@@ -13,7 +13,7 @@ export default async function Home() {
     <main className={styles.page}>
       <Image src="/tda.png" alt="Tour de App 2026" width={100} height={100} />
       <section>
-        <h1>Hello Tour de App 2026!</h1>
+        <h1>Hello TdA</h1>
       </section>
       <blockquote>
         <p>This is a response from the API server running on port 3000</p>
