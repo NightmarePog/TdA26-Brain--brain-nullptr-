@@ -26,7 +26,7 @@ build:
     context: ./apps/web
     dockerfile: ./apps/web/Dockerfile
     args:
-      NEXT_PUBLIC_API_URL: https://<slug>.tourde.app
+      NEXT_PUBLIC_API_URL: https://brain-brain-nullptr-8763.tourde.app/
   - name: server
     context: ./apps/server
     dockerfile: ./apps/server/Dockerfile
