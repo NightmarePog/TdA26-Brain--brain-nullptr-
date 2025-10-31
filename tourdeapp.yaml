@@ -1,4 +1,4 @@
-$schema: https://portalbush.tourde.cloud/static/schema.json
+# $schema: https://portalbush.tourde.cloud/static/schema.json
 exposedPort: 80
 
 containers:
