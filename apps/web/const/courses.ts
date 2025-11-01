@@ -1,7 +1,7 @@
-import { CoursePreview } from "../types/course";
+import { CoursePreviewProps } from "../types/course";
 
 
-export const CoursesConst: CoursePreview[] = [{
+export const CoursesConst: CoursePreviewProps[] = [{
         id: 1,
         name: "First Course!",
         description: "cool"
