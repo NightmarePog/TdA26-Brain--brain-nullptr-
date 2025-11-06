@@ -80,7 +80,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    @apply text-white;
+    @apply text-accent-foreground;
   }
   body {
     @apply bg-background text-foreground;

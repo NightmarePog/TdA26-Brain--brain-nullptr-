@@ -1,16 +1,16 @@
-import { CoursePreviewProps } from "@/types/course"
+import { CoursePreviewProps } from "@/types/course";
 
 interface props {
-    coursePreviewInfo: CoursePreviewProps
+  coursePreviewInfo: CoursePreviewProps;
 }
 
 const CoursePreview = ({ coursePreviewInfo }: props) => {
-    return (
+  return (
     <div className="h-20 w-50 border">
-        <p>{coursePreviewInfo.name}</p>
-        <p>{coursePreviewInfo.description}</p>
+      <p>{coursePreviewInfo.name}</p>
+      <p>{coursePreviewInfo.description}</p>
     </div>
-    )
-}
+  );
+};
 
-export default CoursePreview
+export default CoursePreview;
