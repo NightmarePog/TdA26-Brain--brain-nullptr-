@@ -1,0 +1,25 @@
+{
+  "name": "Next.js Arch Dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/home/dev/workspace/apps/web",
+  "mounts": [
+    "source=/home/nightmare/Github/TdA26-Brainbrain-nullptr-/apps/web,target=/home/dev/workspace/apps/web,type=bind,consistency=cached",
+    "type=volume,source=tda26-node-modules,target=/home/dev/workspace/apps/web/node_modules",
+    "type=volume,source=tda26-next-cache,target=/home/dev/workspace/apps/web/.next"
+  ],
+  "forwardPorts": [3001],
+  "runArgs": ["-p", "3001:3001"],
+  "remoteUser": "dev",
+  "postCreateCommand": "sudo chown -R dev:dev /home/dev/workspace && npm install",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "fish"
+      },
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}
