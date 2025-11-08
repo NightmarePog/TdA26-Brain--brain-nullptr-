@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import { Dosis } from "next/font/google";
 import "./globals.css";
@@ -8,7 +7,6 @@ const dosis = Dosis({
   variable: "--font-dosis",
   subsets: ["latin"],
 });
-
 
 export const metadata: Metadata = {
   title: "Tour de App 2026",
@@ -23,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${dosis.className}`}>
-        <Navbar/>
+        <Navbar />
         {children}
       </body>
     </html>

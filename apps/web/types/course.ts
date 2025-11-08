@@ -1,7 +1,7 @@
 // type Course
 
 export type CoursePreviewProps = {
-    id: number
-    name: string
-    description: string
-}
+  id: number;
+  name: string;
+  description: string;
+};
