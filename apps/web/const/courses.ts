@@ -1,6 +1,4 @@
-import { CoursePreviewProps } from "../types/course";
-
-import { CoursePreviewProps } from "../types/course";
+import type { CoursePreviewProps } from "../types/course";
 
 // 🕓 Last Viewed
 export const CoursesConstLastViewed: CoursePreviewProps[] = [
