@@ -2,87 +2,81 @@
 @import "tw-animate";
 
 :root {
-  --radius: 0.625rem;
+    --radius: 0.625rem;
 
+    --background: #ffffff;
+    --foreground: #1a1a1a;
 
-  --background: #FFFFFF;
-  --foreground: #1A1A1A;
+    --primary: #0257a5;
+    --primary-foreground: #ffffff;
 
+    --secondary: #0070bb;
+    --secondary-foreground: #ffffff;
 
-  --primary: #0257A5;
-  --primary-foreground: #FFFFFF;
+    --accent: #91f5ad;
+    --accent-foreground: #1a1a1a;
 
+    --brand-1: #6dd4b1;
+    --brand-2: #49b3b4;
+    --brand-3: #2592b8;
 
-  --secondary: #0070BB;
-  --secondary-foreground: #FFFFFF;
-
-
-  --accent: #91F5AD;
-  --accent-foreground: #1A1A1A;
-
-
-  --brand-1: #6DD4B1;
-  --brand-2: #49B3B4;
-  --brand-3: #2592B8;
-
-
-  --border: #0257A5;
-  --ring: #0070BB;
-  --input: #6DD4B1;
+    --card-foreground: #e5e7eb;
+    --card: #ffffff;
+    --border: #0257a5;
+    --ring: #0070bb;
+    --input: #6dd4b1;
 }
-
 
 .dark {
-  --background: #1A1A1A;
-  --foreground: #FFFFFF;
+    --background: #1a1a1a;
+    --foreground: #ffffff;
 
-  --primary: #0257A5;
-  --primary-foreground: #FFFFFF;
+    --primary: #0257a5;
+    --primary-foreground: #ffffff;
 
-  --secondary: #0070BB;
-  --secondary-foreground: #FFFFFF;
+    --secondary: #0070bb;
+    --secondary-foreground: #ffffff;
 
-  --accent: #91F5AD;
-  --accent-foreground: #1A1A1A;
+    --accent: #91f5ad;
+    --accent-foreground: #1a1a1a;
 
-  --brand-1: #6DD4B1;
-  --brand-2: #49B3B4;
-  --brand-3: #2592B8;
+    --brand-1: #6dd4b1;
+    --brand-2: #49b3b4;
+    --brand-3: #2592b8;
 
-  --border: #0070BB;
-  --ring: #0257A5;
-  --input: #49B3B4;
+    --card: #1a1a1a;
+    --card-foreground: #1a1000;
+    --border: #0070bb;
+    --ring: #0257a5;
+    --input: #49b3b4;
 }
 
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
 
-  --color-brand-1: var(--brand-1);
-  --color-brand-2: var(--brand-2);
-  --color-brand-3: var(--brand-3);
+    --color-brand-1: var(--brand-1);
+    --color-brand-2: var(--brand-2);
+    --color-brand-3: var(--brand-3);
 
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
+    --color-border: var(--border);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-    @apply text-accent-foreground;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border outline-ring/50;
+    }
 }

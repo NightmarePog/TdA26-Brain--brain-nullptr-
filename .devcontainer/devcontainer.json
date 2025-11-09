@@ -6,8 +6,7 @@
   "workspaceFolder": "/home/dev/workspace/apps/web",
   "mounts": [
     "source=/home/nightmare/Github/TdA26-Brainbrain-nullptr-/apps/web,target=/home/dev/workspace/apps/web,type=bind,consistency=cached",
-    "type=volume,source=tda26-node-modules,target=/home/dev/workspace/apps/web/node_modules",
-    "type=volume,source=tda26-next-cache,target=/home/dev/workspace/apps/web/.next"
+    "source=/home/nightmare/Github/TdA26-Brainbrain-nullptr-/apps/web/node_modules,target=/home/dev/workspace/apps/web/node_modules,type=bind"
   ],
   "forwardPorts": [3001],
   "runArgs": ["-p", "3001:3001"],

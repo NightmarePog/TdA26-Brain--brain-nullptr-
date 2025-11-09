@@ -5,6 +5,7 @@ import Icon from "@/components/ui/icon";
 import { Book, HomeIcon, Settings, User } from "lucide-react";
 import NavbarButton from "../ui/navbarButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ModeToggle } from "./themeToggle";
 
 export default function Navbar() {
   const isMobile = useIsMobile();
@@ -32,6 +33,7 @@ export default function Navbar() {
         <NavbarButton>
           <Settings stroke="white" />
         </NavbarButton>
+        <ModeToggle />
       </div>
     </nav>
   );
