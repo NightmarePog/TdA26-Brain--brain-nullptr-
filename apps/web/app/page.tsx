@@ -1,9 +1,7 @@
-import HomePage from "@/components/layouts/homePage";
-
 export default async function Home() {
   return (
     <main>
-      <HomePage />
+      <p>i am gonna be an entrance page</p>
     </main>
   );
 }

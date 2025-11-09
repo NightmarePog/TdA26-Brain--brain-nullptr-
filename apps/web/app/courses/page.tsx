@@ -1,9 +1,19 @@
-import CoursePreviewLayout from "@/components/layouts/coursePreviewLayout";
+import CourseSection from "@/components/layouts/courseSection";
+import NotFound from "@/components/ui/errorComponents";
+import {
+  CoursesConstLastViewed,
+  CoursesConstRecommended,
+} from "@/const/courses";
 
 const CoursesPage = () => {
+  const data = null;
   return (
     <div>
-      <CoursePreviewLayout />
+      {data ? (
+        <CourseSection title={"bwa"} coursesPreview={data} />
+      ) : (
+        <NotFound />
+      )}
     </div>
   );
 };

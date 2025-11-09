@@ -1,6 +1,6 @@
-import SectionTitle from "../ui/typography/sectionTitle";
+import type { CoursePreviewProps } from "@/types/course";
 import CoursePreview from "../ui/courseCard";
-import { CoursePreviewProps } from "@/types/course";
+import SectionTitle from "../ui/typography/sectionTitle";
 
 interface props {
   title: string;
