@@ -7,6 +7,7 @@ import Logo from "@/public/Logos/SVG/Think-different-Academy_LOGO_bily.svg";
 import NavbarButton from "../ui/navbarButton";
 import { ModeToggle } from "./themeToggle";
 import { useRouter } from "next/navigation";
+import SettingsPopover from "./settingsPopover";
 
 export default function Navbar() {
   const router = useRouter();
@@ -50,10 +51,7 @@ export default function Navbar() {
           />
           {!isMobile && "Přihlásit"}
         </NavbarButton>
-        <NavbarButton>
-          <Settings stroke="white" />
-        </NavbarButton>
-        <ModeToggle />
+        <SettingsPopover />
       </div>
     </nav>
   );
