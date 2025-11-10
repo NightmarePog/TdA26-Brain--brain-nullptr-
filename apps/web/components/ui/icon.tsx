@@ -8,10 +8,10 @@ interface Props {
 
 const Icon = ({ src, alt, size = "small" }: Props) => {
   const sizeMap = {
-    smallest: 30,
-    small: 42,
-    medium: 50,
-    big: 60,
+    smallest: 25,
+    small: 30,
+    medium: 40,
+    big: 50,
   };
 
   const dimension = sizeMap[size];

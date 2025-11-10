@@ -12,7 +12,7 @@ export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
   return (
-    <nav className="sticky flex justify-between bg-primary text-white">
+    <nav className="sticky flex justify-between text-white">
       <div className="flex gap-2 text-inherit">
         <NavbarButton
           className="p-x-5"

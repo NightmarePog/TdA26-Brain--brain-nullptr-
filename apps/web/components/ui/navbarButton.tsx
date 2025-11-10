@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./button";
 
 interface Props {
   children?: ReactNode;
@@ -10,17 +11,18 @@ interface Props {
 const NavbarButton = ({ children, className, onClick }: Props) => {
   const isMobile = useIsMobile();
   return (
-    <button
+    <Button
       type="button"
+      variant={"ghost"}
       className={
-        "cursor-pointer p-2 hover:bg-secondary transition-colors duration-200 flex justify-center items-center gap-4 font-bold " +
+        "cursor-pointer p-2 m-1 hover:bg-secondary transition-colors duration-200 gap-4 font-bold " +
         className +
         (!isMobile ? " px-4" : "px-2")
       }
       onClick={onClick}
     >
       {children}
-    </button>
+    </Button>
   );
 };
 

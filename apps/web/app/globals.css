@@ -4,70 +4,66 @@
 :root {
     --radius: 0.625rem;
 
-    --background: #ffffff;
+    --background: #f8fafc;
     --foreground: #1a1a1a;
 
-    --primary: #0257a5;
+    --primary: #2288d1; /* zjemněná modrá */
     --primary-foreground: #ffffff;
 
-    --secondary: #0070bb;
-    --secondary-foreground: #ffffff;
+    --secondary: #a8f5be; /* jemnější zelená */
+    --secondary-foreground: #1a1a1a;
 
-    --accent: #91f5ad;
-    --accent-foreground: #1a1a1a;
+    --accent: #0070bb; /* původní modrá pro akcenty */
+    --accent-foreground: #ffffff;
 
-    --brand-1: #6dd4b1;
+    --brand-1: #a8f5be;
     --brand-2: #49b3b4;
-    --brand-3: #2592b8;
+    --brand-3: #2288d1;
 
-    --card-foreground: #e5e7eb;
     --card: #ffffff;
-    --border: #0257a5;
+    --card-foreground: #1a1a1a;
+
+    --border: #dce6ef;
     --ring: #0070bb;
-    --input: #6dd4b1;
+    --input: #a8f5be;
 }
 
 .dark {
     --background: #1a1a1a;
     --foreground: #ffffff;
 
-    --primary: #0257a5;
+    --primary: #0070bb;
     --primary-foreground: #ffffff;
 
-    --secondary: #0070bb;
-    --secondary-foreground: #ffffff;
+    --secondary: #91f5ad;
+    --secondary-foreground: #1a1a1a;
 
-    --accent: #91f5ad;
-    --accent-foreground: #1a1a1a;
+    --accent: #0070bb;
+    --accent-foreground: #ffffff;
 
-    --brand-1: #6dd4b1;
-    --brand-2: #49b3b4;
-    --brand-3: #2592b8;
+    --brand-1: #0257a5;
+    --brand-2: #2592b8;
+    --brand-3: #0070bb;
 
-    --card: #1a1a1a;
-    --card-foreground: #1a1000;
-    --border: #0070bb;
-    --ring: #0257a5;
+    --card: #1f1f1f;
+    --card-foreground: #ffffff;
+    --border: #2592b8;
+    --ring: #0070bb;
     --input: #49b3b4;
 }
 
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
-
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
-
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
-
     --color-brand-1: var(--brand-1);
     --color-brand-2: var(--brand-2);
     --color-brand-3: var(--brand-3);
-
     --color-border: var(--border);
     --color-ring: var(--ring);
     --color-input: var(--input);
