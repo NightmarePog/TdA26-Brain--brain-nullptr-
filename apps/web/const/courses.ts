@@ -37,9 +37,36 @@ export const CoursesConstLastViewed: CoursePreviewProps[] = [
       "Integrate LLM APIs and AI workflows into your frontend applications using modern frameworks and best practices.",
     image: "/tda.png",
   },
+  {
+    id: 5,
+    name: "GraphQL for Modern Applications",
+    description:
+      "Learn how to design, query, and optimize GraphQL APIs for scalable and efficient web applications.",
+    image: "/tda.png",
+  },
+  {
+    id: 6,
+    name: "Advanced Node.js Techniques",
+    description:
+      "Master backend development with Node.js, asynchronous patterns, performance optimization, and microservices architecture.",
+    image: "/tda.png",
+  },
+  {
+    id: 7,
+    name: "Progressive Web Apps (PWAs)",
+    description:
+      "Create fast, reliable, and offline-capable web apps that deliver native-like experiences on the web.",
+    image: "/tda.png",
+  },
+  {
+    id: 8,
+    name: "Full-Stack Testing with Jest & Cypress",
+    description:
+      "Ensure quality and reliability by testing frontend and backend applications using Jest, React Testing Library, and Cypress.",
+    image: "/tda.png",
+  },
 ];
 
-// ⭐ Recommended
 export const CoursesConstRecommended: CoursePreviewProps[] = [
   {
     id: 5,
