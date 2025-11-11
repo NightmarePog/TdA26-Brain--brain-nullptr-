@@ -5,7 +5,6 @@ import Icon from "@/components/ui/icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Logo from "@/public/Logos/SVG/Think-different-Academy_LOGO_bily.svg";
 import NavbarButton from "../ui/navbarButton";
-import { ModeToggle } from "./themeToggle";
 import { useRouter } from "next/navigation";
 import SettingsPopover from "./settingsPopover";
 
@@ -24,14 +23,6 @@ export default function Navbar() {
           <Icon src={Logo} alt={"logo"} />
         </NavbarButton>
         {!isMobile && <div className="px-10"></div>}
-        <NavbarButton
-          onClick={() => {
-            router.push("/home");
-          }}
-        >
-          <HomeIcon stroke="white" />
-          {!isMobile && "Domů"}
-        </NavbarButton>
         <NavbarButton
           onClick={() => {
             router.push("/courses");

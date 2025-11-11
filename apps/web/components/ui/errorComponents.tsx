@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { Button } from "./button";
-import { Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const NotFound = () => {
@@ -45,11 +45,11 @@ export const HttpError = ({ code }: httpErrorProps) => {
         <Button
           className="m-5 cursor-pointer"
           onClick={() => {
-            router.push("/home");
+            router.back();
           }}
         >
-          <Home />
-          Domů
+          <ArrowLeft />
+          zpět
         </Button>
       </div>
     </div>
