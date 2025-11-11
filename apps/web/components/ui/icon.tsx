@@ -11,7 +11,7 @@ const Icon = ({ src, alt, size = "small" }: Props) => {
     smallest: 25,
     small: 30,
     medium: 40,
-    big: 50,
+    big: 300,
   };
 
   const dimension = sizeMap[size];
