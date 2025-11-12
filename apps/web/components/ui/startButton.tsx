@@ -8,7 +8,7 @@ export default function StartButton() {
   const router = useRouter();
   return (
     <motion.button
-      onClick={() => router.push("/home")}
+      onClick={() => router.push("/courses")}
       whileHover={{
         scale: 1.1,
         boxShadow: "0 0 30px rgba(34,136,209,0.7)",
@@ -21,7 +21,7 @@ export default function StartButton() {
       className="relative px-10 py-4 text-xl font-extrabold rounded-2xl
                  text-[(--primary-color)] border-2
                  bg-[linear-gradient(to_right,rgba(0,112,187,0.9),rgba(34,136,209,0.9),rgba(73,179,180,0.9))]
-                 shadow-lg overflow-hidden uppercase tracking-wide ml-20 backdrop-blur-sm cursor-pointer"
+                 shadow-lg overflow-hidden uppercase tracking-wide ml-20 backdrop-blur-sm cursor-pointer mr-20"
     >
       <span className="relative z-10 flex items-center gap-2">
         <Sparkles className="w-5 h-5 animate-pulse" />

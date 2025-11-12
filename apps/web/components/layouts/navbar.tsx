@@ -1,5 +1,5 @@
 "use client";
-import { Book, HomeIcon, Settings, User } from "lucide-react";
+import { Book, User } from "lucide-react";
 import Icon from "@/components/ui/icon";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -12,7 +12,7 @@ export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
   return (
-    <nav className="sticky flex justify-between text-white">
+    <nav className="sticky flex justify-between bg-secondary-foreground text-white">
       <div className="flex gap-2 text-inherit">
         <NavbarButton
           className="p-x-5"
@@ -33,13 +33,8 @@ export default function Navbar() {
         </NavbarButton>
       </div>
       <div className="gap-2 flex text-inherit">
-        <NavbarButton>
-          <User
-            stroke="white"
-            onAbort={() => {
-              router.push("/login");
-            }}
-          />
+        <NavbarButton onClick={() => router.push("/login")}>
+          <User />
           {!isMobile && "Přihlásit"}
         </NavbarButton>
         <SettingsPopover />

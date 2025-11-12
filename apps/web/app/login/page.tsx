@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   username: z.string().min(1, "Zadej uživatelské jméno"),
@@ -50,7 +51,7 @@ const Login = () => {
           <CardHeader className="space-y-2 text-center">
             <CardTitle className="text-3xl font-bold">Přihlášení</CardTitle>
             <CardDescription className="text-lg text-muted-foreground">
-              Zadej své přihlašovací údaje
+              Zadej své přihlašovací údaje jako instruktor
             </CardDescription>
           </CardHeader>
 
@@ -77,22 +78,33 @@ const Login = () => {
               <Label htmlFor="password" className="text-lg">
                 Heslo
               </Label>
-              <div className="flex">
-                <Input
+              <div
+                className={cn(
+                  "flex items-center justify-between h-9 w-full min-w-0 rounded-md border pl-3 py-1 shadow-xs transition-all",
+                  "border-input bg-transparent dark:bg-input/30",
+                  "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+                  "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                  "focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary focus-within:shadow-sm",
+                  "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                )}
+              >
+                <input
                   id="password"
                   type={!passwordVisible ? "password" : "text"}
                   placeholder={!passwordVisible ? "••••••••" : "Heslo"}
-                  className="text-base p-3"
+                  className="w-full bg-transparent text-base outline-none"
                   {...form.register("password")}
                 />
                 <Button
                   type="button"
                   onClick={() => setPasswordVisible(!passwordVisible)}
-                  variant={"ghost"}
+                  variant="ghost"
+                  className="focus:outline-none"
                 >
-                  {passwordVisible ? <EyeClosed /> : <Eye />}
+                  {passwordVisible ? <Eye /> : <EyeClosed />}
                 </Button>
               </div>
+
               {form.formState.errors.password && (
                 <p className="text-sm text-red-500">
                   {form.formState.errors.password.message}

@@ -7,13 +7,13 @@
     --background: #f8fafc;
     --foreground: #1a1a1a;
 
-    --primary: #2288d1; /* zjemněná modrá */
+    --primary: #2288d1;
     --primary-foreground: #ffffff;
 
-    --secondary: #a8f5be; /* jemnější zelená */
+    --secondary: #a8f5be;
     --secondary-foreground: #1a1a1a;
 
-    --accent: #0070bb; /* původní modrá pro akcenty */
+    --accent: #0070bb;
     --accent-foreground: #ffffff;
 
     --brand-1: #a8f5be;
@@ -26,6 +26,8 @@
     --border: #dce6ef;
     --ring: #0070bb;
     --input: #a8f5be;
+    --popover: #f8faff;
+    --popover-background: #1a1a2c;
 }
 
 .dark {
@@ -50,6 +52,9 @@
     --border: #2592b8;
     --ring: #0070bb;
     --input: #49b3b4;
+    --popover: #1a1a2c;
+    --popover-background: #1a1a2c;
+    --popover-foreground: #ffffff;
 }
 
 @theme inline {
@@ -69,6 +74,7 @@
     --color-input: var(--input);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
 }
 
 @layer base {
