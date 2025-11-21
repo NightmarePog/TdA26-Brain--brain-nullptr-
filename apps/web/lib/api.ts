@@ -10,11 +10,21 @@ export const rootAPI = async () => {
 };
 
 const CoursesApi = {
+  /**
+   * /api/courses/get/{id}
+   * @param id
+   * @returns
+   */
   get: async (id: number) => {
     const res = await api.get(`/courses/${id}`);
     return res.data;
   },
-  post: async (id: number) => {
+  /**
+   * /api/courses/get/{id}
+   * @param id
+   * @returns
+   */
+  post: async () => {
     const res = await api.get(`/courses/${id}`);
     return res.data;
   },
