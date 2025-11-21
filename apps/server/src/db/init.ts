@@ -14,6 +14,15 @@ export async function initDatabase() {
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 			)
 		`);
+		await pool.execute(`
+			CREATE TABLE IF NOT EXISTS courses (
+				uuid CHAR(36) PRIMARY KEY,
+				name VARCHAR(255) NOT NULL,
+				description VARCHAR(255),
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+			)
+		`);
 
 		console.log("Database schema initialized successfully!");
 	} catch (error) {
