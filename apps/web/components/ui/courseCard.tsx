@@ -17,11 +17,11 @@ const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
   coursePreviewInfo,
 }) => {
   return (
-    <div className="flex flex-wrap -mx-4">
+    <div className="flex flex-wrap  justify-center w-full">
       <AnimatePresence mode="popLayout">
         {coursePreviewInfo.map((info, index) => (
           <motion.div
-            key={info.id ?? index} // raději použij unikátní ID
+            key={info.id ?? index}
             layout
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
