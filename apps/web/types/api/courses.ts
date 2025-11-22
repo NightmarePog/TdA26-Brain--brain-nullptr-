@@ -1,16 +1,16 @@
-export interface CourseCreateRequest {
+export type CourseCreateRequest = {
   name: string;
   description?: string;
-}
+};
 
-export interface CourseUpdateRequest {
+export type CourseUpdateRequest = {
   name?: string;
   description?: string;
-}
+};
 
-export interface CourseDetails {
+export type CourseDetails = {
   uuid: string;
   name: string;
   description?: string;
   materials?: [];
-}
+};

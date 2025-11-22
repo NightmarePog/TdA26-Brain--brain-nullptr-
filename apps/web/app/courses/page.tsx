@@ -4,16 +4,21 @@ import CoursePreviewCarousel from "@/components/ui/courseCard";
 import CoursePreview from "@/components/ui/coursePreview";
 import NotFound from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
-import {
-  CoursesConstLastViewed,
-  CoursesConstRecommended,
-} from "@/const/courses";
+import { CoursesApi } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const CoursesPage = () => {
-  const data = CoursesConstLastViewed;
   const [query, setQuery] = useState("");
-  const filtered = data.filter((item) =>
+  const { isPending, error, data } = useQuery({
+    queryKey: ["allCourses"],
+    queryFn: CoursesApi.getAll,
+  });
+
+  if (error) return <p>nastala chyba: {error.message}</p>;
+  if (isPending) return <p>načítaní...</p>;
+
+  const filtered = data!.filter((item) =>
     item.name.toLowerCase().includes(query.toLowerCase()),
   );
 

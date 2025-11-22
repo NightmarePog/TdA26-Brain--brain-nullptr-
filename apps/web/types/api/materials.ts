@@ -3,7 +3,7 @@ enum MaterialType {
   URL_MATERIAL,
 }
 
-interface FileMaterial {
+type FileMaterial = {
   uuid: string;
   type: MaterialType.FILE_MATERIAL;
   name: string;
@@ -11,43 +11,43 @@ interface FileMaterial {
   fileUrl: string;
   mimeType: string;
   sizeBytes: number;
-}
+};
 
-interface UrlMaterial {
+type UrlMaterial = {
   uuid: string;
   type: MaterialType.URL_MATERIAL;
   name: string;
   description?: string;
   url: string;
   faviconUrl?: string;
-}
+};
 
-export interface Material {
+export type Material = {
   material: UrlMaterial | FileMaterial;
-}
+};
 
-export interface FileMaterialCreateRequest {
+export type FileMaterialCreateRequest = {
   type: MaterialType.FILE_MATERIAL;
   name: string;
   description?: string;
   file: File;
-}
+};
 
-export interface UrlMaterialCreateRequest {
+export type UrlMaterialCreateRequest = {
   type: MaterialType.URL_MATERIAL;
   name: string;
   description?: string;
   url: string;
-}
+};
 
-export interface FileMaterialUpdateRequest {
+export type FileMaterialUpdateRequest = {
   name?: string;
   description?: string;
   file?: File;
-}
+};
 
-export interface UrlMaterialUpdateRequest {
+export type UrlMaterialUpdateRequest = {
   name?: string;
   description?: string;
   url?: string;
-}
+};
