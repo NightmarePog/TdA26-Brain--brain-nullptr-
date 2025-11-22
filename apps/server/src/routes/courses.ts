@@ -24,7 +24,7 @@ courseRoutes.post("/", async (req, res) => {
             INSERT INTO courses (uuid, name, description)
             VALUES (?, ?, ?)
         `,[uuid, name, desc]);
-		const [course] = await pool.execute(`SELECT * FROM courses WHERE uuid = ?`,[uuid]);
+		const course = await findCourseByUUID(uuid);
 		res.status(201).json(course);
 	} catch (error) {
 		console.error("Error creating course:", error);
@@ -37,6 +37,22 @@ courseRoutes.get("/:uuid", async (req, res) => {
 		const uuid : string = req.params.uuid;
 		const course = await findCourseByUUID(uuid);
 		course ? res.status(200).json(course) : res.status(404).json({ message: "Invalid course uuid" });
+	} catch (error) {
+		console.error("Error getting course details:", error);
+		res.status(500).json({ error: "Failed to get course details" });
+	}
+});
+
+courseRoutes.delete("/:uuid", async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const course = await findCourseByUUID(uuid);
+		if (!course) {
+			res.status(404).json({ message: "Invalid course uuid" });
+			return;
+		}
+		// TODO: delete from datbase
+		
 	} catch (error) {
 		console.error("Error getting course details:", error);
 		res.status(500).json({ error: "Failed to get course details" });

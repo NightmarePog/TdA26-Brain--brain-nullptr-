@@ -2,30 +2,69 @@ import "dotenv/config";
 import { pool } from "./index.js";
 
 export async function initDatabase() {
-	try {
-		console.log("Initializing database schema...");
+	while (true) {
+		try {
+			console.log("Initializing database schema...");
 
-		await pool.execute(`
-			CREATE TABLE IF NOT EXISTS users (
-				id INT AUTO_INCREMENT PRIMARY KEY,
-				email VARCHAR(255) NOT NULL,
-				name VARCHAR(255) NOT NULL,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-			)
-		`);
-		await pool.execute(`
-			CREATE TABLE IF NOT EXISTS courses (
-				uuid CHAR(36) PRIMARY KEY,
-				name VARCHAR(255) NOT NULL,
-				description VARCHAR(255),
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-			)
-		`);
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS users (
+					id INT AUTO_INCREMENT PRIMARY KEY,
+					email VARCHAR(255) NOT NULL,
+					name VARCHAR(255) NOT NULL,
+					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+				)
+			`);
+			console.log("Created users table");
 
-		console.log("Database schema initialized successfully!");
-	} catch (error) {
-		console.error("Error initializing database:", error);
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS courses (
+					uuid CHAR(36) PRIMARY KEY,
+					name VARCHAR(255) NOT NULL,
+					description VARCHAR(1000),
+					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+				)
+			`);
+			console.log("Created courses table");
+
+			//** WIP */
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS FileMaterial (
+					uuid CHAR(36) PRIMARY KEY,
+					course_uuid CHAR(36),
+					type VARCHAR(255) NOT NULL,
+					name VARCHAR(255) NOT NULL,
+					fileUrl VARCHAR(1000) NOT NULL,
+					description VARCHAR(1000),
+					mimeType VARCHAR(255),
+					sizeBytes INT,
+					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
+				)
+			`);
+			console.log("Created users table");
+
+			/** Testing data */
+			await pool.execute(`
+				INSERT INTO courses (uuid, name, description)
+				VALUES ('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 'This is a name!', 'This is a description!')
+			`);
+			await pool.execute(`
+				INSERT INTO courses (uuid, name, description)
+				VALUES ('abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef', 'Jetset life is gonna kill you', 'Gaze into her killing jar id sometimes stare for hours, she even poked the holes so i can breathe. She bought the last line, im just the worst kind of guy to argue with what you might find and for the last night i lie, could i lie with you? ALRIGHT, GIVE UP, GET DOWN, Its just the hardest part of living!')
+			`);
+			console.log("Added test data")
+
+			console.log("Database schema initialized successfully!");
+			break;
+		} catch (error) {
+			if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+				console.log("Database is probably still starting, retrying...");
+				await new Promise(f => setTimeout(f, 5000));
+				continue;
+			}
+			console.error("Error initializing database:", error);
+			break;
+		}
 	}
 }
