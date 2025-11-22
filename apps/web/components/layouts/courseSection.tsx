@@ -1,10 +1,10 @@
 import SectionTitle from "../ui/typography/sectionTitle";
 import CoursePreview from "../ui/courseCard";
-import { CoursePreviewProps } from "@/types/course";
+import { CourseDetails } from "@/types/api/courses";
 
 interface props {
   title: string;
-  coursesPreview: CoursePreviewProps[];
+  coursesPreview: CourseDetails[];
 }
 
 const CourseSection = ({ title, coursesPreview }: props) => {
