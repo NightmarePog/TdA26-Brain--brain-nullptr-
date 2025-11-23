@@ -28,7 +28,7 @@ export const CoursesApi = {
    * @returns
    */
   getAll: async () => {
-    const res = await api.get(`/courses/`);
+    const res = await api.get(`/courses`);
     return res.data as CourseDetails[];
   },
   /**
@@ -37,7 +37,7 @@ export const CoursesApi = {
    * @returns
    */
   post: async (data: CourseCreateRequest) => {
-    const res = await api.post(`/courses/`, data);
+    const res = await api.post(`/courses`, data);
     return res.data as CourseDetails;
   },
   get: async (id: number) => {

@@ -2,15 +2,15 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { CoursePreviewProps } from "@/types/course";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "phosphor-react";
 import Text from "@/components/ui/typography/text";
 import { motion, AnimatePresence } from "framer-motion";
+import { CourseDetails } from "@/types/api/courses";
 
 interface CoursePreviewCarouselProps {
-  coursePreviewInfo: CoursePreviewProps[];
+  coursePreviewInfo: CourseDetails[];
 }
 
 const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
@@ -21,7 +21,7 @@ const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
       <AnimatePresence mode="popLayout">
         {coursePreviewInfo.map((info, index) => (
           <motion.div
-            key={info.id ?? index}
+            key={info.uuid ?? index}
             layout
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -32,7 +32,7 @@ const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
             <Card className="group h-[500px] w-[350px] p-0 overflow-hidden border border-card-foreground hover:shadow-xl transition-all rounded-3xl">
               <div className="relative h-[250px] w-full overflow-hidden">
                 <Image
-                  src={info.image}
+                  src={"/tda.png"}
                   alt={info.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
