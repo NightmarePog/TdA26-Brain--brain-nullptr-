@@ -95,7 +95,7 @@ courseRoutes.put("/:uuid", async (req, res) => {
 	}
 });
 
-/** GET/DELETE/PUT on /courses/:uuid/materials */
+/** GET/POST on /courses/:uuid/materials/ */
 courseRoutes.get("/:uuid/materials", async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
