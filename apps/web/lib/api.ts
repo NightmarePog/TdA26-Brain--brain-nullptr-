@@ -40,34 +40,34 @@ export const CoursesApi = {
     const res = await api.post(`/courses`, data);
     return res.data as CourseDetails;
   },
-  get: async (id: number) => {
-    const res = await api.get(`/courses/${id}`);
+  get: async (uuid: string) => {
+    const res = await api.get(`/courses/${uuid}`);
     return res.data as CourseDetails;
   },
-  put: async (id: number, data: CourseUpdateRequest) => {
-    const res = await api.put(`/courses/${id}`, data);
+  put: async (uuid: string, data: CourseUpdateRequest) => {
+    const res = await api.put(`/courses/${uuid}`, data);
     return res.data as CourseUpdateRequest;
   },
 
-  delete: async (id: number) => {
-    const res = await api.delete(`/courses/${id}`);
+  delete: async (uuid: string) => {
+    const res = await api.delete(`/courses/${uuid}`);
     return (res.data as string) || res.status;
   },
 
   materials: {
-    getAll: async (courseId: number) => {
+    getAll: async (courseId: string) => {
       const res = await api.get(`/courses/${courseId}/materials`);
       return res.data as Material[];
     },
     post: async (
-      courseId: number,
+      courseId: string,
       data: UrlMaterialCreateRequest | FileMaterialCreateRequest,
     ) => {
       const res = await api.post(`/courses/${courseId}/materials`, data);
       return res.data as Material;
     },
     put: async (
-      courseId: number,
+      courseId: string,
       materialId: number,
       data: FileMaterialUpdateRequest | UrlMaterialUpdateRequest,
     ) => {

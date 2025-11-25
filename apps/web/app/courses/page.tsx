@@ -24,7 +24,6 @@ const CoursesPage = () => {
 
   return (
     <>
-      {/** TODO: course filtering */}
       <div className="flex justify-center p-5">
         <Input
           placeholder="Vyhledávat..."
