@@ -1,18 +1,18 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Dosis } from "next/font/google";
 import "./globals.css";
+
 import Navbar from "@/components/layouts/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const dosis = Dosis({
   variable: "--font-dosis",
   subsets: ["latin"],
 });
-
-export const metadata: Metadata = {
-  title: "Tour de App 2026",
-  description: "Tour de App 2026",
-};
 
 export default function RootLayout({
   children,
@@ -21,17 +21,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${dosis.className}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          {children}
-        </ThemeProvider>
-      </body>
+      <QueryClientProvider client={queryClient}>
+        <body className={dosis.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            {children}
+          </ThemeProvider>
+        </body>
+      </QueryClientProvider>
     </html>
   );
 }
