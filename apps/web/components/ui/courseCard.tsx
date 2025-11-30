@@ -2,13 +2,13 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { CoursePreviewProps } from "@/types/course";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "phosphor-react";
 import Text from "@/components/ui/typography/text";
 import { motion, AnimatePresence } from "framer-motion";
 import { CourseDetails } from "@/types/api/courses";
+import { useRouter } from "next/navigation";
 
 interface CoursePreviewCarouselProps {
   coursePreviewInfo: CourseDetails[];
@@ -17,6 +17,8 @@ interface CoursePreviewCarouselProps {
 const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
   coursePreviewInfo,
 }) => {
+  const router = useRouter();
+
   return (
     <div className="flex flex-wrap  justify-center w-full">
       <AnimatePresence mode="popLayout">
@@ -52,8 +54,9 @@ const CoursePreviewCarousel: React.FC<CoursePreviewCarouselProps> = ({
 
                 <div className="flex justify-end mt-4">
                   <Button
+                    onClick={() => router.push(`/courses/${info.uuid}`)}
                     variant="secondary"
-                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 rounded-full px-4 py-2"
+                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 rounded-full cursor-pointer px-4 py-2"
                   >
                     <span>Explore</span>
                     <ArrowRight size={20} weight="bold" />
