@@ -142,7 +142,7 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 			const mimeType : string = req.body.mimeType;
 			const sizeBytes : number = req.body.sizeBytes;
 			/** TODO */
-			console.log("FILE not implemented yet");
+			console.log("lets make a file: ", fileURL);
 		}
 
 		res.status(404).json({ message: "Invalid mime type" });
@@ -162,7 +162,6 @@ async function findCourseByUUID(uuid : string) {
 };
 
 async function formatMaterialJSON(entry : JSON) {
-	delete entry.course_uuid;
 	/** Prioritize file instead of url, shouldnt cause problems */
 	const [files] = await pool.execute(`
 		SELECT * FROM files WHERE uuid = ?
