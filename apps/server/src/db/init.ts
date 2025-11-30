@@ -75,7 +75,7 @@ export async function initDatabase() {
 			`);
 			await pool.execute(`
 				INSERT IGNORE INTO files (uuid, type, name, fileUrl)
-				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'file', 'This is a name!', 'This is a description!')
+				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'This is a file type!', 'This is a name of a file!', 'This is a description of a file!')
 			`);
 			await pool.execute(`
 				INSERT IGNORE INTO courses (uuid, name, description)
