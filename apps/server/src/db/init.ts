@@ -5,7 +5,13 @@ import { createDirectory } from "@/utils/filesystem.js";
 export async function initDatabase() {
 	while (true) {
 		try {
+			/** Check if database is available */
+			await pool.execute(`
+				SHOW TABLES
+			`);
+
 			console.log("Creating directories...");
+
 			await createDirectory("/app/materials/");
 			console.log("/apps/materials/ OK");
 
@@ -77,16 +83,19 @@ export async function initDatabase() {
 				VALUES ('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 'This is a name!', 'This is a description!')
 			`);
 			console.log("course1 OK");
+
 			await pool.execute(`
 				INSERT IGNORE INTO materials (uuid, course_uuid)
 				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
 			`);
 			console.log("material OK");
+
 			await pool.execute(`
 				INSERT IGNORE INTO files (uuid, type, name, fileUrl)
 				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'This is a file type!', 'This is a name of a file!', 'This is a description of a file!')
 			`);
 			console.log("file OK");
+			
 			await pool.execute(`
 				INSERT IGNORE INTO courses (uuid, name, description)
 				VALUES ('abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef', 'Jetset life is gonna kill you', 'Gaze into her killing jar id sometimes stare for hours, she even poked the holes so i can breathe. She bought the last line, im just the worst kind of guy to argue with what you might find and for the last night i lie, could i lie with you? ALRIGHT, GIVE UP, GET DOWN, Its just the hardest part of living!')
