@@ -26,7 +26,7 @@ export async function isDirectory(path : string) : Promise<boolean> {
     return stats.isDirectory();
 }
 
-export async function readFile(path : string, format : string) : Promise<string|undefined> {
+export async function readFile(path : string, format : string) : Promise<string|void> {
     if (!(await fileOrDirectoryExists(path))) {
         console.error("File doesn't exist");
         return;
@@ -43,7 +43,7 @@ export async function readFile(path : string, format : string) : Promise<string|
     }
 }
 
-export async function writeFile(path : string, format : string, data : string) : Promise<string|undefined> {
+export async function writeFile(path : string, format : string, data : string) : Promise<string|void> {
     if (!(await fileOrDirectoryExists(path))) {
         console.error("File doesn't exist");
         return;
@@ -60,7 +60,7 @@ export async function writeFile(path : string, format : string, data : string) :
     }
 }
 
-export async function appendFile(path : string, format : string, data : string) : Promise<string|undefined> {
+export async function appendFile(path : string, format : string, data : string) : Promise<string|void> {
     if (!(await fileOrDirectoryExists(path))) {
         console.error("File doesn't exist");
         return;
@@ -77,7 +77,7 @@ export async function appendFile(path : string, format : string, data : string) 
     }
 }
 
-export async function deleteFile(path : string) : Promise<undefined> {
+export async function deleteFile(path : string) : Promise<void> {
     if (!(await fileOrDirectoryExists(path))) {
         console.error("File doesn't exist");
         return;
@@ -93,7 +93,7 @@ export async function deleteFile(path : string) : Promise<undefined> {
     }
 }
 
-export async function createDirectory(path : string) : Promise<undefined> {
+export async function createDirectory(path : string) : Promise<void> {
     if (await fileOrDirectoryExists(path)) {
         console.error("Directory already exists");
         return;
@@ -105,7 +105,7 @@ export async function createDirectory(path : string) : Promise<undefined> {
     }
 }
 
-export async function deleteDirectory(path : string) : Promise<undefined> {
+export async function deleteDirectory(path : string) : Promise<void> {
     if (!(await fileOrDirectoryExists(path))) {
         console.error("Directory doesn't exist");
         return;
