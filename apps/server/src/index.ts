@@ -17,17 +17,8 @@ apiRoutes.get("/", (_req, res) => {
 
 app.use("/api", apiRoutes);
 
-/** 
- *  This has to be String|any because apiRoutes.use needs
- *  type 'PathParams', which doesn't exist. stupid.
- */
-const routes = new Map<String|any, Router> ([
-	["/users", userRoutes],
-	["/courses", courseRoutes],
-]);
-routes.forEach((value, key) => {
-	apiRoutes.use(key, value);
-});
+apiRoutes.use("/users", userRoutes);
+apiRoutes.use("/courses", courseRoutes);
 
 const port = process.env.PORT || 3000;
 async function start() {
@@ -36,10 +27,6 @@ async function start() {
 	app.listen(port, () => {
 		console.log("Server is running");
 		console.log(`Server port: ${port}`);
-		console.log("Available routes:");
-		routes.forEach((v,k) => {
-			console.log("-- "+k);
-		});
 	});
 }
 
