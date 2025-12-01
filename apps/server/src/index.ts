@@ -12,7 +12,7 @@ app.use(express.json());
 
 const apiRoutes = express.Router();
 apiRoutes.get("/", (_req, res) => {
-	res.status(200).send("OK");
+	res.status(200).json( {organization:"Think different academy"} );
 });
 
 app.use("/api", apiRoutes);
