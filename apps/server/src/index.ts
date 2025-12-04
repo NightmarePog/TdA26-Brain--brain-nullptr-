@@ -1,6 +1,6 @@
 import "dotenv/config";
 import cors from "cors";
-import express, { Router } from "express";
+import express from "express";
 import { initDatabase } from "./db/init.js";
 import { userRoutes } from "./routes/users.js";
 import { courseRoutes } from "./routes/courses.js";
@@ -12,7 +12,11 @@ app.use(express.json());
 
 const apiRoutes = express.Router();
 apiRoutes.get("/", (_req, res) => {
-	res.status(200).json({ organization: "Think different academy" });
+	res.status(200).json({ organization: "Student Cyber Games" });
+});
+
+app.get("/", (_req, res) => {
+	res.status(200).send("Hello TdA");
 });
 
 app.use("/api", apiRoutes);
