@@ -44,10 +44,6 @@ export async function readFile(path : string, format : string) : Promise<string|
 }
 
 export async function writeFile(path : string, format : string, data : string) : Promise<string|void> {
-    if (!(await fileOrDirectoryExists(path))) {
-        console.error("File doesn't exist");
-        return;
-    }
     if (await isDirectory(path)) {
         console.error("Path is a directory");
         return;
@@ -90,6 +86,18 @@ export async function deleteFile(path : string) : Promise<void> {
         await fs.unlink(path);
     } catch (error) {
         console.error("Error deleting file:", error);
+    }
+}
+
+export async function moveFile(path : string, newPath : string) : Promise<void> {
+    if (!(await fileOrDirectoryExists(path))) {
+        console.error("File doesn't exist");
+        return;
+    }
+    try {
+        await fs.rename(path, newPath);
+    } catch (error) {
+        console.error("Error moving file:", error);
     }
 }
 
