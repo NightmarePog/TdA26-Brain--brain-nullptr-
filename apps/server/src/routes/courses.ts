@@ -60,13 +60,11 @@ courseRoutes.post("/", async (req, res) => {
 		return;
 	}
 
-    await pool.execute(
-      `
-            INSERT INTO courses (uuid, name, description)
-            VALUES (?, ?, ?)
-        `,
-      [uuid, name, desc],
-    );
+    await pool.execute(`
+		INSERT INTO courses (uuid, name, description)
+		VALUES (?, ?, ?)
+    `,[uuid, name, desc]);
+
     const course = await findCourseByUUID(uuid);
     res.status(201).json(course);
   } catch (error) {
@@ -124,17 +122,14 @@ courseRoutes.put("/:uuid", async (req, res) => {
           ? req.body.description
           : course.description;
 
-      await pool.execute(
-        `
-				UPDATE courses
-				SET name = ?, description = ?
-				WHERE uuid = ?
-			`,
-        [name, desc, uuid],
-      );
+      	await pool.execute(`
+			UPDATE courses
+			SET name = ?, description = ?
+			WHERE uuid = ?
+		`, [name, desc, uuid]);
     }
 
-		res.status(200).json(await findCourseByUUID(uuid));
+	res.status(200).json(await findCourseByUUID(uuid));
 		
 	} catch (error) {
 		console.error("Error updating course:", error);
@@ -167,11 +162,10 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 	try {
 		if (req.is('application/json')) {
 			/** URL */
-			const type : string = req.body.type;
 			const name : string = req.body.name;
 			const desc : string = req.body.description || '';
 			const url : string = req.body.url;
-			const faviconUrl : string = req.body.faviconUrl || '';
+			const faviconUrl : string = `${url}/favicon.ico`;
 
 			if (!type || !name || !url) {
 				res.status(404).json({ message: "Required data missing" });
@@ -184,9 +178,9 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 			`,[uuid, course_uuid]);
 
 			await pool.execute(`
-				INSERT INTO urls (uuid, type, name, url, faviconUrl, description)
-				VALUES (?, ?, ?, ?, ?, ?)
-			`, [uuid, type, name, url, faviconUrl, desc]);
+				INSERT INTO urls (uuid, name, url, faviconUrl, description)
+				VALUES (?, ?, ?, ?, ?)
+			`, [uuid, name, url, faviconUrl, desc]);
 
 			const [materials] = await pool.execute(`
 				SELECT * FROM materials WHERE uuid = ?
@@ -201,9 +195,8 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 					return res.status(404).json( { message:err.message } );
 				}
 
-				const type : string = req.file.mimetype.split("/")[0];
-				const name : string = req.file.originalname;
-				const mimeType : string = req.file.mimetype.split("/")[1];
+				const name : string = req.body.name || req.file.originalname;
+				const mimeType : string = req.file.mimetype;
 				const sizeBytes : number = req.file.size;
 				const description : string = req.body.description || "";
 	
@@ -211,7 +204,7 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				const newDirPath = `/app/materials/${course_uuid}`;
 				const newFilePath = `${newDirPath}/${uuid}`;
 	
-				if (!name || !type) {
+				if (!name) {
 					deleteFile(tmpFilePath);
 					res.status(404).json({ message: "Required data missing" });
 					return;
@@ -228,9 +221,9 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				`,[uuid, course_uuid]);
 	
 				await pool.execute(`
-					INSERT INTO files (uuid, type, name, description, mimeType, sizeBytes)
+					INSERT INTO files (uuid, name, description, mimeType, sizeBytes)
 					VALUES (?, ?, ?, ?, ?, ?)
-				`, [uuid, type, name, description, mimeType, sizeBytes]);
+				`, [uuid, name, description, mimeType, sizeBytes]);
 	
 				const [materials] = await pool.execute(`
 					SELECT * FROM materials WHERE uuid = ?
@@ -295,6 +288,8 @@ async function getCourseDetailsByUUID(uuid : string) {
 	/** for now only get materials ontop of the initial course */
 	const course = await findCourseByUUID(uuid);
 	if (!course) return;
+	delete course.created_at;
+	delete course.updated_at;
 	const materials = await getMaterialsByCourseUUID(uuid);
 	if (!materials) return;
 	// const quizzes : JSON = ;
