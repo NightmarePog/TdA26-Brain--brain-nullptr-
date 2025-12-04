@@ -1,6 +1,40 @@
 import express from "express";
+import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
+import { createDirectory, deleteFile, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
+
+const MAX_UPLOAD_SIZE = 30000000;
+
+const acceptableExtensions = ['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mp3'];
+
+const storage = multer.diskStorage({
+    destination: function (req : any, file : any, cb : any) {
+		cb(null, '/app/tmp/');
+    },
+	filename: function (req : any, file : any, cb : any) {
+		cb(null, req.params.uuid);
+	}
+});
+
+const upload = multer({
+	storage: storage,
+	limits: {
+        fileSize: MAX_UPLOAD_SIZE // 30 MB
+    },
+	fileFilter: (req : any, file : any, callback : any) => {
+		if (!(acceptableExtensions.includes(file.originalname.split(".").at(-1)))) {
+			return callback(new Error('Unsupported file type'));
+		}
+
+		const fileSize = parseInt(req.headers['content-length']);
+		if (fileSize > MAX_UPLOAD_SIZE) {
+			return callback(new Error('Maximum file size exceeded'));
+		}
+
+		callback(null, true);
+    }
+}).single('file');
 
 export const courseRoutes = express.Router();
 
@@ -20,6 +54,12 @@ courseRoutes.post("/", async (req, res) => {
     const uuid: string = randomUUID();
     const name: string = req.body.name;
     const desc: string = req.body.description || "";
+
+	if (!name) {
+		res.status(404).json({ message: "Required data missing" });
+		return;
+	}
+
     await pool.execute(
       `
             INSERT INTO courses (uuid, name, description)
@@ -61,7 +101,6 @@ courseRoutes.delete("/:uuid", async (req, res) => {
 
 		// This somehow returns nothing, so it works as intended
 		res.status(204).json(course);
-		
 	} catch (error) {
 		console.error("Error deleting course:", error);
 		res.status(500).json({ error: "Failed to delete course" });
@@ -115,18 +154,29 @@ courseRoutes.get("/:uuid/materials", async (req, res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/materials", async (req, res) => {
-	try {
-		const course_uuid : string = req.params.uuid;
-		const uuid : string = randomUUID();
-		const type : string = req.body.type;
-        const name : string = req.body.name;
-        const desc : string = req.body.description || '';
+courseRoutes.post("/:uuid/materials", async (req, res, next) => {
+	const course_uuid : string = req.params.uuid;
+	const uuid : string = randomUUID();
 
+	const course = await findCourseByUUID(course_uuid);
+    if (!course) {
+      res.status(404).json({ message: "Invalid course uuid" });
+      return;
+    }
+	
+	try {
 		if (req.is('application/json')) {
 			/** URL */
+			const type : string = req.body.type;
+			const name : string = req.body.name;
+			const desc : string = req.body.description || '';
 			const url : string = req.body.url;
 			const faviconUrl : string = req.body.faviconUrl || '';
+
+			if (!type || !name || !url) {
+				res.status(404).json({ message: "Required data missing" });
+				return;
+			}
 
 			await pool.execute(`
 				INSERT INTO materials (uuid, course_uuid)
@@ -146,14 +196,52 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 
 		} else if (req.is('multipart/form-data')) {
 			/** FILE */
-			const fileURL : string = req.body.fileURL;
-			const mimeType : string = req.body.mimeType;
-			const sizeBytes : number = req.body.sizeBytes;
-			/** TODO */
-			console.log("lets make a file: ", fileURL);
-		}
+			upload(req, res, async function(err : any) {
+				if (err) {
+					return res.status(404).json( { message:err.message } );
+				}
 
-		res.status(404).json({ message: "Invalid mime type" });
+				const type : string = req.file.mimetype.split("/")[0];
+				const name : string = req.file.originalname;
+				const mimeType : string = req.file.mimetype.split("/")[1];
+				const sizeBytes : number = req.file.size;
+				const description : string = req.body.description || "";
+	
+				const tmpFilePath = `/app/tmp/${course_uuid}`;
+				const newDirPath = `/app/materials/${course_uuid}`;
+				const newFilePath = `${newDirPath}/${uuid}`;
+	
+				if (!name || !type) {
+					deleteFile(tmpFilePath);
+					res.status(404).json({ message: "Required data missing" });
+					return;
+				}
+	
+				if (!(await fileOrDirectoryExists(newDirPath))) {
+					await createDirectory(newDirPath);
+				}
+				await moveFile(tmpFilePath, newFilePath);
+	
+				await pool.execute(`
+					INSERT INTO materials (uuid, course_uuid)
+					VALUES (?, ?)
+				`,[uuid, course_uuid]);
+	
+				await pool.execute(`
+					INSERT INTO files (uuid, type, name, description, mimeType, sizeBytes)
+					VALUES (?, ?, ?, ?, ?, ?)
+				`, [uuid, type, name, description, mimeType, sizeBytes]);
+	
+				const [materials] = await pool.execute(`
+					SELECT * FROM materials WHERE uuid = ?
+				`,[uuid]);
+	
+				res.status(201).json(await formatMaterialJSON(materials[0]));
+			});
+		} else {
+			res.status(404).json({ message: "Invalid mime type" });
+			return;
+		}
 		
 	} catch (error) {
 		console.error("Error creating material:", error);
@@ -209,6 +297,9 @@ async function getCourseDetailsByUUID(uuid : string) {
 	if (!course) return;
 	const materials = await getMaterialsByCourseUUID(uuid);
 	if (!materials) return;
+	// const quizzes : JSON = ;
+	// if (!quizzes) return;
 	course.materials = materials;
+	// course.quizzes = quizzes;
 	return course;
 }
