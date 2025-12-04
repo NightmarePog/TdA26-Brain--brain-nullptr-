@@ -10,10 +10,13 @@ export async function initDatabase() {
 				SHOW TABLES
 			`);
 
-			console.log("Creating directories...");
+			console.log("\nCreating directories..");
 
 			await createDirectory("/app/materials/");
-			console.log("/apps/materials/ OK");
+			console.log("/app/materials/ OK");
+			
+			await createDirectory("/app/tmp/");
+			console.log("/app/tmp/ OK");
 
 			console.log("\nCreating tables...");
 
@@ -53,7 +56,6 @@ export async function initDatabase() {
 					uuid CHAR(36) PRIMARY KEY,
 					type VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
-					fileUrl VARCHAR(1000) NOT NULL,
 					description VARCHAR(1000),
 					mimeType VARCHAR(255),
 					sizeBytes INT,
@@ -91,8 +93,8 @@ export async function initDatabase() {
 			console.log("material OK");
 
 			await pool.execute(`
-				INSERT IGNORE INTO files (uuid, type, name, fileUrl)
-				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'This is a file type!', 'This is a name of a file!', 'This is a description of a file!')
+				INSERT IGNORE INTO files (uuid, type, name)
+				VALUES ('12345678-bbbb-1234-4321-eeeeeeeeeeee', 'This is a file type!', 'This is a name of a file!')
 			`);
 			console.log("file OK");
 			
