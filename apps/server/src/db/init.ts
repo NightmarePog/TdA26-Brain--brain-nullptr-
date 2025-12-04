@@ -54,7 +54,6 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS files (
 					uuid CHAR(36) PRIMARY KEY,
-					type VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
 					mimeType VARCHAR(255),
@@ -67,7 +66,6 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS urls (
 					uuid CHAR(36) PRIMARY KEY,
-					type VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
 					url VARCHAR(1000) NOT NULL,
 					faviconUrl VARCHAR(1000),
