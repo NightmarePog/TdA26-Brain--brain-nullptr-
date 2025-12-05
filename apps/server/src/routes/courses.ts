@@ -116,8 +116,8 @@ courseRoutes.put("/:uuid", async (req, res) => {
 		}
 
 		if (req.body) {
-			const name: string = req.body.name || course.name;
-			const desc: string = req.body.description || course.description;
+			const name: string =req.body.name != null ? req.body.name : course.name;
+			const desc: string = req.body.description != null ? req.body.description : course.description;
 
 			await pool.execute(`
 				UPDATE courses
@@ -274,9 +274,9 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 					if (err) {
 						return res.status(400).json( { message:err.message } );
 					}
-
-					const name: string = req.body.name || material.name;
-					const desc: string = req.body.description || material.description;
+					
+					const name: string = req.body.name != null ? req.body.name : material.name;
+					const desc: string = req.body.description != null ? req.body.description : material.description;
 					const mimeType : string = req.file.mimetype;
 					const sizeBytes : number = req.file.size;
 		
@@ -297,8 +297,8 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 				});
 			} else if (req.is('application/json')) {
 				/** Without file replacement */
-				const name: string = req.body.name || material.name;
-				const desc: string = req.body.description || material.description;
+				const name: string = req.body.name != null ? req.body.name : material.name;
+				const desc: string = req.body.description != null ? req.body.description : material.description;
 
 				await pool.execute(`
 					UPDATE files
