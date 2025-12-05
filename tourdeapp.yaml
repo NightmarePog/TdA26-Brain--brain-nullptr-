@@ -9,7 +9,7 @@ containers:
       NEXT_PUBLIC_API_URL: https://brain-brain-nullptr-8763.tourde.app
   - name: server
     image: registry.tourde.cloud/brain-brain-nullptr-8763/server
-    port: 3001
+    port: 3000
     env:
       DATABASE_URL: mysql://root:password@localhost:3306/tda_app
   - name: mysql
