@@ -265,34 +265,51 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 			return;
 		}
 
-		if (req.is('multipart/form-data')) {
-			upload(req, res, async function(err : any) {
-				if (err) {
-					return res.status(400).json( { message:err.message } );
-				}
+		const type = material.type;
 
+		if (type == "file") {
+			if (req.is('multipart/form-data')) {
+				/** With file replacement */
+				upload(req, res, async function(err : any) {
+					if (err) {
+						return res.status(400).json( { message:err.message } );
+					}
+
+					const name: string = req.body.name || material.name;
+					const desc: string = req.body.description || material.description;
+					const mimeType : string = req.file.mimetype;
+					const sizeBytes : number = req.file.size;
+		
+					const tmpFilePath = `/app/tmp/${uuid}`;
+					const newDirPath = `/app/materials/${uuid}`;
+					const newFilePath = `${newDirPath}/${material_uuid}`;
+
+					if (!(await fileOrDirectoryExists(newDirPath))) {
+						await createDirectory(newDirPath);
+					}
+					await moveFile(tmpFilePath, newFilePath);
+
+					await pool.execute(`
+						UPDATE files
+						SET name = ?, description = ?, mimeType = ?, sizeBytes = ?
+						WHERE uuid = ?
+					`, [name, desc, mimeType, sizeBytes, material_uuid]);
+				});
+			} else if (req.is('application/json')) {
+				/** Without file replacement */
 				const name: string = req.body.name || material.name;
 				const desc: string = req.body.description || material.description;
-				const mimeType : string = req.file.mimetype;
-				const sizeBytes : number = req.file.size;
-	
-				const tmpFilePath = `/app/tmp/${uuid}`;
-				const newDirPath = `/app/materials/${uuid}`;
-				const newFilePath = `${newDirPath}/${material_uuid}`;
-
-				if (!(await fileOrDirectoryExists(newDirPath))) {
-					await createDirectory(newDirPath);
-				}
-				await moveFile(tmpFilePath, newFilePath);
 
 				await pool.execute(`
 					UPDATE files
-					SET name = ?, description = ?, mimeType = ?, sizeBytes = ?
+					SET name = ?, description = ?
 					WHERE uuid = ?
-				`, [name, desc, mimeType, sizeBytes, material_uuid]);
-			});
-
-		} else if (req.is('application/json')) {
+				`, [name, desc, material_uuid]);
+			} else {
+				res.status(404).json({ message: "Invalid content type" });
+				return;
+			}
+		} else if (type == "url") {
 			const name: string = req.body.name || material.name;
 			const desc: string = req.body.description || material.description;
 			const url: string = req.body.url != null ? req.body.url : material.url;
@@ -302,9 +319,6 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 				SET name = ?, description = ?, url = ?, faviconUrl = ?
 				WHERE uuid = ?
 			`, [name, desc, url, `${url}/favicon.ico`, material_uuid]);
-		} else {
-			res.status(404).json({ message: "Invalid content type" });
-			return;
 		}
 
 		await pool.execute(`
