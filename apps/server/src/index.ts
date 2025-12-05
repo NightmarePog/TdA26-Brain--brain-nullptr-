@@ -15,10 +15,6 @@ apiRoutes.get("/", (_req, res) => {
 	res.status(200).json({ organization: "Student Cyber Games" });
 });
 
-app.get("/", (_req, res) => {
-	res.status(200).send("Hello TdA");
-});
-
 app.use("/api", apiRoutes);
 
 apiRoutes.use("/users", userRoutes);
