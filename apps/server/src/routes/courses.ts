@@ -164,6 +164,7 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 			/** URL */
 			const name : string = req.body.name;
 			const desc : string = req.body.description || '';
+			const type : string = req.body.type;
 			const url : string = req.body.url;
 			const faviconUrl : string = `${url}/favicon.ico`;
 
@@ -178,9 +179,9 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 			`,[uuid, course_uuid]);
 
 			await pool.execute(`
-				INSERT INTO urls (uuid, name, url, faviconUrl, description)
-				VALUES (?, ?, ?, ?, ?)
-			`, [uuid, name, url, faviconUrl, desc]);
+				INSERT INTO urls (uuid, name, type, url, faviconUrl, description)
+				VALUES (?, ?, ?, ?, ?, ?)
+			`, [uuid, name, type, url, faviconUrl, desc]);
 
 			const [materials] = await pool.execute(`
 				SELECT * FROM materials WHERE uuid = ?
@@ -199,12 +200,13 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				const mimeType : string = req.file.mimetype;
 				const sizeBytes : number = req.file.size;
 				const description : string = req.body.description || "";
+				const type : string = req.body.type;
 	
 				const tmpFilePath = `/app/tmp/${course_uuid}`;
 				const newDirPath = `/app/materials/${course_uuid}`;
 				const newFilePath = `${newDirPath}/${uuid}`;
 	
-				if (!name) {
+				if (!name || !type) {
 					deleteFile(tmpFilePath);
 					res.status(404).json({ message: "Required data missing" });
 					return;
@@ -221,9 +223,9 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				`,[uuid, course_uuid]);
 	
 				await pool.execute(`
-					INSERT INTO files (uuid, name, description, mimeType, sizeBytes)
-					VALUES (?, ?, ?, ?, ?, ?)
-				`, [uuid, name, description, mimeType, sizeBytes]);
+					INSERT INTO files (uuid, name, type, fileUrl, description, mimeType, sizeBytes)
+					VALUES (?, ?, ?, ?, ?, ?, ?)
+				`, [uuid, name, type, newFilePath, description, mimeType, sizeBytes]);
 	
 				const [materials] = await pool.execute(`
 					SELECT * FROM materials WHERE uuid = ?
