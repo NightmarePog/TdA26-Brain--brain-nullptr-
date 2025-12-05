@@ -34,10 +34,11 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS courses (
 					uuid CHAR(36) PRIMARY KEY,
-					name VARCHAR(255) NOT NULL,	 
+					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
 					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					update_count INT DEFAULT 0
 				)
 			`);
 			console.log("courses OK");
@@ -45,7 +46,10 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS materials (
 					uuid CHAR(36) PRIMARY KEY,
-					course_uuid CHAR(36),
+					course_uuid CHAR(36) NOT NULL,
+					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					update_count INT DEFAULT 0,
 					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
 				)
 			`);
