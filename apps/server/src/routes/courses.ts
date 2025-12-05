@@ -284,17 +284,38 @@ async function getMaterialsByCourseUUID(uuid : string) {
 	return materials;
 }
 
+/** TODO */
+async function getQuizzesByCourseUUID(uuid : string) {
+	if (!(await findCourseByUUID(uuid))) return;
+	return [];
+}
+
+/** TODO */
+async function getFeedByCourseUUID(uuid : string) {
+	if (!(await findCourseByUUID(uuid))) return;
+	return [];
+}
+
 async function getCourseDetailsByUUID(uuid : string) {
 	/** for now only get materials ontop of the initial course */
 	const course = await findCourseByUUID(uuid);
 	if (!course) return;
+
 	delete course.created_at;
 	delete course.updated_at;
+
 	const materials = await getMaterialsByCourseUUID(uuid);
 	if (!materials) return;
-	// const quizzes : JSON = ;
-	// if (!quizzes) return;
+
+	const quizzes = await getQuizzesByCourseUUID(uuid);
+	if (!quizzes) return;
+
+	const feed = await getFeedByCourseUUID(uuid);
+	if (!feed) return;
+
 	course.materials = materials;
-	// course.quizzes = quizzes;
+	course.quizzes = quizzes;
+	course.feed = feed;
+
 	return course;
 }
