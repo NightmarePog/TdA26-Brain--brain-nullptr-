@@ -165,7 +165,7 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 			const name : string = req.body.name;
 			const desc : string = req.body.description || '';
 			const type : string = req.body.type;
-			const url : string = req.body.url;
+			const url : string = "url";
 			const faviconUrl : string = `${url}/favicon.ico`;
 
 			if (!type || !name || !url) {
@@ -200,7 +200,7 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				const mimeType : string = req.file.mimetype;
 				const sizeBytes : number = req.file.size;
 				const description : string = req.body.description || "";
-				const type : string = req.body.type;
+				const type : string = "file";
 	
 				const tmpFilePath = `/app/tmp/${course_uuid}`;
 				const newDirPath = `/app/materials/${course_uuid}`;
@@ -253,6 +253,8 @@ async function findCourseByUUID(uuid : string) {
 };
 
 async function formatMaterialJSON(entry : JSON) {
+	delete entry.course_uuid;
+
 	/** Prioritize file instead of url, shouldnt cause problems */
 	const [files] = await pool.execute(`
 		SELECT * FROM files WHERE uuid = ?
@@ -260,7 +262,7 @@ async function formatMaterialJSON(entry : JSON) {
 	const file = files.length == 1 ? files[0] : null;
 	if (file) {
 		delete file.uuid;
-		entry.file = file;
+		entry = Object.assign(entry, file);
 		return entry;
 	}
 
@@ -270,7 +272,7 @@ async function formatMaterialJSON(entry : JSON) {
 	const url = urls.length == 1 ? urls[0] : null;
 	if (url) {
 		delete url.uuid;
-		entry.url = url;
+		entry = Object.assign(entry, url);
 		return entry;
 	}
 }
