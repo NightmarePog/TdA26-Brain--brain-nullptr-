@@ -15,7 +15,6 @@ RUN chmod +x /app/start.sh
 
 RUN npm run build
 
-ENV RUN_URL=localhost
 ENV DATABASE_URL=mysql://root:password@localhost:3306/tda_app
 ENV PORT=3000
 
