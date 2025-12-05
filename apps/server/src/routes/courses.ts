@@ -41,7 +41,7 @@ export const courseRoutes = express.Router();
 /** GET/POST on /courses/ */
 courseRoutes.get("/", async (_req, res) => {
 	try {
-		const [rows] = await pool.execute("SELECT * FROM courses");
+		const [rows] = await pool.execute("SELECT * FROM courses ORDER BY created_at DESC");
 		res.status(200).json(rows);
 	} catch (error) {
 		console.error("Error fetching course summaries:", error);
@@ -50,27 +50,27 @@ courseRoutes.get("/", async (_req, res) => {
 });
 
 courseRoutes.post("/", async (req, res) => {
-  try {
-    const uuid: string = randomUUID();
-    const name: string = req.body.name;
-    const desc: string = req.body.description || "";
+  	try {
+		const uuid: string = randomUUID();
+		const name: string = req.body.name;
+		const desc: string = req.body.description || "";
 
-	if (!name) {
-		res.status(404).json({ message: "Required data missing" });
-		return;
+		if (!name) {
+			res.status(404).json({ message: "Invalid data" });
+			return;
+		}
+
+		await pool.execute(`
+			INSERT INTO courses (uuid, name, description)
+			VALUES (?, ?, ?)
+		`,[uuid, name, desc]);
+
+		const course = await findCourseByUUID(uuid);
+		res.status(201).json(course);
+	} catch (error) {
+		console.error("Error creating course:", error);
+		res.status(500).json({ error: "Failed to create course" });
 	}
-
-    await pool.execute(`
-		INSERT INTO courses (uuid, name, description)
-		VALUES (?, ?, ?)
-    `,[uuid, name, desc]);
-
-    const course = await findCourseByUUID(uuid);
-    res.status(201).json(course);
-  } catch (error) {
-    console.error("Error creating course:", error);
-    res.status(500).json({ error: "Failed to create course" });
-  }
 });
 
 /** GET/DELETE/PUT on /courses/:uuid/ */
@@ -106,31 +106,28 @@ courseRoutes.delete("/:uuid", async (req, res) => {
 });
 
 courseRoutes.put("/:uuid", async (req, res) => {
-  try {
-    const uuid: string = req.params.uuid;
+	try {
+		const uuid: string = req.params.uuid;
 
-    const course = await findCourseByUUID(uuid);
-    if (!course) {
-      res.status(404).json({ message: "Invalid course uuid" });
-      return;
-    }
+		const course = await findCourseByUUID(uuid);
+		if (!course) {
+			res.status(404).json({ message: "Invalid course uuid" });
+			return;
+		}
 
-    if (req.body) {
-      const name: string = req.body.name != null ? req.body.name : course.name;
-      const desc: string =
-        req.body.description != null
-          ? req.body.description
-          : course.description;
+		if (req.body) {
+			const name: string = req.body.name != null ? req.body.name : course.name;
+			const desc: string = req.body.description != null ? req.body.description : course.description;
 
-      	await pool.execute(`
-			UPDATE courses
-			SET name = ?, description = ?
-			WHERE uuid = ?
-		`, [name, desc, uuid]);
-    }
+			await pool.execute(`
+				UPDATE courses
+				SET name = ?, description = ?
+				WHERE uuid = ?
+			`, [name, desc, uuid]);
+		}
 
-	res.status(200).json(await findCourseByUUID(uuid));
-		
+		res.status(200).json(await findCourseByUUID(uuid));
+			
 	} catch (error) {
 		console.error("Error updating course:", error);
 		res.status(500).json({ error: "Failed to update course" });
@@ -164,12 +161,12 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 			/** URL */
 			const name : string = req.body.name;
 			const desc : string = req.body.description || '';
-			const type : string = req.body.type;
-			const url : string = "url";
+			const type : string = "url";
+			const url : string = req.body.url;
 			const faviconUrl : string = `${url}/favicon.ico`;
 
 			if (!type || !name || !url) {
-				res.status(404).json({ message: "Required data missing" });
+				res.status(404).json({ message: "Invalid data" });
 				return;
 			}
 
@@ -182,18 +179,21 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 				INSERT INTO urls (uuid, name, type, url, faviconUrl, description)
 				VALUES (?, ?, ?, ?, ?, ?)
 			`, [uuid, name, type, url, faviconUrl, desc]);
+			
+			await updateCourseByUUID(course_uuid);
 
 			const [materials] = await pool.execute(`
 				SELECT * FROM materials WHERE uuid = ?
 			`,[uuid]);
 
 			res.status(201).json(await formatMaterialJSON(materials[0]));
+			return;
 
 		} else if (req.is('multipart/form-data')) {
 			/** FILE */
 			upload(req, res, async function(err : any) {
 				if (err) {
-					return res.status(404).json( { message:err.message } );
+					return res.status(400).json( { message:err.message } );
 				}
 
 				const name : string = req.body.name || req.file.originalname;
@@ -208,7 +208,7 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 	
 				if (!name || !type) {
 					deleteFile(tmpFilePath);
-					res.status(404).json({ message: "Required data missing" });
+					res.status(404).json({ message: "Invalid data" });
 					return;
 				}
 	
@@ -226,15 +226,18 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 					INSERT INTO files (uuid, name, type, fileUrl, description, mimeType, sizeBytes)
 					VALUES (?, ?, ?, ?, ?, ?, ?)
 				`, [uuid, name, type, newFilePath, description, mimeType, sizeBytes]);
+
+				await updateCourseByUUID(course_uuid);
 	
 				const [materials] = await pool.execute(`
 					SELECT * FROM materials WHERE uuid = ?
 				`,[uuid]);
-	
+
 				res.status(201).json(await formatMaterialJSON(materials[0]));
+				return;
 			});
 		} else {
-			res.status(404).json({ message: "Invalid mime type" });
+			res.status(404).json({ message: "Invalid content type" });
 			return;
 		}
 		
@@ -244,7 +247,108 @@ courseRoutes.post("/:uuid/materials", async (req, res, next) => {
 	}
 });
 
+/** PUT/DELETE on /courses/:uuid/materials/:material_uuid */
+courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
+	try {
+		const uuid: string = req.params.uuid;
+		const material_uuid: string = req.params.material_uuid;
+
+		const course = await findCourseByUUID(uuid);
+		if (!course) {
+			res.status(404).json({ message: "Invalid course uuid" });
+			return;
+		}
+
+		const material = await findMaterialByUUID(material_uuid);
+		if (!material) {
+			res.status(404).json({ message: "Invalid material uuid" });
+			return;
+		}
+
+		if (req.body) {
+			const name: string = req.body.name != null ? req.body.name : material.name;
+			const desc: string = req.body.description != null ? req.body.description : material.description;
+			const type = material.type;
+
+			if (type == "file") {
+				await pool.execute(`
+					UPDATE files
+					SET name = ?, description = ?
+					WHERE uuid = ?
+				`, [name, desc, material_uuid]);
+				
+			} else if (type == "url") {
+				const url: string = req.body.url != null ? req.body.url : material.url;
+
+				await pool.execute(`
+					UPDATE urls
+					SET name = ?, description = ?, url = ?, faviconUrl = ?
+					WHERE uuid = ?
+				`, [name, desc, url, `${url}/favicon.ico`, material_uuid]);
+			}
+		}
+
+		await pool.execute(`
+			UPDATE materials
+			SET update_count = ?
+			WHERE uuid = ?
+		`, [material.update_count+1, material_uuid]);
+
+		await updateCourseByUUID(uuid);
+
+		res.status(200).json(await findMaterialByUUID(material_uuid));
+		
+	} catch (error) {
+		console.error("Error updating course:", error);
+		res.status(500).json({ error: "Failed to update course" });
+	}
+});
+
+courseRoutes.delete("/:uuid/materials/:material_uuid", async (req, res) => {
+	try {
+		const uuid: string = req.params.uuid;
+		const material_uuid: string = req.params.material_uuid;
+
+		const course = await findCourseByUUID(uuid);
+		if (!course) {
+			res.status(404).json({ message: "Invalid course uuid" });
+			return;
+		}
+
+		const material = await findMaterialByUUID(material_uuid);
+		if (!material) {
+			res.status(404).json({ message: "Invalid material uuid" });
+			return;
+		}
+
+		await pool.execute(`
+			DELETE FROM materials WHERE uuid = ?
+		`,[material_uuid]);
+
+		await updateCourseByUUID(uuid);
+
+		// This somehow returns nothing, so it works as intended
+		res.status(204).json(material);
+	} catch (error) {
+		console.error("Error deleting course:", error);
+		res.status(500).json({ error: "Failed to delete course" });
+	}
+});
+
 /** Functions */
+async function updateCourseByUUID(uuid : string) {
+	const course = await findCourseByUUID(uuid);
+	if (!course) {
+		return;
+	}
+
+	await pool.execute(`
+		UPDATE courses
+		SET update_count = ?
+		WHERE uuid = ?
+	`, [course.update_count+1, uuid]);
+}
+
 async function findCourseByUUID(uuid : string) {
 	const [courses] = await pool.execute(`
 			SELECT * FROM courses WHERE uuid = ?
@@ -275,38 +379,42 @@ async function formatMaterialJSON(entry : JSON) {
 		entry = Object.assign(entry, url);
 		return entry;
 	}
-}
+};
+
+async function findMaterialByUUID(uuid : string) {
+	const [materials] = await pool.execute(`
+			SELECT * FROM materials WHERE uuid = ?
+	`,[uuid]);
+	return materials.length == 1 ? (await formatMaterialJSON(materials[0])) : null;
+};
 
 async function getMaterialsByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
 	const [materials] = await pool.execute(`
-			SELECT * FROM materials WHERE course_uuid = ?
+			SELECT * FROM materials WHERE course_uuid = ? ORDER BY created_at DESC
 	`,[uuid]);
 	for (const entry of materials) {
 		await formatMaterialJSON(entry);
 	};
 	return materials;
-}
+};
 
 /** TODO */
 async function getQuizzesByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
 	return [];
-}
+};
 
 /** TODO */
 async function getFeedByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
 	return [];
-}
+};
 
 async function getCourseDetailsByUUID(uuid : string) {
 	/** for now only get materials ontop of the initial course */
 	const course = await findCourseByUUID(uuid);
 	if (!course) return;
-
-	delete course.created_at;
-	delete course.updated_at;
 
 	const materials = await getMaterialsByCourseUUID(uuid);
 	if (!materials) return;
@@ -322,4 +430,4 @@ async function getCourseDetailsByUUID(uuid : string) {
 	course.feed = feed;
 
 	return course;
-}
+};
