@@ -294,6 +294,16 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 						SET name = ?, description = ?, mimeType = ?, sizeBytes = ?
 						WHERE uuid = ?
 					`, [name, desc, mimeType, sizeBytes, material_uuid]);
+
+					await pool.execute(`
+						UPDATE materials
+						SET update_count = ?
+						WHERE uuid = ?
+					`, [material.update_count+1, material_uuid]);
+
+					await updateCourseByUUID(uuid);
+
+					res.status(200).json(await findMaterialByUUID(material_uuid));
 				});
 			} else if (req.is('application/json')) {
 				/** Without file replacement */
@@ -305,6 +315,16 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 					SET name = ?, description = ?
 					WHERE uuid = ?
 				`, [name, desc, material_uuid]);
+
+				await pool.execute(`
+					UPDATE materials
+					SET update_count = ?
+					WHERE uuid = ?
+				`, [material.update_count+1, material_uuid]);
+
+				await updateCourseByUUID(uuid);
+
+				res.status(200).json(await findMaterialByUUID(material_uuid));
 			} else {
 				res.status(404).json({ message: "Invalid content type" });
 				return;
@@ -319,17 +339,17 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 				SET name = ?, description = ?, url = ?, faviconUrl = ?
 				WHERE uuid = ?
 			`, [name, desc, url, `${url}/favicon.ico`, material_uuid]);
+
+			await pool.execute(`
+				UPDATE materials
+				SET update_count = ?
+				WHERE uuid = ?
+			`, [material.update_count+1, material_uuid]);
+
+			await updateCourseByUUID(uuid);
+
+			res.status(200).json(await findMaterialByUUID(material_uuid));
 		}
-
-		await pool.execute(`
-			UPDATE materials
-			SET update_count = ?
-			WHERE uuid = ?
-		`, [material.update_count+1, material_uuid]);
-
-		await updateCourseByUUID(uuid);
-
-		res.status(200).json(await findMaterialByUUID(material_uuid));
 		
 	} catch (error) {
 		console.error("Error updating material:", error);
