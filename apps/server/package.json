@@ -11,16 +11,21 @@
 		"db": "docker run -d --restart always -e MYSQL_DATABASE=tda_app -e MYSQL_ROOT_PASSWORD=password -p 3306:3306 mysql:8.0"
 	},
 	"dependencies": {
+		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.1",
 		"express": "^5.1.0",
+		"jsonwebtoken": "^9.0.3",
 		"multer": "^2.0.2",
 		"mysql2": "^3.14.0",
 		"zod": "^4.0.2"
 	},
 	"devDependencies": {
+		"@types/cookie-parser": "^1.4.10",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.1",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/multer": "^2.0.0",
 		"@types/node": "^22.13.11",
 		"tsdown": "^0.14.1",
 		"tsx": "^4.19.2",
