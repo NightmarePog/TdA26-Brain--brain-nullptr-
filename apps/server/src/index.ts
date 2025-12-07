@@ -4,15 +4,20 @@ import express from "express";
 import { initDatabase } from "./db/init.js";
 import { userRoutes } from "./routes/users.js";
 import { courseRoutes } from "./routes/courses.js";
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 const apiRoutes = express.Router();
 apiRoutes.get("/", (_req, res) => {
 	res.status(200).json({ organization: "Student Cyber Games" });
+});
+apiRoutes.get("/coffee", (_req, res) => {
+	res.status(418).send("I'm a teapot");
 });
 
 app.use("/api", apiRoutes);
