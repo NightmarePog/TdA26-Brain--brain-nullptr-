@@ -65,6 +65,10 @@ export async function sha512(str : string) {
 }
 
 export function authenticate(req : any, res : any, next : any) {
+	/** temporary authenticate skip */
+	next();
+	return;
+
 	let authToken;
 	try {
 		authToken = req.cookies.auth_token;
@@ -79,6 +83,10 @@ export function authenticate(req : any, res : any, next : any) {
 }
 
 export async function authenticateAdmin(req : any, res : any, next : any) {
+	/** temporary authenticate skip */
+	next();
+	return;
+	
 	const user = await findUser(req.user.nameOrEmail);
 	if (!user.admin) {
 		return res.sendStatus(403);
