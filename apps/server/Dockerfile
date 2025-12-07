@@ -17,6 +17,7 @@ RUN npm run build
 
 ENV DATABASE_URL=mysql://root:password@localhost:3306/tda_app
 ENV PORT=3000
+ENV AUTH_TOKEN_SECRET=super_duper_secret_auth_token_secret
 
 EXPOSE 3000
 
