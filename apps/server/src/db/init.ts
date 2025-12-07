@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { pool } from "./index.js";
 import { createDirectory } from "@/utils/filesystem.js";
+import { sha512 } from "@/routes/users.js";
 
 export async function initDatabase() {
 	while (true) {
@@ -25,8 +26,11 @@ export async function initDatabase() {
 					id INT AUTO_INCREMENT PRIMARY KEY,
 					email VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
+					password VARCHAR(255) NOT NULL,
+					admin BOOL NOT NULL,
 					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					CONSTRAINT UC_Person UNIQUE (name,email)
 				)
 			`);
 			console.log("users OK");
@@ -82,6 +86,20 @@ export async function initDatabase() {
 			`);
 			console.log("urls OK");
 			
+			console.log("\nCreating users..");
+
+			await pool.execute(`
+				INSERT IGNORE INTO users (email, name, password, admin)
+				VALUES (?, ?, ?, ?)
+			`, ["lecturer@email.com", "lecturer", await sha512("TdA26!"), true]);
+			console.log("admin user OK")
+
+			await pool.execute(`
+				INSERT IGNORE INTO users (email, name, password, admin)
+				VALUES (?, ?, ?, ?)
+			`, ["student@email.com", "student", await sha512("1234"), false]);
+			console.log("student user OK")
+
 			break;
 
 		} catch (error) {
