@@ -3,6 +3,7 @@ import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
 import { createDirectory, deleteFile, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
+import { authenticate, authenticateAdmin } from "./users";
 
 const MAX_UPLOAD_SIZE = 30000000;
 
@@ -49,14 +50,14 @@ courseRoutes.get("/", async (_req, res) => {
 	}
 });
 
-courseRoutes.post("/", async (req, res) => {
+courseRoutes.post("/", authenticate, authenticateAdmin, async (req, res) => {
   	try {
 		const uuid: string = randomUUID();
 		const name: string = req.body.name;
 		const desc: string = req.body.description || "";
 
 		if (!name) {
-			res.status(404).json({ message: "Invalid data" });
+			res.status(400).json({ message: "Invalid data" });
 			return;
 		}
 
@@ -85,7 +86,7 @@ courseRoutes.get("/:uuid", async (req, res) => {
 	}
 });
 
-courseRoutes.delete("/:uuid", async (req, res) => {
+courseRoutes.delete("/:uuid", authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const course = await findCourseByUUID(uuid);
@@ -105,7 +106,7 @@ courseRoutes.delete("/:uuid", async (req, res) => {
 	}
 });
 
-courseRoutes.put("/:uuid", async (req, res) => {
+courseRoutes.put("/:uuid", authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
 
@@ -146,7 +147,7 @@ courseRoutes.get("/:uuid/materials", async (req, res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/materials", async (req, res) => {
+courseRoutes.post("/:uuid/materials", authenticate, authenticateAdmin, async (req, res) => {
 	const course_uuid : string = req.params.uuid;
 	const uuid : string = randomUUID();
 
@@ -166,7 +167,7 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 			const faviconUrl : string = `${url}/favicon.ico`;
 
 			if (!type || !name || !url) {
-				res.status(404).json({ message: "Invalid data" });
+				res.status(400).json({ message: "Invalid data" });
 				return;
 			}
 
@@ -208,7 +209,7 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 	
 				if (!name || !type) {
 					deleteFile(tmpFilePath);
-					res.status(404).json({ message: "Invalid data" });
+					res.status(400).json({ message: "Invalid data" });
 					return;
 				}
 	
@@ -237,7 +238,7 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 				return;
 			});
 		} else {
-			res.status(404).json({ message: "Invalid content type" });
+			res.status(400).json({ message: "Invalid content type" });
 			return;
 		}
 		
@@ -248,7 +249,7 @@ courseRoutes.post("/:uuid/materials", async (req, res) => {
 });
 
 /** PUT/DELETE on /courses/:uuid/materials/:material_uuid */
-courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
+courseRoutes.put("/:uuid/materials/:material_uuid", authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
 		const material_uuid: string = req.params.material_uuid;
@@ -326,7 +327,7 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 
 				res.status(200).json(await findMaterialByUUID(material_uuid));
 			} else {
-				res.status(404).json({ message: "Invalid content type" });
+				res.status(400).json({ message: "Invalid content type" });
 				return;
 			}
 		} else if (type == "url") {
@@ -357,7 +358,7 @@ courseRoutes.put("/:uuid/materials/:material_uuid", async (req, res) => {
 	}
 });
 
-courseRoutes.delete("/:uuid/materials/:material_uuid", async (req, res) => {
+courseRoutes.delete("/:uuid/materials/:material_uuid", authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
 		const material_uuid: string = req.params.material_uuid;
