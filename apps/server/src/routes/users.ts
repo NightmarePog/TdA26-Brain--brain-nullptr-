@@ -20,8 +20,6 @@ userRoutes.get("/", authenticate, authenticateAdmin, async (req, res) => {
 /** POST on /users/login/ */
 userRoutes.post("/login/", async (req, res) => {
 	try {
-		/** TODO implement rate limiting? */
-
 		const nameOrEmail = req.body.nameOrEmail;
 		const password = req.body.password;
 
@@ -36,7 +34,7 @@ userRoutes.post("/login/", async (req, res) => {
 			return;
 		}
 
-		if (await sha512(password) !== user.password) {
+		if (await sha512(`${password}${process.env.PASSWORD_SALT}`) !== user.password) {
 			res.status(401).json({ message: "Invalid password" });
 			return;
 		}
