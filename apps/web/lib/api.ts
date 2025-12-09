@@ -10,6 +10,7 @@ import {
   UrlMaterialCreateRequest,
   UrlMaterialUpdateRequest,
 } from "@/types/api/materials";
+import { userLoginRecieve, userLoginSend } from "@/types/api/user";
 import axios from "axios";
 
 export const api = axios.create({
@@ -81,5 +82,12 @@ export const CoursesApi = {
       const res = await api.put(`/courses/${courseId}/materials/${materialId}`);
       return res.status;
     },
+  },
+};
+
+export const userApi = {
+  post: async (data: userLoginSend) => {
+    const res = await api.post(`/users/login`, data);
+    return res.data as userLoginRecieve;
   },
 };
