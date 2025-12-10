@@ -12,9 +12,9 @@ export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
   return (
-    <nav className="flex justify-between items-center bg-black text-white z-50 h-18 px-8 md:px-16">
+    <nav className="flex justify-between items-center bg-primary text-white z-50 h-18 px-8 md:px-16">
       <div className="flex gap-4 items-center text-inherit">
-        <NavbarButton className="px-6 py-4" onClick={() => router.push("/")}>
+        <NavbarButton className="px-6 py-4 " onClick={() => router.push("/")}>
           <Icon src={Logo} alt={"logo"} className="w-8 h-8 md:w-12 md:h-12" />
         </NavbarButton>
 

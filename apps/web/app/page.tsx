@@ -6,21 +6,24 @@ import Image from "next/image";
 
 export default async function Home() {
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="h-full overflow-hidden">
       {/* Background */}
-      <Image
-        src="/landing-background.svg"
-        alt="Landing Background"
-        fill
-        priority
-        className="object-cover -z-10"
-      />
+      <div>
+        <Image
+          src="/landing-background.svg"
+          alt="Landing Background"
+          fill
+          priority
+          className="object-cover -z-10"
+        />
+        <div className="bg-primary object-cover" />
+      </div>
 
       {/* Content */}
-      <main className="absolute-z-20 inset-0 w-full h-full flex flex-col justify-between p-10">
-        <div className="text-left m-10 space-y-4 max-w-3xl">
+      <main className="">
+        <div className="text-left m-10 space-y-4 max-w-3xl ">
           <h1 className="text-6xl md:text-7xl font-extrabold leading-tight drop-shadow-lg">
-            Odemkni svůj vzdělávací potenciál
+            Odemkni svůj vzdělávací potenciál!
           </h1>
 
           <p className="text-3xl md:text-4xl font-semibold drop-shadow-md">
@@ -39,7 +42,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="flex justify-end m-20">
+        <div className="flex justify-end ">
           <Icon src={Logo} size="huge" alt="Think Academy Logo" />
         </div>
       </main>
