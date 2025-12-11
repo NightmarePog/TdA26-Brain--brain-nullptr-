@@ -3,7 +3,7 @@ import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
-import { authenticate, authenticateAdmin, findUser } from "./users";
+import { authenticate, authenticateAdmin, authenticateOptional, findUser } from "./users";
 
 enum Types {
 	FILE = "file",
@@ -370,10 +370,22 @@ courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial
 
 /** QUIZZES */
 /** GET/POST on /courses/:uuid/quizzes/ */
-courseRoutes.get("/:uuid/quizzes", checkCourse, async (req,res) => {
+courseRoutes.get("/:uuid/quizzes", checkCourse, authenticateOptional, async (req,res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizzes = await getQuizzesByCourseUUID(uuid);
+		if (req.user != null) {
+			const user = await findUser(req.user.nameOrEmail);
+			if (user != null && user.admin) {
+				for (const quiz of quizzes) {
+					const [answers] = await pool.execute(`
+						SELECT * FROM answers WHERE quizUuid = ?
+					`,[quiz.uuid]);
+					
+					quiz.answers = answers;
+				}
+			}
+		}
 		res.status(200).json(quizzes);
 	} catch (error) {
 		console.error("Error fetching quizzes:", error);
@@ -388,10 +400,6 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 
 		if (body.title == null) {
 			res.status(400).json({ message: "Missing title" });
-			return;
-		}
-		if (body.attemptsCount == null) {
-			res.status(400).json({ message: "Missing attemptsCount" });
 			return;
 		}
 		if (body.questions == null) {
@@ -478,12 +486,11 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 
 		const quizUuid : string = randomUUID();
 		const title : string = body.title;
-		const attemptsCount : number = body.attemptsCount;
 
 		await pool.execute(`
-			INSERT INTO quizzes (uuid, courseUuid, title, attemptsCount)
-			VALUES (?, ?, ?, ?)
-		`,[quizUuid, uuid, title, attemptsCount]);
+			INSERT INTO quizzes (uuid, courseUuid, title)
+			VALUES (?, ?, ?)
+		`,[quizUuid, uuid, title]);
 
 		for (const q of questions) {
 			const questionUuid : string = randomUUID();
@@ -521,8 +528,18 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 });
 
 /** GET/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/ */
-courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, async (req, res) => {
+courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticateOptional, async (req, res) => {
 	try {
+		if (req.user != null) {
+			const user = await findUser(req.user.nameOrEmail);
+			if (user != null && user.admin) {
+				const [answers] = await pool.execute(`
+					SELECT * FROM answers WHERE quizUuid = ?
+				`,[req.quiz.uuid]);
+				
+				req.quiz.answers = answers;
+			}
+		}
 		res.status(200).json(req.quiz);
 	} catch (error) {
 		console.error("Error fetching quiz:", error);
@@ -556,7 +573,6 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 		const quiz : JSON = req.quiz;
 
 		const title : string = body.title != null ? body.title : quiz.title;
-		const attemptsCount : number = body.attemptsCount != null ? body.attemptsCount : quiz.attemptsCount;
 		const questions : JSON[] = body.questions != null ? [] : quiz.questions;
 
 		if (body.questions != null) {
@@ -665,9 +681,9 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 
 		await pool.execute(`
 			UPDATE quizzes
-			SET title = ?, attemptsCount = ?, updateCount = ?
+			SET title = ?, updateCount = ?
 			WHERE uuid = ?
-		`,[title, attemptsCount, quiz.updateCount+1, quizUuid]);
+		`,[title, quiz.updateCount+1, quizUuid]);
 
 		await updateCourseByUUID(uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
 
@@ -683,7 +699,7 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 });
 
 /** POST on /courses/:uuid/quizzes/:quizUuid/submit/ */
-courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
+courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, authenticateOptional, async (req, res) => {
 	try {
 		const user = req.user != null ? await findUser(req.user.nameOrEmail) : null;
 		const quizUuid : string = req.params.quizUuid;
@@ -779,6 +795,12 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, check
 			INSERT INTO answers (uuid, quizUuid, userId, score, maxScore)
 			VALUES (?, ?, ?, ?, ?)
 		`,[answerUuid, quizUuid, user != null ? user.id : null, score, maxScore]);
+
+		await pool.execute(`
+			UPDATE quizzes
+			SET attemptsCount = ?
+			WHERE uuid = ?
+		`,[req.quiz.attemptsCount+1, quizUuid]);
 
 		const [db_answers] = await pool.execute(`
 			SELECT * FROM answers WHERE uuid = ?
@@ -901,10 +923,10 @@ courseRoutes.get("/:uuid/feed/stream", checkCourse, async (req, res) => {
 			const [newLatest] = await pool.execute(`
 				SELECT * FROM feed WHERE courseUuid = ? ORDER BY createdAt DESC LIMIT 1
 			`,[req.params.uuid]);
-			
-			if (latest[0].uuid != newLatest[0].uuid) {
+
+			if ((latest[0] != null && latest[0].uuid != newLatest[0].uuid) || (latest[0] == null && newLatest[0] != null)) {
 				latest = newLatest;
-				res.write(`event: new_post\ndata: ${JSON.stringify(latest[0])}\n\n`);
+				res.write(`event: new_post\ndata: ${JSON.stringify(await formatFeedJSON(latest[0]))}\n\n`);
 				res.flush();
 			}
 		}, 2000);
@@ -980,12 +1002,6 @@ async function formatQuizJSON(entry : JSON) {
 		}
 	};
 	entry.questions = questions;
-
-	const [answers] = await pool.execute(`
-		SELECT * FROM answers WHERE quizUuid = ?
-	`,[entry.uuid]);
-
-	entry.answers = answers;
 
 	return entry;
 };
