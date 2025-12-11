@@ -82,6 +82,31 @@ export async function authenticate(req : any, res : any, next : any) {
 	});
 }
 
+export async function authenticateOptional(req : any, res : any, next : any) {
+	let authToken;
+	try {
+		authToken = req.cookies.auth_token;
+	} catch (err) {};
+	if (authToken == null) {
+		next();
+		return;
+	}
+
+	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
+		if (err) {
+			next();
+			return;
+		}
+		const u = await findUser(user.nameOrEmail);
+		if (!u) {
+			next();
+			return;
+		}
+		req.user = user;
+		next();
+	});
+}
+
 export async function authenticateAdmin(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
 	next();
