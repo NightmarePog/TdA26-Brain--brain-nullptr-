@@ -5,12 +5,14 @@ import { initDatabase } from "./db/init.js";
 import { userRoutes } from "./routes/users.js";
 import { courseRoutes } from "./routes/courses.js";
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use(compression());
 
 const apiRoutes = express.Router();
 apiRoutes.get("/", (_req, res) => {
