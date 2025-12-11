@@ -91,7 +91,7 @@ export async function initDatabase() {
 					uuid CHAR(36) PRIMARY KEY,
 					courseUuid CHAR(36) NOT NULL,
 					title VARCHAR(255) NOT NULL,
-					attemptsCount INT NOT NULL,
+					attemptsCount INT DEFAULT 0,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
