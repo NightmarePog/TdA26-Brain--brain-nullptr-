@@ -23,6 +23,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <QueryClientProvider client={queryClient}>
         <body className={dosis.className}>
+          <p className="size-0">Hello TdA</p>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
