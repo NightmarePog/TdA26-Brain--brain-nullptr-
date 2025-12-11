@@ -62,7 +62,7 @@ export async function sha512(str : string) {
 	return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString(16)).slice(-2))).join('');
 }
 
-export function authenticate(req : any, res : any, next : any) {
+export async function authenticate(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
 	next();
 	return;
@@ -71,10 +71,12 @@ export function authenticate(req : any, res : any, next : any) {
 	try {
 		authToken = req.cookies.auth_token;
 	} catch (err) {};
-	if (!authToken) return res.sendStatus(401);
+	if (authToken == null) return res.sendStatus(401);
 
-	jwt.verify(authToken, authTokenSecret, (err : any, user : any) => {
+	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
 		if (err) return res.sendStatus(403);
+		const u = await findUser(user.nameOrEmail);
+		if (!u) return res.sendStatus(404).json({ message: "User not found" });
 		req.user = user;
 		next();
 	});
@@ -92,7 +94,7 @@ export async function authenticateAdmin(req : any, res : any, next : any) {
 	next();
 }
 
-async function findUser(nameOrEmail : string) {
+export async function findUser(nameOrEmail : string) {
 	const [users] = await pool.execute(`
 			SELECT * FROM users WHERE name = ? OR email = ?
 	`,[nameOrEmail, nameOrEmail]);
