@@ -2,17 +2,26 @@ import express from "express";
 import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
-import { createDirectory, deleteFile, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
-import { authenticate, authenticateAdmin } from "./users";
+import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
+import { authenticate, authenticateAdmin, findUser } from "./users";
 
 enum Types {
 	FILE = "file",
 	URL = "url",
 	SINGLE_CHOICE = "singleChoice",
 	MULTIPLE_CHOICE = "multipleChoice",
+	MANUAL = "manual",
+	SYSTEM = "system"
 };
 
-const MAX_UPLOAD_SIZE = 30000000;
+/** Messages that show up in course feeds */
+enum FeedMessages {
+	CREATE = "has been uploaded",
+	EDIT = "has been edited",
+	DELETE = "has been deleted",
+};
+
+const MAX_UPLOAD_SIZE = 30000000;	// 30 MB
 const VALID_EXTENSIONS = ['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mp3'];
 const storage = multer.diskStorage({
     destination: function (req : any, file : any, cb : any) {
@@ -25,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({
 	storage: storage,
 	limits: {
-        fileSize: MAX_UPLOAD_SIZE // 30 MB
+        fileSize: MAX_UPLOAD_SIZE
     },
 	fileFilter: (req : any, file : any, callback : any) => {
 		if (!(VALID_EXTENSIONS.includes(file.originalname.split(".").at(-1)))) {
@@ -43,11 +52,13 @@ const upload = multer({
 
 export const courseRoutes = express.Router();
 
+
+/** COURSES */
 /** GET/POST on /courses/ */
-courseRoutes.get("/", async (_req, res) => {
+courseRoutes.get("/", async (req, res) => {
 	try {
-		const [rows] = await pool.execute("SELECT * FROM courses ORDER BY created_at DESC");
-		res.status(200).json(rows);
+		const [courses] = await pool.execute("SELECT * FROM courses ORDER BY createdAt DESC");
+		res.status(200).json(courses);
 	} catch (error) {
 		console.error("Error fetching course summaries:", error);
 		res.status(500).json({ error: "Failed to fetch course summaries" });
@@ -115,6 +126,9 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, auth
 			WHERE uuid = ?
 		`, [name, desc, uuid]);
 
+		const nameChanged = name != req.course.name, descChanged = desc != req.course.description;
+		await updateCourseByUUID(uuid, `Course ${nameChanged && descChanged ? "name and description" : (nameChanged && !descChanged ? "name" : "description")} ${FeedMessages.EDIT}`);
+
 		res.status(200).json(await findCourseByUUID(uuid));
 			
 	} catch (error) {
@@ -123,6 +137,8 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, auth
 	}
 });
 
+
+/** MATERIALS */
 /** GET/POST on /courses/:uuid/materials/ */
 courseRoutes.get("/:uuid/materials", checkCourse, async (req, res) => {
 	try {
@@ -137,7 +153,7 @@ courseRoutes.get("/:uuid/materials", checkCourse, async (req, res) => {
 
 courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdmin, async (req, res, next) => {
 	try {
-		const course_uuid : string = req.params.uuid;
+		const courseUuid : string = req.params.uuid;
 		const uuid : string = randomUUID();
 
 		if (req.is('application/json')) {
@@ -159,16 +175,17 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 				const desc : string = req.body.description || "";
 	
 				await pool.execute(`
-					INSERT INTO materials (uuid, course_uuid)
+					INSERT INTO materials (uuid, courseUuid)
 					VALUES (?, ?)
-				`,[uuid, course_uuid]);
+				`,[uuid, courseUuid]);
 	
 				await pool.execute(`
 					INSERT INTO urls (uuid, name, type, url, faviconUrl, description)
 					VALUES (?, ?, ?, ?, ?, ?)
 				`, [uuid, name, type, url, faviconUrl, desc]);
 
-				req.material_uuid = uuid;
+				req.materialUuid = uuid;
+				req.name = name;
 				next();
 			});
 		} else if (req.is('multipart/form-data')) {
@@ -192,8 +209,8 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 				const sizeBytes : number = req.file.size;
 				const type : string = Types.FILE;
 	
-				const tmpFilePath = `/app/tmp/${course_uuid}`;
-				const newDirPath = `/app/materials/${course_uuid}`;
+				const tmpFilePath = `/app/tmp/${courseUuid}`;
+				const newDirPath = `/app/materials/${courseUuid}`;
 				const newFilePath = `${newDirPath}/${uuid}`;
 	
 				if (!(await fileOrDirectoryExists(newDirPath))) {
@@ -202,16 +219,17 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 				await moveFile(tmpFilePath, newFilePath);
 	
 				await pool.execute(`
-					INSERT INTO materials (uuid, course_uuid)
+					INSERT INTO materials (uuid, courseUuid)
 					VALUES (?, ?)
-				`,[uuid, course_uuid]);
+				`,[uuid, courseUuid]);
 	
 				await pool.execute(`
 					INSERT INTO files (uuid, name, type, fileUrl, description, mimeType, sizeBytes)
 					VALUES (?, ?, ?, ?, ?, ?, ?)
 				`, [uuid, name, type, newFilePath, description, mimeType, sizeBytes]);
 
-				req.material_uuid = uuid;
+				req.materialUuid = uuid;
+				req.name = name;
 				next();
 			});
 		} else {
@@ -223,20 +241,20 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 		res.status(500).json({ error: "Failed to create material" });
 	}
 }, async (req, res) => {
-	await updateCourseByUUID(req.params.uuid);
+	await updateCourseByUUID(req.params.uuid, `Material '${req.name}' ${FeedMessages.CREATE}`);
 
 	const [materials] = await pool.execute(`
 		SELECT * FROM materials WHERE uuid = ?
-	`,[req.material_uuid]);
+	`,[req.materialUuid]);
 
 	res.status(201).json(await formatMaterialJSON(materials[0]));
 });
 
-/** PUT/DELETE on /courses/:uuid/materials/:material_uuid */
-courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res, next) => {
+/** PUT/DELETE on /courses/:uuid/materials/:materialUuid/ */
+courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res, next) => {
 	try {
 		const uuid: string = req.params.uuid;
-		const material_uuid: string = req.params.material_uuid;
+		const materialUuid: string = req.params.materialUuid;
 		const material = req.material;
 		const type = material.type;
 
@@ -262,7 +280,7 @@ courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, 
 		
 					const tmpFilePath = `/app/tmp/${uuid}`;
 					const newDirPath = `/app/materials/${uuid}`;
-					const newFilePath = `${newDirPath}/${material_uuid}`;
+					const newFilePath = `${newDirPath}/${materialUuid}`;
 
 					if (!(await fileOrDirectoryExists(newDirPath))) {
 						await createDirectory(newDirPath);
@@ -273,8 +291,9 @@ courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, 
 						UPDATE files
 						SET name = ?, description = ?, mimeType = ?, sizeBytes = ?
 						WHERE uuid = ?
-					`, [name, description, mimeType, sizeBytes, material_uuid]);
-
+					`, [name, description, mimeType, sizeBytes, materialUuid]);
+					
+					req.name = name;
 					next();
 				});
 			} else if (req.is('application/json')) {
@@ -291,8 +310,9 @@ courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, 
 					UPDATE files
 					SET name = ?, description = ?
 					WHERE uuid = ?
-				`, [name, desc, material_uuid]);
+				`, [name, desc, materialUuid]);
 
+				req.name = name;
 				next();
 			} else {
 				res.status(400).json({ message: "Invalid content type" });
@@ -307,8 +327,9 @@ courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, 
 				UPDATE urls
 				SET name = ?, description = ?, url = ?, faviconUrl = ?
 				WHERE uuid = ?
-			`, [name, desc, url, `${url}/favicon.ico`, material_uuid]);
+			`, [name, desc, url, `${url}/favicon.ico`, materialUuid]);
 
+			req.name = name;
 			next();
 		}
 		
@@ -319,25 +340,25 @@ courseRoutes.put("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, 
 }, async (req, res) => {
 	await pool.execute(`
 		UPDATE materials
-		SET update_count = ?
+		SET updateCount = ?
 		WHERE uuid = ?
-	`, [req.material.update_count+1, req.material.uuid]);
+	`, [req.material.updateCount+1, req.material.uuid]);
 
-	await updateCourseByUUID(uuid);
+	await updateCourseByUUID(req.params.uuid, `Material '${req.name}'${(req.name != req.material.name ? ` (originally '${req.material.name}')` : "")} ${FeedMessages.EDIT}`);
 
 	res.status(200).json(await findMaterialByUUID(req.material.uuid));
 });
 
-courseRoutes.delete("/:uuid/materials/:material_uuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
-		const material_uuid: string = req.params.material_uuid;
+		const materialUuid: string = req.params.materialUuid;
 
 		await pool.execute(`
 			DELETE FROM materials WHERE uuid = ?
-		`,[material_uuid]);
+		`,[materialUuid]);
 
-		await updateCourseByUUID(uuid);
+		await updateCourseByUUID(uuid, `Material ${req.material.name} ${FeedMessages.DELETE}`);
 
 		res.status(204).json({ message: "Material deleted sucessfully" });
 	} catch (error) {
@@ -346,25 +367,43 @@ courseRoutes.delete("/:uuid/materials/:material_uuid", checkCourse, checkMateria
 	}
 });
 
-/** GET/POST on /courses/:uuid/quizzes */
+
+/** QUIZZES */
+/** GET/POST on /courses/:uuid/quizzes/ */
 courseRoutes.get("/:uuid/quizzes", checkCourse, async (req,res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizzes = await getQuizzesByCourseUUID(uuid);
-		quizzes ? res.status(200).json(quizzes) : res.status(404).json({ message: "Invalid course uuid" });
+		res.status(200).json(quizzes);
 	} catch (error) {
 		console.error("Error fetching quizzes:", error);
 		res.status(500).json({ error: "Failed to fetch quizzes" });
 	}
 });
 
-courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res, next) => {
+courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res) => {
   	try {
 		const uuid = req.params.uuid;
 		const body = req.body;
 
-		if (body.title == null || body.attemptsCount == null || body.questions == null || body.questions.length == 0) {
-			next();
+		if (body.title == null) {
+			res.status(400).json({ message: "Missing title" });
+			return;
+		}
+		if (body.attemptsCount == null) {
+			res.status(400).json({ message: "Missing attemptsCount" });
+			return;
+		}
+		if (body.questions == null) {
+			res.status(400).json({ message: "Missing questions" });
+			return;
+		}
+		if (!Array.isArray(body.questions)) {
+			res.status(400).json({ message: "questions must be an array" });
+			return;
+		}
+		if (body.questions.length == 0) {
+			res.status(400).json({ message: "questions must not be empty" });
 			return;
 		}
 
@@ -372,148 +411,520 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 
 		/** Parse questions */
 		for (const q of body.questions) {
-			if (q.type == null || q.question == null || q.options == null || q.options.length == 0) {
-				next();
+			if (q.type == null) {
+				res.status(400).json({ message: "Missing question->type" });
 				return;
 			}
 			if (q.type != Types.SINGLE_CHOICE && q.type != Types.MULTIPLE_CHOICE) {
-				next();
+				res.status(400).json({ message: `question->type must be '${Types.SINGLE_CHOICE}' or '${Types.MULTIPLE_CHOICE}'` });
+				return;
+			}
+			if (q.question == null) {
+				res.status(400).json({ message: "Missing question->question" });
+				return;
+			}
+			if (q.options == null) {
+				res.status(400).json({ message: "Missing question->options" });
+				return;
+			}
+			if (!Array.isArray(q.options)) {
+				res.status(400).json({ message: "question->options must be an array" });
+				return;
+			}
+			if (q.options.length == 0) {
+				res.status(400).json({ message: "question->options must not be empty" });
 				return;
 			}
 
 			const correctIndices : number[] = [];
 			if (q.type == Types.SINGLE_CHOICE) {
+				if (q.correctIndex == null) {
+					res.status(400).json({ message: "Missing question->correctIndex" });
+					return;
+				}
+
 				if (q.correctIndex > q.options.length-1 || q.correctIndex < 0) {
-					next();
+					res.status(400).json({ message: `question->correctIndex must be within 0 and ${q.options.length-1}` });
 					return;
 				}
 				correctIndices.push(q.correctIndex);
 				delete q.correctIndex;
 			} else {
+				if (q.correctIndices == null) {
+					res.status(400).json({ message: "Missing question->correctIndices" });
+					return;
+				}
+				if (!Array.isArray(q.correctIndices)) {
+					res.status(400).json({ message: "question->correctIndices must be an array" });
+					return;
+				}
+				if (q.correctIndices.length == 0) {
+					res.status(400).json({ message: "question->correctIndices must not be empty" });
+					return;
+				}
+
 				for (const ci of q.correctIndices) {
 					if (ci > q.options.length-1 || ci < 0) {
-						next();
+						res.status(400).json({ message: `question->correctIndices->number must be within 0 and ${q.options.length-1}` });
 						return;
 					}
 					correctIndices.push(ci);
 				}
 				delete q.correctIndices;
 			}
-			if (correctIndices.length == 0) {
-				next();
-				return;
-			}
 			q.correctIndices = correctIndices;
 			questions.push(q);
 		}
 
-		const quiz_uuid : string = randomUUID();
+		const quizUuid : string = randomUUID();
 		const title : string = body.title;
 		const attemptsCount : number = body.attemptsCount;
 
 		await pool.execute(`
-			INSERT INTO quizzes (uuid, course_uuid, title, attemptsCount)
+			INSERT INTO quizzes (uuid, courseUuid, title, attemptsCount)
 			VALUES (?, ?, ?, ?)
-		`,[quiz_uuid, uuid, title, attemptsCount]);
+		`,[quizUuid, uuid, title, attemptsCount]);
 
 		for (const q of questions) {
-			const question_uuid : string = randomUUID();
+			const questionUuid : string = randomUUID();
 			const type : string = q.type;
 			const question : string = q.question;
 			const correctIndices : number[] = q.correctIndices;
 			const options : string[] = q.options;
 
 			await pool.execute(`
-				INSERT INTO questions (uuid, quiz_uuid, type, question)
+				INSERT INTO questions (uuid, quizUuid, type, question)
 				VALUES (?, ?, ?, ?)
-			`,[question_uuid, quiz_uuid, type, question]);
+			`,[questionUuid, quizUuid, type, question]);
 
 			let idx=0;
 			for (const o of options) {
 				await pool.execute(`
-					INSERT INTO options (uuid, question_uuid, idx, opt, correct)
+					INSERT INTO options (uuid, questionUuid, idx, opt, correct)
 					VALUES (?, ?, ?, ?, ?)
-				`,[randomUUID(), question_uuid, idx, o, correctIndices.indexOf(idx) != -1]);
+				`,[randomUUID(), questionUuid, idx, o, correctIndices.indexOf(idx) != -1]);
 				idx+=1;
 			}
 		}
 
-		await updateCourseByUUID(uuid);
+		await updateCourseByUUID(uuid, `Quiz '${title}' ${FeedMessages.CREATE}`);
 
 		const [quizzes] = await pool.execute(`
 			SELECT * FROM quizzes WHERE uuid = ?
-		`,[quiz_uuid]);
+		`,[quizUuid]);
 
 		res.status(201).json(await formatQuizJSON(quizzes[0]));
 	} catch (error) {
 		console.error("Error creating quiz:", error);
 		res.status(500).json({ error: "Failed to create quiz" });
 	}
-}, async (req, res) => {
-	res.status(400).json({ message: "Invalid data" });
-	return;
 });
 
-/** GET/DELETE/PUT on /courses/:uuid/quizzes/:quiz_uuid */
-courseRoutes.get("/:uuid/quizzes/:quiz_uuid", checkCourse, checkQuiz, async (req, res) => {
+/** GET/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/ */
+courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, async (req, res) => {
 	try {
 		res.status(200).json(req.quiz);
 	} catch (error) {
-		console.error("Error fetching quizzes:", error);
-		res.status(500).json({ error: "Failed to fetch quizzes" });
+		console.error("Error fetching quiz:", error);
+		res.status(500).json({ error: "Failed to fetch quiz" });
 	}
 });
 
-courseRoutes.delete("/:uuid/quizzes/:quiz_uuid", checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
 	try {
 		const uuid = req.params.uuid;
-		const quiz_uuid = req.params.quiz_uuid;
-		const quiz = req.quiz;
+		const quizUuid = req.params.quizUuid;
 
 		await pool.execute(`
 			DELETE FROM quizzes WHERE uuid = ?
-		`,[quiz_uuid]);
+		`,[quizUuid]);
 
-		await updateCourseByUUID(uuid);
+		await updateCourseByUUID(uuid, `Quiz '${req.quiz.title}' ${FeedMessages.DELETE}`);
 
-		// This somehow returns nothing, so it works as intended
-		res.status(204).json(quiz);
+		res.status(204).json(({ message: "Quiz deleted sucessfully" }));
 	} catch (error) {
-		console.error("Error deleting quizzes:", error);
-		res.status(500).json({ error: "Failed to delete quizzes" });
+		console.error("Error deleting quiz:", error);
+		res.status(500).json({ error: "Failed to delete quiz" });
 	}
 });
 
-courseRoutes.put("/:uuid/quizzes/:quiz_uuid", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res, next) => {
+courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const quizUuid : string = req.params.quizUuid;
+		const body : JSON = req.body;
+		const quiz : JSON = req.quiz;
+
+		const title : string = body.title != null ? body.title : quiz.title;
+		const attemptsCount : number = body.attemptsCount != null ? body.attemptsCount : quiz.attemptsCount;
+		const questions : JSON[] = body.questions != null ? [] : quiz.questions;
+
+		if (body.questions != null) {
+			if (!Array.isArray(body.questions)) {
+				res.status(400).json({ message: "questions must be an array" });
+				return;
+			}
+			if (body.questions.length == 0) {
+				res.status(400).json({ message: "questions must not be empty" });
+				return;
+			}
 	
-}, async (req, res) => {
-	res.status(400).json({ message: "Invalid data" });
-	return;
+			/** Parse questions */
+			for (const q of body.questions) {
+				if (q.type == null) {
+					res.status(400).json({ message: "Missing question->type" });
+					return;
+				}
+				if (q.type != Types.SINGLE_CHOICE && q.type != Types.MULTIPLE_CHOICE) {
+					res.status(400).json({ message: `question->type must be '${Types.SINGLE_CHOICE}' or '${Types.MULTIPLE_CHOICE}'` });
+					return;
+				}
+				if (q.question == null) {
+					res.status(400).json({ message: "Missing question->question" });
+					return;
+				}
+				if (q.options == null) {
+					res.status(400).json({ message: "Missing question->options" });
+					return;
+				}
+				if (!Array.isArray(q.options)) {
+					res.status(400).json({ message: "question->options must be an array" });
+					return;
+				}
+				if (q.options.length == 0) {
+					res.status(400).json({ message: "question->options must not be empty" });
+					return;
+				}
+	
+				const correctIndices : number[] = [];
+				if (q.type == Types.SINGLE_CHOICE) {
+					if (q.correctIndex == null) {
+						res.status(400).json({ message: "Missing question->correctIndex" });
+						return;
+					}
+	
+					if (q.correctIndex > q.options.length-1 || q.correctIndex < 0) {
+						res.status(400).json({ message: `question->correctIndex must be within 0 and ${q.options.length-1}` });
+						return;
+					}
+					correctIndices.push(q.correctIndex);
+					delete q.correctIndex;
+				} else {
+					if (q.correctIndices == null) {
+						res.status(400).json({ message: "Missing question->correctIndices" });
+						return;
+					}
+					if (!Array.isArray(q.correctIndices)) {
+						res.status(400).json({ message: "question->correctIndices must be an array" });
+						return;
+					}
+					if (q.correctIndices.length == 0) {
+						res.status(400).json({ message: "question->correctIndices must not be empty" });
+						return;
+					}
+	
+					for (const ci of q.correctIndices) {
+						if (ci > q.options.length-1 || ci < 0) {
+							res.status(400).json({ message: `question->correctIndices->number must be within 0 and ${q.options.length-1}` });
+							return;
+						}
+						correctIndices.push(ci);
+					}
+					delete q.correctIndices;
+				}
+				q.correctIndices = correctIndices;
+				questions.push(q);
+			}
+
+			await pool.execute(`
+				DELETE FROM questions WHERE quizUuid = ?
+			`,[quizUuid]);
+
+			for (const q of questions) {
+				const questionUuid : string = randomUUID();
+				const type : string = q.type;
+				const question : string = q.question;
+				const correctIndices : number[] = q.correctIndices;
+				const options : string[] = q.options;
+
+				await pool.execute(`
+					INSERT INTO questions (uuid, quizUuid, type, question)
+					VALUES (?, ?, ?, ?)
+				`,[questionUuid, quizUuid, type, question]);
+
+				let idx=0;
+				for (const o of options) {
+					await pool.execute(`
+						INSERT INTO options (uuid, questionUuid, idx, opt, correct)
+						VALUES (?, ?, ?, ?, ?)
+					`,[randomUUID(), questionUuid, idx, o, correctIndices.indexOf(idx) != -1]);
+					idx+=1;
+				}
+			}
+		}
+
+		await pool.execute(`
+			UPDATE quizzes
+			SET title = ?, attemptsCount = ?, updateCount = ?
+			WHERE uuid = ?
+		`,[title, attemptsCount, quiz.updateCount+1, quizUuid]);
+
+		await updateCourseByUUID(uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
+
+		const [quizzes] = await pool.execute(`
+			SELECT * FROM quizzes WHERE uuid = ?
+		`,[quizUuid]);
+
+		res.status(201).json(await formatQuizJSON(quizzes[0]));
+	} catch (error) {
+		console.error("Error updating quiz:", error);
+		res.status(500).json({ error: "Failed to update quiz" });
+	}
 });
 
-/** Functions */
-async function updateCourseByUUID(uuid : string) {
-	const course = await findCourseByUUID(uuid);
-	if (!course) {
-		return;
+/** POST on /courses/:uuid/quizzes/:quizUuid/submit/ */
+courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
+	try {
+		const user = req.user != null ? await findUser(req.user.nameOrEmail) : null;
+		const quizUuid : string = req.params.quizUuid;
+		const answers : JSON[] = req.body.answers;
+		if (answers == null) {
+			res.status(400).json({ message: "Missing answers" });
+			return;
+		}
+		if (!Array.isArray(answers)) {
+			res.status(400).json({ message: "answers must be an array" });
+			return;
+		}
+		const ansCount = answers.length;
+
+		const [questions] = await pool.execute(`
+			SELECT * FROM questions WHERE quizUuid = ?
+		`,[quizUuid]);
+
+		let score : number = 0, maxScore : number = 0;
+		const correctPerQuestion : boolean[] = [];
+
+		let correctAnsIdx = 0;
+		for (const q of questions) {
+			if (correctAnsIdx >= ansCount) {
+				correctPerQuestion.push(false);
+				continue;
+			}
+			correctAnsIdx+=1;
+
+			let ans : JSON;
+			for (const a of answers) {
+				if (a.uuid == null) {
+					res.status(400).json({ message: "Missing answer->uuid" });
+					return;
+				}
+				ans = a.uuid == q.uuid ? a : null;
+			}
+			if (ans == null) {
+				res.status(404).json({ message: "Invalid question uuid" });
+				return;
+			}
+
+			const [correctAnswers] = await pool.execute(`
+			 	SELECT * FROM options WHERE questionUuid = ? AND correct = ?
+			`,[q.uuid, true]);
+			maxScore+=correctAnswers.length;
+
+			if (q.type == Types.SINGLE_CHOICE) {
+				if (ans.selectedIndex == null) {
+					res.status(400).json({ message: "Missing answer->selectedIndex" });
+					return;
+				}
+				const isCorrect = ans.selectedIndex == correctAnswers.at(0).idx;
+				if (isCorrect) {
+					score += 1;
+				}
+				correctPerQuestion.push(isCorrect);
+			} else {
+				if (ans.selectedIndices == null) {
+					res.status(400).json({ message: "Missing answer->selectedIndices" });
+					return;
+				}
+				if (!Array.isArray(ans.selectedIndices)) {
+					res.status(400).json({ message: "answer->selectedIndices must be an array" });
+					return;
+				}
+				if (ans.selectedIndices.length == 0) {
+					correctPerQuestion.push(false);
+					continue;
+				}
+				ans.selectedIndices = [...new Set(ans.selectedIndices)];
+
+				const correctIndices: number[] = [];
+				for (const ci of correctAnswers) {
+					correctIndices.push(ci.idx);
+				}
+
+				let totalCorrect : number = 0;
+				for (const a of ans.selectedIndices) {
+					totalCorrect += correctIndices.indexOf(a) != -1 ? 1 : 0;
+				}
+
+				const totalBad : number = ans.selectedIndices.filter(n => !correctIndices.includes(n)).length;
+				let corrects : number = Math.max(0,totalCorrect-totalBad);
+				score += corrects;
+				correctPerQuestion.push(corrects == correctAnswers.length);
+			}
+		}
+
+		const answerUuid : string = randomUUID();
+
+		await pool.execute(`
+			INSERT INTO answers (uuid, quizUuid, userId, score, maxScore)
+			VALUES (?, ?, ?, ?, ?)
+		`,[answerUuid, quizUuid, user != null ? user.id : null, score, maxScore]);
+
+		const [db_answers] = await pool.execute(`
+			SELECT * FROM answers WHERE uuid = ?
+		`,[answerUuid]);
+
+		db_answers[0].correctPerQuestion = correctPerQuestion;
+
+		res.status(200).json(db_answers[0]);
+	} catch (error) {
+		console.error("Error submitting quiz:", error);
+		res.status(500).json({ error: "Failed to submit quiz" });
 	}
+});
 
-	await pool.execute(`
-		UPDATE courses
-		SET update_count = ?
-		WHERE uuid = ?
-	`, [course.update_count+1, uuid]);
-}
 
-async function findCourseByUUID(uuid : string) {
-	const [courses] = await pool.execute(`
-			SELECT * FROM courses WHERE uuid = ?
-	`,[uuid]);
-	return courses.length == 1 ? courses[0] : null;
-};
+/** FEED */
+/** GET/POST on /courses/:uuid/feed/ */
+courseRoutes.get("/:uuid/feed", checkCourse, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const feed = await getFeedByCourseUUID(uuid);
+		res.status(200).json(feed);
+	} catch (error) {
+		console.error("Error fetching feed:", error);
+		res.status(500).json({ error: "Failed to fetch feed" });
+	}
+});
 
+courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const message : string = req.body.message;
+		if (message == null) {
+			res.status(400).json({ message: "Missing message" });
+			return;
+		}
+
+		const feedUuid = randomUUID();
+
+		await pool.execute(`
+			INSERT INTO feed (uuid, courseUuid, type, message, edited)
+			VALUES (?, ?, ?, ?, ?)
+		`,[feedUuid, uuid, Types.MANUAL, message, false]);
+
+		const [feed] = await pool.execute(`
+			SELECT * FROM feed WHERE uuid = ?
+		`,[feedUuid]);
+
+		res.status(201).json(feed[0]);
+	} catch (error) {
+		console.error("Error creating feed:", error);
+		res.status(500).json({ error: "Failed to create feed" });
+	}
+});
+
+/** PUT/DELETE on /courses/:uuid/feed/:feedUuid/ */
+courseRoutes.put("/:uuid/feed/:feedUuid", checkJSON, checkBody, checkCourse, checkFeed, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		if (req.feed.type == Types.SYSTEM) {
+			res.status(400).json({ message: "Can not update system feed message" });
+			return;
+		}
+		const feedUuid : string = req.params.feedUuid;
+		const message : string = req.body.message != null ? req.body.message : req.feed.message;
+
+		await pool.execute(`
+			UPDATE feed
+			SET message = ?, edited = ?
+			WHERE uuid = ?
+		`,[message, true, feedUuid]);
+
+		res.status(200).json(await findFeedByUUID(feedUuid));
+	} catch (error) {
+		console.error("Error updating feed:", error);
+		res.status(500).json({ error: "Failed to update feed" });
+	}
+});
+
+courseRoutes.delete("/:uuid/feed/:feedUuid", checkCourse, checkFeed, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		if (req.feed.type == Types.SYSTEM) {
+			res.status(400).json({ message: "Can not delete system feed message" });
+			return;
+		}
+		const feedUuid : string = req.params.feedUuid;
+
+		await pool.execute(`
+			DELETE FROM feed WHERE uuid = ?
+		`,[feedUuid]);
+
+		res.status(204).json({ message: "Feed deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting feed:", error);
+		res.status(500).json({ error: "Failed to delete feed" });
+	}
+});
+
+/** GET on /courses/:uuid/feed/stream */
+courseRoutes.get("/:uuid/feed/stream", checkCourse, async (req, res) => {
+	try {
+		res.writeHead(200, {
+			'Content-Type': 'text/event-stream',
+			'Cache-Control': 'no-cache',
+			'Connection': 'keep-alive',
+			'Content-Encoding': 'none',
+			'Access-Control-Allow-Origin': '*'
+		});
+		res.flushHeaders();
+
+		let [latest] = await pool.execute(`
+			SELECT * FROM feed WHERE courseUuid = ? ORDER BY createdAt DESC LIMIT 1
+		`,[req.params.uuid]);
+
+		const heartbeatInterval = setInterval(() => {
+			res.write("event: heartbeat\n\n");
+			res.flush();
+		}, 20000);
+
+		const dataInterval = setInterval(async () => {
+			const [newLatest] = await pool.execute(`
+				SELECT * FROM feed WHERE courseUuid = ? ORDER BY createdAt DESC LIMIT 1
+			`,[req.params.uuid]);
+			
+			if (latest[0].uuid != newLatest[0].uuid) {
+				latest = newLatest;
+				res.write(`event: new_post\ndata: ${JSON.stringify(latest[0])}\n\n`);
+				res.flush();
+			}
+		}, 2000);
+
+		res.on("close", () => {
+			clearInterval(heartbeatInterval);
+			clearInterval(dataInterval);
+			res.end();
+		});
+	} catch (error) {
+		console.error("Error streaming feed:", error);
+		res.end();
+		res.status(500).json({ error: "Failed to stream feed" });
+	}
+});
+
+/** FORMAT FUNCTIONS */
+/** Formats materials */
 async function formatMaterialJSON(entry : JSON) {
-	delete entry.course_uuid;
+	delete entry.courseUuid;
 
 	/** Prioritize file instead of url, shouldnt cause problems */
 	const [files] = await pool.execute(`
@@ -537,47 +948,22 @@ async function formatMaterialJSON(entry : JSON) {
 	}
 };
 
-async function findMaterialByUUID(uuid : string) {
-	const [materials] = await pool.execute(`
-			SELECT * FROM materials WHERE uuid = ?
-	`,[uuid]);
-	return materials.length == 1 ? (await formatMaterialJSON(materials[0])) : null;
-};
-
-async function findQuizByUUID(uuid : string) {
-	const [quizzes] = await pool.execute(`
-			SELECT * FROM materials WHERE uuid = ?
-	`,[uuid]);
-	return quizzes.length == 1 ? (await formatQuizJSON(quizzes[0])) : null;
-};
-
-async function getMaterialsByCourseUUID(uuid : string) {
-	if (!(await findCourseByUUID(uuid))) return;
-	const [materials] = await pool.execute(`
-			SELECT * FROM materials WHERE course_uuid = ? ORDER BY created_at DESC
-	`,[uuid]);
-	for (const entry of materials) {
-		await formatMaterialJSON(entry);
-	};
-	return materials;
-};
-
+/** Formats quizzes */
 async function formatQuizJSON(entry : JSON) {
-	delete entry.course_uuid;
+	delete entry.courseUuid;
 
 	const [questions] = await pool.execute(`
-		SELECT * FROM questions WHERE quiz_uuid = ?
+		SELECT * FROM questions WHERE quizUuid = ?
 	`,[entry.uuid]);
 	for (const q of questions) {
-		delete q.quiz_uuid;
+		delete q.quizUuid;
 
 		const [db_options] = await pool.execute(`
-			SELECT * FROM options WHERE question_uuid = ? ORDER BY idx ASC
+			SELECT * FROM options WHERE questionUuid = ? ORDER BY idx ASC
 		`,[q.uuid]);
-		delete q.uuid;
 
-		const options : Array<string> = [];
-		const correctIndices : Array<number> = [];
+		const options : string[] = [];
+		const correctIndices : number[] = [];
 
 		for (const op of db_options) {
 			options.push(op.opt);
@@ -594,13 +980,75 @@ async function formatQuizJSON(entry : JSON) {
 		}
 	};
 	entry.questions = questions;
+
+	const [answers] = await pool.execute(`
+		SELECT * FROM answers WHERE quizUuid = ?
+	`,[entry.uuid]);
+
+	entry.answers = answers;
+
+	return entry;
+};
+
+/** Formats feed */
+async function formatFeedJSON(entry : JSON) {
+	delete entry.courseUuid;
 	return entry;
 }
 
+
+/** FIND FUNCTIONS */
+/** Finds specific course */
+async function findCourseByUUID(uuid : string) {
+	const [courses] = await pool.execute(`
+			SELECT * FROM courses WHERE uuid = ?
+	`,[uuid]);
+	return courses.length == 1 ? courses[0] : null;
+};
+
+/** Finds specific material */
+async function findMaterialByUUID(uuid : string) {
+	const [materials] = await pool.execute(`
+			SELECT * FROM materials WHERE uuid = ?
+	`,[uuid]);
+	return materials.length == 1 ? (await formatMaterialJSON(materials[0])) : null;
+};
+
+/** Finds specific quiz */
+async function findQuizByUUID(uuid : string) {
+	const [quizzes] = await pool.execute(`
+			SELECT * FROM quizzes WHERE uuid = ?
+	`,[uuid]);
+	return quizzes.length == 1 ? (await formatQuizJSON(quizzes[0])) : null;
+};
+
+/** Finds specific feed */
+async function findFeedByUUID(uuid : string) {
+	const [feed] = await pool.execute(`
+			SELECT * FROM feed WHERE uuid = ?
+	`,[uuid]);
+	return feed.length == 1 ? (await formatFeedJSON(feed[0])) : null;
+};
+
+
+/** GET FUNCTIONS */
+/** Gets all course materials */
+async function getMaterialsByCourseUUID(uuid : string) {
+	if (!(await findCourseByUUID(uuid))) return;
+	const [materials] = await pool.execute(`
+			SELECT * FROM materials WHERE courseUuid = ? ORDER BY createdAt DESC
+	`,[uuid]);
+	for (const entry of materials) {
+		await formatMaterialJSON(entry);
+	};
+	return materials;
+};
+
+/** Gets all course quizzes */
 async function getQuizzesByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
 	const [quizzes] = await pool.execute(`
-			SELECT * FROM quizzes WHERE course_uuid = ? ORDER BY created_at DESC
+			SELECT * FROM quizzes WHERE courseUuid = ? ORDER BY createdAt DESC
 	`,[uuid]);
 	for (const entry of quizzes) {
 		await formatQuizJSON(entry);
@@ -608,85 +1056,19 @@ async function getQuizzesByCourseUUID(uuid : string) {
 	return quizzes;
 };
 
-/** TODO */
+/** Gets all course feed */
 async function getFeedByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
-	return [];
+	const [feed] = await pool.execute(`
+			SELECT * FROM feed WHERE courseUuid = ? ORDER BY createdAt DESC
+	`,[uuid]);
+	for (const entry of feed) {
+		await formatFeedJSON(entry);
+	};
+	return feed;
 };
 
-/** Check functions */
-async function checkJSON(req : any, res : any, next : any) {
-	try {
-		if (req.is("application/json")) {
-			next();
-		} else {
-			res.status(400).json({ message: "Incorrect content type" });
-			return;
-		}
-	} catch (error) {
-		console.error("Error checking json:", error);
-		res.status(500).json({ error: "Failed to check json" });
-	}
-}
-
-async function checkBody(req : any, res : any, next : any) {
-	try {
-		if (!req.body) {
-			res.status(400).json({ message: "Missing body" });
-			return;
-		}
-		next();
-	} catch (error) {
-		console.error("Error checking body:", error);
-		res.status(500).json({ error: "Failed to check body" });
-	}
-}
-
-async function checkCourse(req : any, res : any, next : any) {
-	try {
-		const course = await findCourseByUUID(req.params.uuid);
-		if (!course) {
-			res.status(404).json({ message: "Course not found" });
-			return;
-		}
-		req.course = course;
-		next();
-	} catch (error) {
-		console.error("Error checking course:", error);
-		res.status(500).json({ error: "Failed to check course" });
-	}
-}
-
-async function checkMaterial(req : any, res : any, next : any) {
-	try {
-		const material = await findMaterialByUUID(req.params.material_uuid);
-		if (!material) {
-			res.status(404).json({ message: "Material not found" });
-			return;
-		}
-		req.material = material;
-		next();
-	} catch (error) {
-		console.error("Error checking material:", error);
-		res.status(500).json({ error: "Failed to check material" });
-	}
-}
-
-async function checkQuiz(req : any, res : any, next : any) {
-	try {
-		const quiz = await findQuizByUUID(req.params.quiz_uuid);
-		if (!quiz) {
-			res.status(404).json({ message: "Quiz not found" });
-			return;
-		}
-		req.quiz = quiz;
-		next();
-	} catch (error) {
-		console.error("Error checking quiz:", error);
-		res.status(500).json({ error: "Failed to check quiz" });
-	}
-}
-
+/** Gets course details */
 async function getCourseDetailsByUUID(uuid : string) {
 	/** for now only get materials ontop of the initial course */
 	const course = await findCourseByUUID(uuid);
@@ -706,4 +1088,130 @@ async function getCourseDetailsByUUID(uuid : string) {
 	course.feed = feed;
 
 	return course;
+};
+
+
+/** CHECK FUNCTIONS */
+/** Checks for JSON content type */
+async function checkJSON(req : any, res : any, next : any) {
+	try {
+		if (req.is("application/json")) {
+			next();
+		} else {
+			res.status(400).json({ message: "Incorrect content type" });
+			return;
+		}
+	} catch (error) {
+		console.error("Error checking json:", error);
+		res.status(500).json({ error: "Failed to check json" });
+	}
+}
+
+/** Checks for JSON body */
+async function checkBody(req : any, res : any, next : any) {
+	try {
+		if (!req.body) {
+			res.status(400).json({ message: "Missing body" });
+			return;
+		}
+		next();
+	} catch (error) {
+		console.error("Error checking body:", error);
+		res.status(500).json({ error: "Failed to check body" });
+	}
+}
+
+/** Checks for course in params */
+async function checkCourse(req : any, res : any, next : any) {
+	try {
+		const course = await findCourseByUUID(req.params.uuid);
+		if (!course) {
+			res.status(404).json({ message: "Course not found" });
+			return;
+		}
+		req.course = course;
+		next();
+	} catch (error) {
+		console.error("Error checking course:", error);
+		res.status(500).json({ error: "Failed to check course" });
+	}
+}
+
+/** Checks for material in params */
+async function checkMaterial(req : any, res : any, next : any) {
+	try {
+		const material = await findMaterialByUUID(req.params.materialUuid);
+		if (!material) {
+			res.status(404).json({ message: "Material not found" });
+			return;
+		}
+		req.material = material;
+		next();
+	} catch (error) {
+		console.error("Error checking material:", error);
+		res.status(500).json({ error: "Failed to check material" });
+	}
+}
+
+/** Checks for quiz in params */
+async function checkQuiz(req : any, res : any, next : any) {
+	try {
+		const quiz = await findQuizByUUID(req.params.quizUuid);
+		if (!quiz) {
+			res.status(404).json({ message: "Quiz not found" });
+			return;
+		}
+		req.quiz = quiz;
+		next();
+	} catch (error) {
+		console.error("Error checking quiz:", error);
+		res.status(500).json({ error: "Failed to check quiz" });
+	}
+}
+
+/** Checks for feed in params */
+async function checkFeed(req : any, res : any, next : any) {
+	try {
+		const feed = await findFeedByUUID(req.params.feedUuid);
+		if (!feed) {
+			res.status(404).json({ message: "Feed not found" });
+			return;
+		}
+		req.feed = feed;
+		next();
+	} catch (error) {
+		console.error("Error checking feed:", error);
+		res.status(500).json({ error: "Failed to check feed" });
+	}
+}
+
+
+/** MISCELLANEOUS FUNCTIONS */
+/** Creates a system feed message */
+async function systemFeedMessage(uuid : string, message : string) {
+	const course = await findCourseByUUID(uuid);
+	if (!course) {
+		return;
+	}
+
+	await pool.execute(`
+		INSERT INTO feed (uuid, courseUuid, type, message, edited)
+		VALUES (?, ?, ?, ?, ?)
+	`,[randomUUID(), uuid, Types.SYSTEM, message, false]);
+}
+
+/** Updates course updateCount */
+async function updateCourseByUUID(uuid : string, message? : string) {
+	const course = await findCourseByUUID(uuid);
+	if (!course) {
+		return;
+	}
+
+	if (message != null) systemFeedMessage(uuid, message);
+
+	await pool.execute(`
+		UPDATE courses
+		SET updateCount = ?
+		WHERE uuid = ?
+	`, [course.updateCount+1, uuid]);
 };
