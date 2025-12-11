@@ -735,7 +735,9 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, check
 					res.status(400).json({ message: "Missing answer->uuid" });
 					return;
 				}
-				ans = a.uuid == q.uuid ? a : null;
+				if (a.uuid == q.uuid) {
+					ans = a;
+				}
 			}
 			if (ans == null) {
 				res.status(404).json({ message: "Invalid question uuid" });
