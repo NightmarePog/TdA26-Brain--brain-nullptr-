@@ -28,8 +28,8 @@ export async function initDatabase() {
 					name VARCHAR(255) NOT NULL,
 					password VARCHAR(255) NOT NULL,
 					admin BOOL NOT NULL,
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					CONSTRAINT UC_Person UNIQUE (name,email)
 				)
 			`);
@@ -40,9 +40,9 @@ export async function initDatabase() {
 					uuid CHAR(36) PRIMARY KEY,
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					update_count INT DEFAULT 0
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					updateCount INT DEFAULT 0
 				)
 			`);
 			console.log("courses OK");
@@ -50,11 +50,11 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS materials (
 					uuid CHAR(36) PRIMARY KEY,
-					course_uuid CHAR(36) NOT NULL,
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					update_count INT DEFAULT 0,
-					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					courseUuid CHAR(36) NOT NULL,
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					updateCount INT DEFAULT 0,
+					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("materials OK");
@@ -89,13 +89,13 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS quizzes (
 					uuid CHAR(36) PRIMARY KEY,
-					course_uuid CHAR(36) NOT NULL,
+					courseUuid CHAR(36) NOT NULL,
 					title VARCHAR(255) NOT NULL,
 					attemptsCount INT NOT NULL,
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					update_count INT DEFAULT 0,
-					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					updateCount INT DEFAULT 0,
+					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("quizzes OK");
@@ -103,13 +103,10 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS questions (
 					uuid CHAR(36) PRIMARY KEY,
-					quiz_uuid CHAR(36) NOT NULL,
+					quizUuid CHAR(36) NOT NULL,
 					type VARCHAR(255) NOT NULL,
 					question VARCHAR(1000) NOT NULL,
-					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					update_count INT DEFAULT 0,
-					FOREIGN KEY (quiz_uuid) REFERENCES quizzes(uuid) ON DELETE CASCADE
+					FOREIGN KEY (quizUuid) REFERENCES quizzes(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("questions OK");
@@ -117,14 +114,41 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS options (
 					uuid CHAR(36) PRIMARY KEY,
-					question_uuid CHAR(36) NOT NULL,
+					questionUuid CHAR(36) NOT NULL,
 					idx INT NOT NULL,
 					opt VARCHAR(1000) NOT NULL,
 					correct BOOL NOT NULL,
-					FOREIGN KEY (question_uuid) REFERENCES questions(uuid) ON DELETE CASCADE
+					FOREIGN KEY (questionUuid) REFERENCES questions(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("options OK");
+
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS answers (
+					uuid CHAR(36) PRIMARY KEY,
+					quizUuid CHAR(36) NOT NULL,
+					userId INT,
+					score INT NOT NULL,
+					maxScore INT NOT NULL,
+					submittedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (quizUuid) REFERENCES quizzes(uuid) ON DELETE CASCADE
+				)
+			`);
+			console.log("answers OK");
+
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS feed (
+					uuid CHAR(36) PRIMARY KEY,
+					courseUuid CHAR(36) NOT NULL,
+					type VARCHAR(255) NOT NULL,
+					message VARCHAR(1000) NOT NULL,
+					edited BOOL NOT NULL,
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
+				)
+			`);
+			console.log("feed OK");
 			
 			console.log("\nCreating users..");
 
@@ -137,7 +161,7 @@ export async function initDatabase() {
 			await pool.execute(`
 				INSERT IGNORE INTO users (email, name, password, admin)
 				VALUES (?, ?, ?, ?)
-			`, ["student@email.com", "student", await sha512("1234"), false]);
+			`, ["student@email.com", "student", await sha512(`1234${process.env.PASSWORD_SALT}`), false]);
 			console.log("student user OK");
 
 			break;
