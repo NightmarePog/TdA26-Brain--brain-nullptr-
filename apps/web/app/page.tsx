@@ -42,7 +42,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="flex justify-end ">
+        <div className="absolute right-10 bottom-10">
           <Icon src={Logo} size="huge" alt="Think Academy Logo" />
         </div>
       </main>

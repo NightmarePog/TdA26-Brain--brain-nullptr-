@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { z } from "zod";
+import { success, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { userApi } from "@/lib/api";
+import { userLoginSend } from "@/types/api/user";
+import { Password } from "phosphor-react";
 
 const formSchema = z.object({
   username: z.string().min(1, "Zadej uživatelské jméno"),
@@ -37,8 +40,15 @@ const Login = () => {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    toast.success(`Přihlášen jako ${data.username}`);
-    console.log("Data z formuláře:", data);
+    const dataSend: userLoginSend = {
+      nameOrEmail: data.username,
+      password: data.password,
+    };
+    toast.promise(userApi.post(dataSend), {
+      loading: "kontroluji...",
+      success: "úspěšně přihlášen!",
+      error: (error) => `Chyba! ${error.message}`,
+    });
   };
 
   return (
