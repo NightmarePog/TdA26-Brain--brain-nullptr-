@@ -1,21 +1,39 @@
 import "dotenv/config";
 import { pool } from "./index.js";
+import { createDirectory } from "@/utils/filesystem.js";
+import { sha512 } from "@/routes/users.js";
 
 export async function initDatabase() {
 	while (true) {
 		try {
-			console.log("Initializing database schema...");
+			/** Check if database is available */
+			await pool.execute(`
+				SHOW TABLES
+			`);
+
+			console.log("\nCreating directories..");
+
+			await createDirectory("/app/materials/");
+			console.log("/app/materials/ OK");
+			
+			await createDirectory("/app/tmp/");
+			console.log("/app/tmp/ OK");
+
+			console.log("\nCreating tables...");
 
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS users (
 					id INT AUTO_INCREMENT PRIMARY KEY,
 					email VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
+					password VARCHAR(255) NOT NULL,
+					admin BOOL NOT NULL,
 					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					CONSTRAINT UC_Person UNIQUE (name,email)
 				)
 			`);
-			console.log("Created users table");
+			console.log("users OK");
 
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS courses (
@@ -23,40 +41,67 @@ export async function initDatabase() {
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
 					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					update_count INT DEFAULT 0
 				)
 			`);
-			console.log("Created courses table");
+			console.log("courses OK");
 
-			//** WIP */
 			await pool.execute(`
-				CREATE TABLE IF NOT EXISTS FileMaterial (
+				CREATE TABLE IF NOT EXISTS materials (
 					uuid CHAR(36) PRIMARY KEY,
-					course_uuid CHAR(36),
-					type VARCHAR(255) NOT NULL,
+					course_uuid CHAR(36) NOT NULL,
+					created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					update_count INT DEFAULT 0,
+					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
+				)
+			`);
+			console.log("materials OK");
+
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS files (
+					uuid CHAR(36) PRIMARY KEY,
 					name VARCHAR(255) NOT NULL,
+					type VARCHAR(255) NOT NULL,
 					fileUrl VARCHAR(1000) NOT NULL,
 					description VARCHAR(1000),
 					mimeType VARCHAR(255),
 					sizeBytes INT,
-					FOREIGN KEY (course_uuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					FOREIGN KEY (uuid) REFERENCES materials(uuid) ON DELETE CASCADE
 				)
 			`);
-			console.log("Created users table");
+			console.log("files OK");
 
-			/** Testing data */
 			await pool.execute(`
-				INSERT INTO courses (uuid, name, description)
-				VALUES ('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 'This is a name!', 'This is a description!')
+				CREATE TABLE IF NOT EXISTS urls (
+					uuid CHAR(36) PRIMARY KEY,
+					name VARCHAR(255) NOT NULL,
+					type VARCHAR(255) NOT NULL,
+					url VARCHAR(1000) NOT NULL,
+					faviconUrl VARCHAR(1000),
+					description VARCHAR(1000),
+					FOREIGN KEY (uuid) REFERENCES materials(uuid) ON DELETE CASCADE
+				)
 			`);
-			await pool.execute(`
-				INSERT INTO courses (uuid, name, description)
-				VALUES ('abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef', 'Jetset life is gonna kill you', 'Gaze into her killing jar id sometimes stare for hours, she even poked the holes so i can breathe. She bought the last line, im just the worst kind of guy to argue with what you might find and for the last night i lie, could i lie with you? ALRIGHT, GIVE UP, GET DOWN, Its just the hardest part of living!')
-			`);
-			console.log("Added test data")
+			console.log("urls OK");
+			
+			console.log("\nCreating users..");
 
-			console.log("Database schema initialized successfully!");
+			await pool.execute(`
+				INSERT IGNORE INTO users (email, name, password, admin)
+				VALUES (?, ?, ?, ?)
+			`, ["lecturer@email.com", "lecturer", await sha512("TdA26!"), true]);
+			console.log("admin user OK")
+
+			await pool.execute(`
+				INSERT IGNORE INTO users (email, name, password, admin)
+				VALUES (?, ?, ?, ?)
+			`, ["student@email.com", "student", await sha512("1234"), false]);
+			console.log("student user OK")
+
 			break;
+
 		} catch (error) {
 			if (error.code === 'PROTOCOL_CONNECTION_LOST') {
 				console.log("Database is probably still starting, retrying...");

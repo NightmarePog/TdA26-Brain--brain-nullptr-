@@ -3,6 +3,4 @@ export type userLoginSend = {
   password: string;
 };
 
-export type userLoginRecieve = {
-  TODO: undefined;
-};
+¨
