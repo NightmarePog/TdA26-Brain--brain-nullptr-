@@ -60,6 +60,10 @@ export const CoursesApi = {
       const res = await api.get(`/courses/${courseId}/materials`);
       return res.data as Material[];
     },
+    get: async (courseId: string, materialId: string) => {
+      const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
+      return res.data as Material;
+    },
     post: async (
       courseId: string,
       data: UrlMaterialCreateRequest | FileMaterialCreateRequest,
