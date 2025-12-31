@@ -3,7 +3,7 @@ import Image from "next/image";
 interface Props {
   src: string;
   alt: string;
-  size?: "smallest" | "small" | "medium" | "big";
+  size?: "smallest" | "small" | "medium" | "big" | "huge";
   className?: string;
 }
 
@@ -13,6 +13,7 @@ const Icon = ({ src, alt, size = "small", className }: Props) => {
     small: 30,
     medium: 40,
     big: 300,
+    huge: 350,
   };
 
   const dimension = sizeMap[size];

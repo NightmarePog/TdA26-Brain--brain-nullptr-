@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="508mm"
+   height="285.75mm"
+   viewBox="0 0 508 285.75"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="landing-background.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.50874214"
+     inkscape:cx="949.40042"
+     inkscape:cy="471.75176"
+     inkscape:window-width="1886"
+     inkscape:window-height="981"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient13"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#0070bb;stop-opacity:1;"
+         offset="0"
+         id="stop13" />
+      <stop
+         style="stop-color:#004e7f;stop-opacity:1;"
+         offset="1"
+         id="stop14" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient13"
+       id="linearGradient14"
+       x1="254"
+       y1="142.875"
+       x2="425.42017"
+       y2="261.07693"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:url(#linearGradient14);fill-opacity:1;stroke-width:0.799999"
+       d="m 0,225.19185 c 0,0 59.288386,26.52375 75.930738,-1.56022 16.642355,-28.08398 45.416292,-53.7019 64.489112,-53.56758 73.85046,0.52008 107.24645,14.46939 128.97826,-10.40147 46.80661,-53.56757 45.24639,-59.808459 96.73367,-56.68802 51.48728,3.12044 56.72029,-15.926513 67.60955,-55.127793 C 444.14283,10.401471 469.10635,0 469.10635,0 h 38.89364 V 285.75 H 0 Z"
+       id="path1"
+       sodipodi:nodetypes="csssssccccc" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="path2"
+       cx="204.90898"
+       cy="137.29942"
+       r="14.041986" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="path3"
+       cx="342.2084"
+       cy="78.011032"
+       r="9.8813972" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="path5"
+       cx="251.45557"
+       cy="99.594078"
+       r="5.460772" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="path6"
+       cx="52.267391"
+       cy="204.64894"
+       r="9.6213598" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:2.09524"
+       id="circle6"
+       cx="297.74213"
+       cy="83.471802"
+       r="14.302023" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="circle7"
+       cx="84.511963"
+       cy="181.7657"
+       r="5.460772" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.533333"
+       id="circle8"
+       cx="24.443468"
+       cy="178.90529"
+       r="3.6405146" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:1.10476"
+       id="circle9"
+       cx="142.24013"
+       cy="141.72003"
+       r="7.5410662" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="circle10"
+       cx="410.59808"
+       cy="22.103111"
+       r="5.460772" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.799999"
+       id="circle11"
+       cx="383.29422"
+       cy="63.969051"
+       r="14.041986" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.95238"
+       id="circle12"
+       cx="252.95985"
+       cy="136.37408"
+       r="6.5009193" />
+    <circle
+       style="fill:#0070bb;fill-opacity:1;stroke-width:0.457142"
+       id="circle13"
+       cx="63.913116"
+       cy="147.55566"
+       r="3.120441" />
+  </g>
+</svg>

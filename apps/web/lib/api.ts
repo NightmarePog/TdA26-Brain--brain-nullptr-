@@ -10,6 +10,7 @@ import {
   UrlMaterialCreateRequest,
   UrlMaterialUpdateRequest,
 } from "@/types/api/materials";
+import { userLoginRecieve, userLoginSend } from "@/types/api/user";
 import axios from "axios";
 
 export const api = axios.create({
@@ -59,6 +60,10 @@ export const CoursesApi = {
       const res = await api.get(`/courses/${courseId}/materials`);
       return res.data as Material[];
     },
+    get: async (courseId: string, materialId: string) => {
+      const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
+      return res.data as Material;
+    },
     post: async (
       courseId: string,
       data: UrlMaterialCreateRequest | FileMaterialCreateRequest,
@@ -81,5 +86,12 @@ export const CoursesApi = {
       const res = await api.put(`/courses/${courseId}/materials/${materialId}`);
       return res.status;
     },
+  },
+};
+
+export const userApi = {
+  post: async (data: userLoginSend) => {
+    const res = await api.post(`/users/login`, data);
+    return res.data as userLoginRecieve;
   },
 };
