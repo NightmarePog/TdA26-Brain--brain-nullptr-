@@ -11,10 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CoursesConstLastViewed } from "@/const/courses";
 import { useState } from "react";
 
 const DashboardPage = () => {
   const [query, setQuery] = useState("");
+  const data = CoursesConstLastViewed;
   return (
     <>
       <div className="flex justify-center p-5">
@@ -32,20 +34,22 @@ const DashboardPage = () => {
 
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">název</TableHead>
+            <TableHead className="w-25">název</TableHead>
             <TableHead className="text-right">úprava / smazání</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          <TableRow key="row-1" className="hover:bg-gray-600">
-            <TableCell>TEST NAME</TableCell>
+          {data.map((item) => (
+            <TableRow key="row-1" className="hover:bg-gray-600">
+              <TableCell>{item.name}</TableCell>
 
-            <TableCell className="text-right flex justify-end gap-2 ">
-              <Button>Upravit</Button>
-              <Button variant="destructive">Smazat</Button>
-            </TableCell>
-          </TableRow>
+              <TableCell className="text-right flex justify-end gap-2 ">
+                <Button>Upravit</Button>
+                <Button variant="destructive">Smazat</Button>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
 
         <TableFooter></TableFooter>
