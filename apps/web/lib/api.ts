@@ -24,6 +24,7 @@ import {
   FeedUpdateRequest,
   StreamResponse,
 } from "@/types/api/feed";
+import { userLoginRecieve, userLoginSend } from "@/types/api/user";
 import axios from "axios";
 
 export const api = axios.create({
@@ -66,6 +67,10 @@ export const CoursesApi = {
     getAll: async (uuid: string) => {
       const res = await api.get(`/courses/${uuid}/materials`);
       return res.data as Material[];
+    },
+    get: async (courseId: string, materialId: string) => {
+      const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
+      return res.data as Material;
     },
     post: async (
       uuid: string,
@@ -173,4 +178,11 @@ export const CoursesApi = {
       return res.data as StreamResponse;
     },
   }
+};
+
+export const userApi = {
+  post: async (data: userLoginSend) => {
+    const res = await api.post(`/users/login`, data);
+    return res.data as userLoginRecieve;
+  },
 };
