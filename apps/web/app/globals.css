@@ -25,7 +25,7 @@
 
     --border: #dce6ef;
     --ring: #0070bb;
-    --input: #a8f5be;
+    --input: #111111;
     --popover: #f8faff;
     --popover-background: #1a1a2c;
 }
@@ -51,7 +51,7 @@
     --card-foreground: #ffffff;
     --border: #2592b8;
     --ring: #0070bb;
-    --input: #49b3b4;
+    --input: #111111;
     --popover: #1a1a2c;
     --popover-background: #1a1a2c;
     --popover-foreground: #ffffff;
