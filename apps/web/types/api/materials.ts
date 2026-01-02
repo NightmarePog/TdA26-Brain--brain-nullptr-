@@ -5,6 +5,9 @@ type FileMaterial = {
   fileUrl: string;
   mimeType: string;
   sizeBytes: number;
+  created_at: string;
+  updated_at: string;
+  updateCount: number;
 };
 
 type UrlMaterial = {
@@ -13,11 +16,12 @@ type UrlMaterial = {
   description?: string;
   url: string;
   faviconUrl?: string;
+  created_at: string;
+  updated_at: string;
+  updateCount: number;
 };
 
-export type Material = {
-  material: UrlMaterial | FileMaterial;
-};
+export type Material = UrlMaterial | FileMaterial;
 
 export type FileMaterialCreateRequest = {
   name?: string;

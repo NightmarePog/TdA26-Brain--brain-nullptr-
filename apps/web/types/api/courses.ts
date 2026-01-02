@@ -8,11 +8,23 @@ export type CourseUpdateRequest = {
   description?: string;
 };
 
+export type Course = {
+  uuid: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  updateCount: number;
+}
+
 export type CourseDetails = {
   uuid: string;
   name: string;
   description?: string;
   created_at: string;
   updated_at: string;
+  updateCount: number;
   materials?: [];
+  quizzes?: [];
+  feed?: [];
 };
