@@ -809,6 +809,8 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, check
 		`,[answerUuid]);
 
 		db_answers[0].correctPerQuestion = correctPerQuestion;
+		delete db_answers[0].userId;
+		delete db_answers[0].uuid;
 
 		res.status(200).json(db_answers[0]);
 	} catch (error) {
