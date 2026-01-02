@@ -3,4 +3,7 @@ export type userLoginSend = {
   password: string;
 };
 
-¨
+/** user receives a cookie with the auth_token */
+export type userLoginRecieve = {
+  message: string;
+};
