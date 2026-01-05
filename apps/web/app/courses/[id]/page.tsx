@@ -8,7 +8,7 @@ export default function CourseRouter({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const { id } = use(params); // teď máme synchronicky id
+  const { id } = use(params);
   useEffect(() => {
     router.push(`/courses/${id}/materials`);
   }, [id, router]);
