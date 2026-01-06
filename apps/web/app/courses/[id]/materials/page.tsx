@@ -1,19 +1,25 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import AppCard, { AppCardType } from "@/components/ui/appCard";
+import PageTitle from "@/components/ui/typography/pageTitle";
 
 const MaterialsPage = () => {
   return (
-    <Table className="border-y">
-      <TableBody>
-        <TableRow key="row-1" className="hover:bg-gray-600">
-          <TableCell>TEST TEXT</TableCell>
-          <TableCell className="text-right">
-            <Button>Stáhnout</Button>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <div>
+      <PageTitle>Materiály</PageTitle>
+      <div className="flex flex-wrap justify-center m-10">
+        <AppCard
+          appCards={new Array(10).fill(":3").map((item, index) => {
+            const remap: AppCardType = {
+              title: item,
+              key: index,
+              previewImg: "/tda.png",
+              onClick: () => null,
+            };
+            return remap;
+          })}
+        />
+      </div>
+    </div>
   );
 };
 

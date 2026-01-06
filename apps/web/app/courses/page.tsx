@@ -1,19 +1,26 @@
 "use client";
 import CourseSection from "@/components/layouts/courseSection";
-import CoursePreviewCarousel from "@/components/ui/courseCard";
+import AppCard, { AppCardType } from "@/components/ui/appCard";
 import CoursePreview from "@/components/ui/coursePreview";
 import NotFound from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
 import { CoursesApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const CoursesPage = () => {
+  const router = useRouter();
+
   const [query, setQuery] = useState("");
   const { isPending, error, data } = useQuery({
     queryKey: ["allCourses"],
     queryFn: CoursesApi.getAll,
   });
+
+  const routeToCourse = (uuid: string) => {
+    router.push(uuid);
+  };
 
   if (error) return <p>nastala chyba: {error.message}</p>;
   if (isPending) return <p>načítaní...</p>;
@@ -38,7 +45,19 @@ const CoursesPage = () => {
         {data ? (
           <div className="flex justify-center">
             <div className="sm:flex gap-2 my-2 w-full overflow-hidden">
-              <CoursePreviewCarousel coursePreviewInfo={filtered || data} />
+              {/*remapping because the input is diffrent than output */}
+              <AppCard
+                appCards={filtered.map((item) => {
+                  const remap: AppCardType = {
+                    title: item.name,
+                    description: item.description,
+                    key: item.uuid,
+                    previewImg: "/public/tda.png",
+                    onClick: () => routeToCourse(item.uuid),
+                  };
+                  return remap;
+                })}
+              />
             </div>
           </div>
         ) : (
