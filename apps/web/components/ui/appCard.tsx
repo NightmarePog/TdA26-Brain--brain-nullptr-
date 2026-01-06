@@ -51,7 +51,7 @@ const AppCard: React.FC<AppCardProps> = ({ appCards }) => {
                   <Text className="text-xl font-semibold mb-2 line-clamp-1">
                     {card.title}
                   </Text>
-                  <Text className="text-base text-foreground/70 line-clamp-3">
+                  <Text className="text-base text-foreground/70 line-clamp-3 whitespace-pre-line">
                     {card.description}
                   </Text>
                 </div>

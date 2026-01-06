@@ -18,7 +18,7 @@ const CourseSidebar = () => {
   const lastSegment = pathname.split("/").filter(Boolean).pop();
 
   return (
-    <aside className="w-64 flex-none h-screen bg-black border-r border-white/10 flex flex-col">
+    <aside className="w-64 flex-none h-screen bg-black border-r border-white/10 flex flex-col sticky top-0">
       {/* Course name */}
       <div className="px-6 py-4">
         <span className="text-sm text-white/70 tracking-wide">Název kurzu</span>
