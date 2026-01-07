@@ -6,6 +6,7 @@ export type Quiz = {
     updated_at: string;
     updateCount: number;
     answers?: Answer[];
+    questions: Question[];
 };
 
 export type Answer = {
