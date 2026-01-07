@@ -19,7 +19,7 @@ const CoursesPage = () => {
   });
 
   const routeToCourse = (uuid: string) => {
-    router.push(uuid);
+    router.push("courses/" + uuid);
   };
 
   if (error) return <p>nastala chyba: {error.message}</p>;
@@ -52,7 +52,7 @@ const CoursesPage = () => {
                     title: item.name,
                     description: item.description,
                     key: item.uuid,
-                    previewImg: "/public/tda.png",
+                    previewImg: "/tda.png",
                     onClick: () => routeToCourse(item.uuid),
                   };
                   return remap;

@@ -1,5 +1,6 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import path from "node:path/win32";
 
 interface MenuItem {
   name: string;
@@ -16,6 +17,7 @@ const CourseSidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const lastSegment = pathname.split("/").filter(Boolean).pop();
+  const id = pathname.split("/").filter(Boolean)[1];
 
   return (
     <aside className="w-64 flex-none h-screen bg-black border-r border-white/10 flex flex-col sticky top-0">

@@ -26,6 +26,12 @@ import {
 } from "@/types/api/feed";
 import { userLoginRecieve, userLoginSend } from "@/types/api/user";
 import axios from "axios";
+import { appConfig } from "@/const/config";
+
+import materials from "@/const/material";
+import { quizzes } from "@/const/quizzes";
+import { feedItems } from "@/const/feed";
+import { courses } from "@/const/courses";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -41,6 +47,7 @@ export const CoursesApi = {
    * COURSES
    */
   getAll: async () => {
+    if (appConfig.frontendDebug) return courses;
     const res = await api.get(`/courses`);
     return res.data as Course[];
   },
@@ -49,6 +56,7 @@ export const CoursesApi = {
     return res.data as Course;
   },
   get: async (uuid: string) => {
+    if (appConfig.frontendDebug) return courses[1];
     const res = await api.get(`/courses/${uuid}`);
     return res.data as CourseDetails;
   },
@@ -65,10 +73,12 @@ export const CoursesApi = {
    */
   materials: {
     getAll: async (uuid: string) => {
+      if (appConfig.frontendDebug) return materials;
       const res = await api.get(`/courses/${uuid}/materials`);
       return res.data as Material[];
     },
     get: async (courseId: string, materialId: string) => {
+      if (appConfig.frontendDebug) return courses[1];
       const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
       return res.data as Material;
     },
@@ -100,32 +110,21 @@ export const CoursesApi = {
    */
   quizzes: {
     getAll: async (uuid: string) => {
+      if (appConfig.frontendDebug) return quizzes;
       const res = await api.get(`/courses/${uuid}/quizzes`);
       return res.data as Quiz[];
     },
-    post: async (
-      uuid: string,
-      data: QuizCreateRequest,
-    ) => {
+    post: async (uuid: string, data: QuizCreateRequest) => {
       const res = await api.post(`/courses/${uuid}/quizzes`, data);
       return res.data as Quiz;
     },
-    get: async (
-      uuid: string,
-      quizUuid: string,
-    ) => {
+    get: async (uuid: string, quizUuid: string) => {
+      if (appConfig.frontendDebug) return quizzes[0];
       const res = await api.post(`/courses/${uuid}/quizzes/${quizUuid}`);
       return res.data as Quiz;
     },
-    put: async (
-      uuid: string,
-      quizUuid: string,
-      data: QuizUpdateRequest,
-    ) => {
-      const res = await api.put(
-        `/courses/${uuid}/quizzes/${quizUuid}`,
-        data,
-      );
+    put: async (uuid: string, quizUuid: string, data: QuizUpdateRequest) => {
+      const res = await api.put(`/courses/${uuid}/quizzes/${quizUuid}`, data);
       return res.data as Quiz;
     },
     delete: async (uuid: string, quizUuid: string) => {
@@ -137,7 +136,10 @@ export const CoursesApi = {
       quizUuid: string,
       data: QuizSubmitRequest,
     ) => {
-      const res = await api.post(`/courses/${uuid}/quizzes/${quizUuid}/submit`, data);
+      const res = await api.post(
+        `/courses/${uuid}/quizzes/${quizUuid}/submit`,
+        data,
+      );
       return res.data as QuizSubmitResponse;
     },
   },
@@ -146,38 +148,27 @@ export const CoursesApi = {
    */
   feed: {
     getAll: async (uuid: string) => {
+      if (appConfig.frontendDebug) return feedItems;
       const res = await api.get(`/courses/${uuid}/feed`);
       return res.data as FeedItem[];
     },
-    post: async (
-      uuid: string,
-      data: FeedCreateRequest,
-    ) => {
+    post: async (uuid: string, data: FeedCreateRequest) => {
       const res = await api.post(`/courses/${uuid}/feed`, data);
       return res.data as FeedItem;
     },
-    put: async (
-      uuid: string,
-      feedUuid: string,
-      data: FeedUpdateRequest,
-    ) => {
-      const res = await api.put(
-        `/courses/${uuid}/feed/${feedUuid}`,
-        data,
-      );
+    put: async (uuid: string, feedUuid: string, data: FeedUpdateRequest) => {
+      const res = await api.put(`/courses/${uuid}/feed/${feedUuid}`, data);
       return res.data as FeedItem;
     },
     delete: async (uuid: string, feedUuid: string) => {
       const res = await api.put(`/courses/${uuid}/feed/${feedUuid}`);
       return res.data as string;
     },
-    getStream: async (
-      uuid: string,
-    ) => {
+    getStream: async (uuid: string) => {
       const res = await api.post(`/courses/${uuid}/feed/stream`);
       return res.data as StreamResponse;
     },
-  }
+  },
 };
 
 export const userApi = {

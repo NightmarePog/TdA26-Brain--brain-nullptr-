@@ -1,145 +1,84 @@
-import type { CoursePreviewProps } from "../types/course";
+import { Course } from "@/types/api/courses";
 
-// 🕓 Last Viewed
-export const CoursesConstLastViewed: CoursePreviewProps[] = [
+export const courses: Course[] = [
   {
-    id: 0,
-    name: "Mastering React Hooks",
-    description:
-      "Learn how to build dynamic, reusable components using advanced React Hooks and state management techniques.",
-    image: "/tda.png",
+    uuid: "c1a1f001-1111-4aaa-8aaa-000000000001",
+    name: "Úvod do programování",
+    description: "Základy programování pro úplné začátečníky",
+    created_at: "2025-01-01T10:00:00Z",
+    updated_at: "2025-01-02T10:00:00Z",
+    updateCount: 1,
   },
   {
-    id: 1,
-    name: "TypeScript for Professionals",
-    description:
-      "A deep dive into TypeScript’s powerful type system, generics, and tooling — designed for modern JavaScript developers.",
-    image: "/tda.png",
+    uuid: "c1a1f002-2222-4bbb-8bbb-000000000002",
+    name: "TypeScript od základů",
+    description: "Silné typování v JavaScriptu",
+    created_at: "2025-01-03T09:00:00Z",
+    updated_at: "2025-01-04T09:00:00Z",
+    updateCount: 2,
   },
   {
-    id: 2,
-    name: "Next.js 15: From Zero to Production",
-    description:
-      "Build blazing-fast full-stack applications with Next.js 15, server actions, and the new app router architecture.",
-    image: "/tda.png",
+    uuid: "c1a1f003-3333-4ccc-8ccc-000000000003",
+    name: "React pro začátečníky",
+    description: "Komponenty, hooks a práce se stavem",
+    created_at: "2025-01-05T08:30:00Z",
+    updated_at: "2025-01-06T08:30:00Z",
+    updateCount: 0,
   },
   {
-    id: 3,
-    name: "Design Systems with Tailwind CSS",
-    description:
-      "Create scalable and visually consistent UI systems using Tailwind CSS and component-driven design principles.",
-    image: "/tda.png",
+    uuid: "c1a1f004-4444-4ddd-8ddd-000000000004",
+    name: "Next.js App Router",
+    description: "Moderní routing a server components",
+    created_at: "2025-01-07T11:15:00Z",
+    updated_at: "2025-01-07T11:15:00Z",
+    updateCount: 0,
   },
   {
-    id: 4,
-    name: "Building AI-Driven Web Apps",
-    description:
-      "Integrate LLM APIs and AI workflows into your frontend applications using modern frameworks and best practices.",
-    image: "/tda.png",
+    uuid: "c1a1f005-5555-4eee-8eee-000000000005",
+    name: "Databáze a SQL",
+    description: "Návrh databází a SQL dotazy",
+    created_at: "2025-01-08T12:00:00Z",
+    updated_at: "2025-01-09T12:00:00Z",
+    updateCount: 3,
   },
   {
-    id: 5,
-    name: "GraphQL for Modern Applications",
-    description:
-      "Learn how to design, query, and optimize GraphQL APIs for scalable and efficient web applications.",
-    image: "/tda.png",
+    uuid: "c1a1f006-6666-4fff-8fff-000000000006",
+    name: "REST API v praxi",
+    description: "Návrh a implementace REST API",
+    created_at: "2025-01-10T13:00:00Z",
+    updated_at: "2025-01-11T13:00:00Z",
+    updateCount: 1,
   },
   {
-    id: 6,
-    name: "Advanced Node.js Techniques",
-    description:
-      "Master backend development with Node.js, asynchronous patterns, performance optimization, and microservices architecture.",
-    image: "/tda.png",
+    uuid: "c1a1f007-7777-4000-8000-000000000007",
+    name: "Autentizace a autorizace",
+    description: "JWT, OAuth a zabezpečení aplikací",
+    created_at: "2025-01-12T14:00:00Z",
+    updated_at: "2025-01-13T14:00:00Z",
+    updateCount: 2,
   },
   {
-    id: 7,
-    name: "Progressive Web Apps (PWAs)",
-    description:
-      "Create fast, reliable, and offline-capable web apps that deliver native-like experiences on the web.",
-    image: "/tda.png",
+    uuid: "c1a1f008-8888-4111-8111-000000000008",
+    name: "Testování aplikací",
+    description: "Unit, integrační a e2e testy",
+    created_at: "2025-01-14T15:00:00Z",
+    updated_at: "2025-01-15T15:00:00Z",
+    updateCount: 0,
   },
   {
-    id: 8,
-    name: "Full-Stack Testing with Jest & Cypress",
-    description:
-      "Ensure quality and reliability by testing frontend and backend applications using Jest, React Testing Library, and Cypress.",
-    image: "/tda.png",
-  },
-];
-
-export const CoursesConstRecommended: CoursePreviewProps[] = [
-  {
-    id: 5,
-    name: "Advanced Node.js Patterns",
-    description:
-      "Explore design patterns, worker threads, and scalable architectures for high-performance Node.js applications.",
-    image: "/tda.png",
+    uuid: "c1a1f009-9999-4222-8222-000000000009",
+    name: "DevOps základy",
+    description: "CI/CD, Docker a deployment",
+    created_at: "2025-01-16T16:00:00Z",
+    updated_at: "2025-01-17T16:00:00Z",
+    updateCount: 1,
   },
   {
-    id: 6,
-    name: "UX Principles for Developers",
-    description:
-      "Understand the psychology of user experience and design intuitive interfaces that convert and engage.",
-    image: "/tda.png",
-  },
-  {
-    id: 7,
-    name: "React Performance Masterclass",
-    description:
-      "Learn how to optimize React rendering, use memoization effectively, and handle large-scale state efficiently.",
-    image: "/tda.png",
-  },
-  {
-    id: 8,
-    name: "GraphQL in Production",
-    description:
-      "Build type-safe APIs using GraphQL, Apollo Server, and code generation tools for seamless integration.",
-    image: "/tda.png",
-  },
-  {
-    id: 9,
-    name: "Effective Testing with Vitest & Playwright",
-    description:
-      "Learn modern testing workflows using Vitest, Playwright, and CI/CD integration for reliable releases.",
-    image: "/tda.png",
-  },
-];
-
-// 🆕 New
-export const CoursesConstNew: CoursePreviewProps[] = [
-  {
-    id: 10,
-    name: "Building with Bun 1.0",
-    description:
-      "Get started with Bun — the next-gen JavaScript runtime — for lightning-fast builds and APIs.",
-    image: "/tda.png",
-  },
-  {
-    id: 11,
-    name: "Astro Islands Architecture",
-    description:
-      "Learn how Astro revolutionizes frontend performance with partial hydration and island-based rendering.",
-    image: "/tda.png",
-  },
-  {
-    id: 12,
-    name: "Deploying with Docker & Fly.io",
-    description:
-      "Containerize and deploy your modern web apps globally using Docker, Fly.io, and GitHub Actions.",
-    image: "/tda.png",
-  },
-  {
-    id: 13,
-    name: "AI-Powered UI with Vercel SDK",
-    description:
-      "Create dynamic, AI-driven interfaces using Vercel’s SDK for AI streaming and edge functions.",
-    image: "/tda.png",
-  },
-  {
-    id: 14,
-    name: "Rust for Web Developers",
-    description:
-      "Learn how to use Rust and WebAssembly to build secure, high-performance web applications.",
-    image: "/tda.png",
+    uuid: "c1a1f010-aaaa-4333-8333-000000000010",
+    name: "Architektura frontend aplikací",
+    description: "Škálovatelnost a udržitelnost kódu",
+    created_at: "2025-01-18T17:00:00Z",
+    updated_at: "2025-01-19T17:00:00Z",
+    updateCount: 4,
   },
 ];

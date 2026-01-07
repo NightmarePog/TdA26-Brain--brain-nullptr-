@@ -49,81 +49,99 @@
 :root {
     --radius: 0.625rem;
 
-    /* Light mode */
-    --background: #f5f5f5;
-    --foreground: #1f1f1f;
-    --card: #ffffff;
-    --card-foreground: #1f1f1f;
-    --popover: #ffffff;
-    --popover-foreground: #1f1f1f;
+    /* === LIGHT MODE: Svěží a čistý === */
 
+    /* Pozadí necháme čistě bílé nebo velmi jemně šedé pro moderní "airy" vzhled */
+    --background: #ffffff;
+    --foreground: #1a1a1a; /* Tvá brand černá */
+
+    /* Karty lehce oddělíme stínem, ne barvou, aby to bylo čisté */
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+
+    /* PRIMARY: Hlavní modrá pro tlačítka a důležité akce */
     --primary: #0070bb;
     --primary-foreground: #ffffff;
-    --secondary: #e5e7eb; /* světle šedá */
-    --secondary-foreground: #111827;
-    --muted: #f3f4f6;
-    --muted-foreground: #6b7280;
-    --accent: #6366f1; /* fialová */
-    --accent-foreground: #ffffff;
-    --destructive: #bc2626; /* červená */
-    --destructive-accent: #fc3636;
-    --border: #d1d5db;
+
+    /* SECONDARY: Použijeme tu světlejší tyrkysovou z doplňkových barev.
+       Skvělé pro sekundární tlačítka nebo pozadí sekcí. */
+    --secondary: #ddf7f0; /* Velmi světlá verze tvé 6DD4B1 */
+    --secondary-foreground: #0070bb;
+
+    /* MUTED: Místo šedé použijeme jemný nádech brandové modro-zelené */
+    --muted: #f0f7fa;
+    --muted-foreground: #49b3b4; /* Jedna z tvých doplňkových barev pro neaktivní text */
+
+    /* ACCENT: Tady to září. Mint zelená pro aktivní stavy a zvýraznění. */
+    --accent: #91f5ad;
+    --accent-foreground: #1a1a1a; /* Černý text na zelené pro maximální čitelnost */
+
+    /* Destructive barvy necháme standardní červené pro jasnou chybu */
+    --destructive: #ef4444;
+    --destructive-accent: #fca5a5;
+
+    /* Border použijeme jemně modrý, ne šedý */
+    --border: #e5ebf0;
     --input: #ffffff;
-    --ring: #2563eb;
+    --ring: #91f5ad; /* Ring (focus) bude svítit zeleně */
 
+    /* SIDEBAR Light: Čistý bílý s modrými prvky */
     --sidebar: #ffffff;
-    --sidebar-foreground: #1f1f1f;
-    --sidebar-primary: #2563eb;
+    --sidebar-foreground: #1a1a1a;
+    --sidebar-primary: #0070bb;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #6366f1;
-    --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #e5e7eb;
-    --sidebar-ring: #2563eb;
-
-    --chart-1: #3b82f6;
-    --chart-2: #10b981;
-    --chart-3: #f59e0b;
-    --chart-4: #ef4444;
-    --chart-5: #8b5cf6;
+    --sidebar-accent: #f0f7fa;
+    --sidebar-accent-foreground: #0070bb;
+    --sidebar-border: #e5ebf0;
+    --sidebar-ring: #91f5ad;
 }
 
 .dark {
-    /* Dark mode */
-    --background: #1f1f1f;
-    --foreground: #f5f5f5;
-    --card: #2c2c2c;
-    --card-foreground: #f5f5f5;
-    --popover: #2c2c2c;
-    --popover-foreground: #f5f5f5;
+    /* === DARK MODE: Hluboký a kontrastní === */
 
+    /* Základ je tvá brand černá */
+    --background: #1a1a1a;
+    --foreground: #f0f7fa;
+
+    /* Karty o stupínek světlejší pro hloubku */
+    --card: #242424;
+    --card-foreground: #f0f7fa;
+    --popover: #242424;
+    --popover-foreground: #f0f7fa;
+
+    /* V dark mode modrá stále funguje skvěle */
     --primary: #0070bb;
     --primary-foreground: #ffffff;
-    --secondary: #374151;
-    --secondary-foreground: #e5e7eb;
-    --muted: #4b5563;
-    --muted-foreground: #d1d5db;
-    --accent: #818cf8;
-    --accent-foreground: #ffffff;
+
+    /* Sekundární prvky tmavší tyrkysová */
+    --secondary: #1e2f38;
+    --secondary-foreground: #6dd4b1;
+
+    /* Muted prvky tmavě šedomodré */
+    --muted: #2a2a2a;
+    --muted-foreground: #64748b;
+
+    /* ACCENT: V tmavém režimu ta mint zelená funguje jako neon. */
+    --accent: #91f5ad;
+    --accent-foreground: #1a1a1a;
+
     --destructive: #f87171;
     --destructive-accent: #a98181;
-    --border: #4b5563;
-    --input: #374151;
-    --ring: #3b82f6;
+    --border: #2e2e2e;
+    --input: #242424;
+    --ring: #91f5ad;
 
-    --sidebar: #2c2c2c;
-    --sidebar-foreground: #f5f5f5;
-    --sidebar-primary: #2c2c2c;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #818cf8;
-    --sidebar-accent-foreground: #2c2c2c;
-    --sidebar-border: #4b5563;
-    --sidebar-ring: #3b82f6;
-
-    --chart-1: #3b82f6;
-    --chart-2: #10b981;
-    --chart-3: #f59e0b;
-    --chart-4: #ef4444;
-    --chart-5: #8b5cf6;
+    /* SIDEBAR Dark: Může být o něco tmavší než pozadí */
+    --sidebar: #131313;
+    --sidebar-foreground: #f0f7fa;
+    --sidebar-primary: #91f5ad; /* V sidebaru zkusíme primární barvu zelenou */
+    --sidebar-primary-foreground: #1a1a1a;
+    --sidebar-accent: #242424;
+    --sidebar-accent-foreground: #91f5ad;
+    --sidebar-border: #2e2e2e;
+    --sidebar-ring: #91f5ad;
 }
 
 @layer base {
