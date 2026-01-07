@@ -11,12 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CoursesConstLastViewed } from "@/const/courses";
+import { courses } from "@/const/courses";
 import { useState } from "react";
 
 const DashboardPage = () => {
   const [query, setQuery] = useState("");
-  const data = CoursesConstLastViewed;
+  const data = courses;
   return (
     <>
       <div className="flex justify-center p-5">

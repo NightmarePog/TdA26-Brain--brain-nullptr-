@@ -3,12 +3,12 @@ import { Material } from "@/types/api/materials";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCourseMaterials = (
-  courseUuid?: string,
-  materialUuid?: string,
+  courseUuid: string,
+  materialUuid: string,
 ) => {
   return useQuery<Material>({
     queryKey: ["course", courseUuid, "material", materialUuid],
-    queryFn: () => CoursesApi.materials.get(courseUuid!, materialUuid!),
+    queryFn: () => CoursesApi.materials.get(courseUuid, materialUuid),
     enabled: !!courseUuid && !!materialUuid,
   });
 };

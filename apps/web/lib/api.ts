@@ -78,7 +78,7 @@ export const CoursesApi = {
       return res.data as Material[];
     },
     get: async (courseId: string, materialId: string) => {
-      if (appConfig.frontendDebug) return courses[1];
+      if (appConfig.frontendDebug) return materials[1];
       const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
       return res.data as Material;
     },
