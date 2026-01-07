@@ -2,6 +2,7 @@ type FileMaterial = {
   uuid: string;
   name: string;
   description?: string;
+  type: "file";
   fileUrl: string;
   mimeType: string;
   sizeBytes: number;
@@ -14,6 +15,7 @@ type UrlMaterial = {
   uuid: string;
   name: string;
   description?: string;
+  type: "url";
   url: string;
   faviconUrl?: string;
   created_at: string;
