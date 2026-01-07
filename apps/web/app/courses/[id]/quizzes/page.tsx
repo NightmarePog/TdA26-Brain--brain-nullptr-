@@ -1,19 +1,27 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import AppCard, { AppCardType } from "@/components/ui/appCard";
+import PageTitle from "@/components/ui/typography/pageTitle";
+
+import { quizzes } from "@/const/quizzes";
 
 const QuizzesPage = () => {
   return (
-    <Table className="border-y">
-      <TableBody>
-        <TableRow key="row-1" className="hover:bg-gray-600">
-          <TableCell>TEST QUIZ</TableCell>
-          <TableCell className="text-right">
-            <Button>Začít</Button>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <div>
+      <PageTitle>Kvízy</PageTitle>
+      <div className="flex flex-wrap justify-center m-10">
+        <AppCard
+          appCards={quizzes.map((quiz) => {
+            const remap: AppCardType = {
+              title: quiz.title,
+              key: quiz.uuid,
+              previewImg: "/tda.png",
+              onClick: () => null,
+            };
+            return remap;
+          })}
+        />
+      </div>
+    </div>
   );
 };
 
