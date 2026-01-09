@@ -1,5 +1,5 @@
 "use client";
-import AppCard, { AppCardType } from "@/components/ui/appCard";
+import AppCard, { AppCardType } from "@/components/cards/appCard";
 import PageTitle from "@/components/ui/typography/pageTitle";
 
 import { quizzes } from "@/const/quizzes";

@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    domains: ["www.google.com"],
   },
 };
 

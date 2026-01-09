@@ -1,5 +1,6 @@
 "use client";
-import AppCard, { AppCardType } from "@/components/ui/appCard";
+import AppCard, { AppCardType } from "@/components/cards/appCard";
+import MaterialCard from "@/components/cards/materialCard";
 import PageTitle from "@/components/ui/typography/pageTitle";
 import materials from "@/const/material";
 import { Material } from "@/types/api/materials";
@@ -27,18 +28,7 @@ const MaterialsPage = () => {
     <div>
       <PageTitle>Materiály</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
-        <AppCard
-          appCards={materials.map((materialItem) => {
-            const remap: AppCardType = {
-              title: materialItem.name,
-              description: getDescription(materialItem),
-              key: materialItem.uuid,
-              previewImg: "/tda.png",
-              onClick: () => null,
-            };
-            return remap;
-          })}
-        />
+        <MaterialCard materials={materials} />
       </div>
     </div>
   );

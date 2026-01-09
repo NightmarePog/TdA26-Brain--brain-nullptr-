@@ -1,5 +1,5 @@
 "use client";
-import AppCard, { AppCardType } from "@/components/ui/appCard";
+import AppCard, { AppCardType } from "@/components/cards/appCard";
 import NotFound from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
 import { CoursesApi } from "@/lib/api";
