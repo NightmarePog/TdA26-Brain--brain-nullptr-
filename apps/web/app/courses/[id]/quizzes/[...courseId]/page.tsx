@@ -3,7 +3,7 @@ import QuizSummaryLayout from "@/components/layouts/quizSummaryLayout";
 import { quizzes } from "@/const/quizzes";
 
 const QuizPage = () => {
-  return <QuizSummaryLayout />;
+  return <QuizSummaryLayout percentage={50} />;
 };
 
 export default QuizPage;
