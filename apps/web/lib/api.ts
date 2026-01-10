@@ -131,11 +131,29 @@ export const CoursesApi = {
       const res = await api.put(`/courses/${uuid}/quizzes/${quizUuid}`);
       return res.data as string;
     },
+
     postSubmit: async (
       uuid: string,
       quizUuid: string,
       data: QuizSubmitRequest,
     ) => {
+      if (appConfig.frontendDebug) {
+        const maxScore = data.answers.length;
+        const score = Math.floor(Math.random() * (maxScore + 1));
+
+        const correctPerQuestion = data.answers.map(() => Math.random() > 0.5);
+
+        const randomData: QuizSubmitResponse = {
+          quizUuid,
+          score,
+          maxScore,
+          submittedAt: new Date().toISOString(),
+          correctPerQuestion,
+        };
+        return randomData;
+      }
+
+      // normální API call
       const res = await api.post(
         `/courses/${uuid}/quizzes/${quizUuid}/submit`,
         data,

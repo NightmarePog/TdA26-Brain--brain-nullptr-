@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
+"use client";
 import Icon from "@/components/ui/icon";
-import StartButton from "@/components/ui/startButton";
 import Logo from "@/public/Icons/vector/Idea/zarivka_idea_bile.svg";
 import Image from "next/image";
 
-export default async function Home() {
+export default function Home() {
   return (
     <div className="h-full overflow-hidden">
       {/* Background */}

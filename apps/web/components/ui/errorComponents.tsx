@@ -56,4 +56,30 @@ export const HttpError = ({ code }: httpErrorProps) => {
   );
 };
 
+interface MessageErrorProps {
+  message: string;
+}
+
+export const MessageError = ({ message }: MessageErrorProps) => {
+  const router = useRouter();
+  return (
+    <div className="flex mx-auto flex-col items-center justify-center">
+      <div className="z-10 text-center">
+        <p className="font-bold text-3xl">ajaj</p>
+        <p className="font-bold text-2xl">nastala chyba!</p>
+        <p className="font-bold text-2xl">{message}</p>
+        <Button
+          className="m-5 cursor-pointer"
+          onClick={() => {
+            router.back();
+          }}
+        >
+          <ArrowLeft />
+          zpět
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export default NotFound;

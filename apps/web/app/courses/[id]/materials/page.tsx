@@ -1,11 +1,25 @@
 "use client";
 import AppCard, { AppCardType } from "@/components/cards/appCard";
 import MaterialCard from "@/components/cards/materialCard";
+import { MessageError } from "@/components/ui/errorComponents";
 import PageTitle from "@/components/ui/typography/pageTitle";
 import materials from "@/const/material";
+import useCourseAddress from "@/hooks/useCourseAddress";
+import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";
+import { useQuery } from "@tanstack/react-query";
 
 const MaterialsPage = () => {
+  const { courseUuid, addressingToUuid } = useCourseAddress();
+  const { isLoading, isError, error, data } = useQuery({
+    queryKey: ["feed", addressingToUuid],
+    queryFn: () => CoursesApi.materials.getAll(courseUuid),
+  });
+  if (isLoading) return <p>loading</p>;
+  if (isError || !data) {
+    return <MessageError message={error?.message || "neznámá chyba"} />;
+  }
+
   const getDescription = (item: Material) => {
     const created = new Date(item.created_at);
     const updated = new Date(item.updated_at);
@@ -28,7 +42,7 @@ const MaterialsPage = () => {
     <div>
       <PageTitle>Materiály</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
-        <MaterialCard materials={materials} />
+        <MaterialCard materials={data} />
       </div>
     </div>
   );

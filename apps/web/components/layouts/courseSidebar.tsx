@@ -1,6 +1,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import path from "node:path/win32";
+import useCourseAddress from "@/hooks/useCourseAddress";
 
 interface MenuItem {
   name: string;
@@ -15,9 +16,7 @@ const menuItems: MenuItem[] = [
 
 const CourseSidebar = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  const lastSegment = pathname.split("/").filter(Boolean).pop();
-  const id = pathname.split("/").filter(Boolean)[1];
+  const { courseUuid, addressingTo, addressingToUuid } = useCourseAddress();
 
   return (
     <aside className="w-64 flex-none h-screen bg-black border-r border-white/10 flex flex-col sticky top-0">
@@ -30,12 +29,12 @@ const CourseSidebar = () => {
       {/* Menu */}
       <nav className="flex flex-col gap-2 px-4 mt-4 flex-1">
         {menuItems.map((item, key) => {
-          const isActive = lastSegment === item.href;
+          const isActive = addressingTo === item.href;
 
           return (
             <Button
               key={key}
-              onClick={() => router.push(item.href)}
+              onClick={() => router.push(`/courses/${courseUuid}/${item.href}`)}
               variant="ghost"
               className={`
                 w-full py-2 text-sm font-medium rounded-xl

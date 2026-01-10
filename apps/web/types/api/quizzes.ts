@@ -75,7 +75,7 @@ export type QuizUpdateRequest = {
 };
 
 export type QuizSubmitRequest = {
-  answers: SingleChoiceQuestionAnswer[] | MultipleChoiceQuestionAnswer[];
+  answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
 };
 
 export type QuizSubmitResponse = {
