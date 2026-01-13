@@ -16,11 +16,12 @@ export type AppCardType = {
   key: unknown;
   previewImg: string;
   onClick: () => void;
+  buttonLabel?: string;
 };
 
 export interface AppCardProps {
   appCards: AppCardType[];
-  buttonLabel: string;
+  buttonLabel?: string;
 }
 
 const AppCard: React.FC<AppCardProps> = ({ appCards, buttonLabel }) => {
@@ -63,7 +64,7 @@ const AppCard: React.FC<AppCardProps> = ({ appCards, buttonLabel }) => {
                     variant="secondary"
                     className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 rounded-full cursor-pointer px-4 py-2"
                   >
-                    <span>{buttonLabel}</span>
+                    <span>{buttonLabel || card.buttonLabel || "chyba"}</span>
                     <ArrowRight size={20} weight="bold" />
                   </Button>
                 </div>

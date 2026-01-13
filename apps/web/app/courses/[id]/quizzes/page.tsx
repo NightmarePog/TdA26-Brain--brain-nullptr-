@@ -13,6 +13,7 @@ const QuizzesPage = () => {
       <PageTitle>Kvízy</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
         <AppCard
+          buttonLabel="spustit kvíz"
           appCards={quizzes.map((quiz) => {
             const remap: AppCardType = {
               title: quiz.title,

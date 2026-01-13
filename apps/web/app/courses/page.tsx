@@ -45,6 +45,7 @@ const CoursesPage = () => {
             <div className="sm:flex gap-2 my-2 w-full overflow-hidden">
               {/*remapping because the input is diffrent than output */}
               <AppCard
+                buttonLabel="Začít"
                 appCards={filtered.map((item) => {
                   const remap: AppCardType = {
                     title: item.name,
