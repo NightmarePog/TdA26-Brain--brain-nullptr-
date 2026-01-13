@@ -20,9 +20,10 @@ export type AppCardType = {
 
 export interface AppCardProps {
   appCards: AppCardType[];
+  buttonLabel: string;
 }
 
-const AppCard: React.FC<AppCardProps> = ({ appCards }) => {
+const AppCard: React.FC<AppCardProps> = ({ appCards, buttonLabel }) => {
   return (
     <div className="flex flex-wrap  justify-center">
       <AnimatePresence mode="popLayout">
@@ -62,7 +63,7 @@ const AppCard: React.FC<AppCardProps> = ({ appCards }) => {
                     variant="secondary"
                     className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 rounded-full cursor-pointer px-4 py-2"
                   >
-                    <span>Explore</span>
+                    <span>{buttonLabel}</span>
                     <ArrowRight size={20} weight="bold" />
                   </Button>
                 </div>

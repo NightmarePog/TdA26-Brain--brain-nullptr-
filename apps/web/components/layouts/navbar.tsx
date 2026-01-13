@@ -1,11 +1,12 @@
 "use client";
-import { Book, User } from "lucide-react";
-import Icon from "@/components/ui/icon";
 
+import { Book, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import Icon from "@/components/ui/icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Logo from "@/public/Logos/SVG/Think-different-Academy_LOGO_bily.svg";
 import NavbarButton from "../ui/navbarButton";
-import { useRouter } from "next/navigation";
 import SettingsPopover from "./settingsPopover";
 
 export default function Navbar() {
@@ -13,53 +14,30 @@ export default function Navbar() {
   const isMobile = useIsMobile();
 
   return (
-    <nav
-      className={`flex ${
-        isMobile
-          ? "flex-col items-start h-full w-20"
-          : "flex-row justify-between h-18 px-8 md:px-16"
-      } bg-primary text-white z-50`}
-    >
-      {/* Levá část / logo a odkazy */}
-      <div
-        className={`flex ${
-          isMobile ? "flex-col gap-6 w-full" : "flex-row gap-4 items-center"
-        }`}
-      >
-        <NavbarButton
-          className={`px-4 py-4 ${isMobile ? "w-full flex justify-center" : ""}`}
-          onClick={() => router.push("/")}
-        >
-          <Icon src={Logo} alt={"logo"} className="w-8 h-8 md:w-12 md:h-12" />
+    <nav className="flex h-16 md:h-20 items-center justify-between bg-primary text-white px-4 md:px-8 z-50">
+      {/* Left: logo */}
+      <div className="flex items-center gap-2 md:gap-4">
+        <NavbarButton onClick={() => router.push("/")}>
+          <Icon src={Logo} alt="logo" className="w-8 h-8 md:w-12 md:h-12" />
         </NavbarButton>
 
         <NavbarButton
-          className={`px-4 py-4 flex items-center gap-2 text-lg md:text-xl ${
-            isMobile ? "justify-center w-full" : ""
-          }`}
+          className="flex items-center gap-2 text-lg"
           onClick={() => router.push("/courses")}
         >
-          <Book stroke="white" className="w-6 h-6 md:w-8 md:h-8" />
-          {!isMobile && "Kurzy"}
+          <Book className="w-6 h-6" />
+          Kurzy
         </NavbarButton>
       </div>
 
-      {/* Pravá část / přihlášení a nastavení */}
-      <div
-        className={`flex ${
-          isMobile
-            ? "flex-col gap-6 mt-auto w-full items-center"
-            : "flex-row gap-4 items-center"
-        }`}
-      >
+      {/* Right: actions */}
+      <div className="flex items-center gap-2 md:gap-4">
         <NavbarButton
-          className={`px-4 py-4 flex items-center gap-2 text-lg md:text-xl ${
-            isMobile ? "justify-center w-full" : ""
-          }`}
+          className="flex items-center gap-2"
           onClick={() => router.push("/login")}
         >
-          <User />
-          {!isMobile && "Přihlásit"}
+          <User className="w-6 h-6" />
+          {!isMobile && <span className="text-lg">Přihlásit</span>}
         </NavbarButton>
 
         <SettingsPopover />

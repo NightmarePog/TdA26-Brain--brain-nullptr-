@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { userApi } from "@/lib/api";
 import { userLoginSend } from "@/types/api/user";
 import { Password } from "phosphor-react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().min(1, "Zadej uživatelské jméno"),
@@ -29,6 +30,7 @@ const formSchema = z.object({
 });
 
 const Login = () => {
+  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = React.useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,7 +48,10 @@ const Login = () => {
     };
     toast.promise(userApi.post(dataSend), {
       loading: "kontroluji...",
-      success: "úspěšně přihlášen!",
+      success: (response) => {
+        router.push("/dashboard");
+        return "úspěšně přihlášen!";
+      },
       error: (error) => `Chyba! ${error.message}`,
     });
   };

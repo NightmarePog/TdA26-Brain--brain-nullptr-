@@ -1,22 +1,32 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import AppCard, { AppCardType } from "@/components/cards/appCard";
+import NotFound from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { courses } from "@/const/courses";
+import { CoursesApi } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const DashboardPage = () => {
+  const router = useRouter();
+
   const [query, setQuery] = useState("");
-  const data = courses;
+  const { isPending, error, data } = useQuery({
+    queryKey: ["allCourses"],
+    queryFn: CoursesApi.getAll,
+  });
+
+  const routeToCourse = (uuid: string) => {
+    router.push("dashboard/" + uuid);
+  };
+
+  if (error) return <p>nastala chyba: {error.message}</p>;
+  if (isPending) return <p>načítaní...</p>;
+
+  const filtered = data!.filter((item) =>
+    item.name.toLowerCase().includes(query.toLowerCase()),
+  );
+
   return (
     <>
       <div className="flex justify-center p-5">
@@ -29,31 +39,30 @@ const DashboardPage = () => {
           }}
         />
       </div>
-      <Table>
-        <TableCaption>Dashboard</TableCaption>
-
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-25">název</TableHead>
-            <TableHead className="text-right">úprava / smazání</TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {data.map((item) => (
-            <TableRow key="row-1" className="hover:bg-gray-600">
-              <TableCell>{item.name}</TableCell>
-
-              <TableCell className="text-right flex justify-end gap-2 ">
-                <Button>Upravit</Button>
-                <Button variant="destructive">Smazat</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-
-        <TableFooter></TableFooter>
-      </Table>
+      <div>
+        {data ? (
+          <div className="flex justify-center">
+            <div className="sm:flex gap-2 my-2 w-full overflow-hidden">
+              {/*remapping because the input is diffrent than output */}
+              <AppCard
+                buttonLabel="změnit"
+                appCards={filtered.map((item) => {
+                  const remap: AppCardType = {
+                    title: item.name,
+                    description: item.description,
+                    key: item.uuid,
+                    previewImg: "/tda.png",
+                    onClick: () => routeToCourse(item.uuid),
+                  };
+                  return remap;
+                })}
+              />
+            </div>
+          </div>
+        ) : (
+          <NotFound />
+        )}
+      </div>
     </>
   );
 };

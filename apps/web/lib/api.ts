@@ -191,6 +191,12 @@ export const CoursesApi = {
 
 export const userApi = {
   post: async (data: userLoginSend) => {
+    if (appConfig.frontendDebug) {
+      return {
+        message: "Login successful",
+      } as userLoginRecieve;
+    }
+
     const res = await api.post(`/users/login`, data);
     return res.data as userLoginRecieve;
   },
