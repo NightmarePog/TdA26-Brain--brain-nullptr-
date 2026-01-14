@@ -8,7 +8,7 @@ import { useState } from "react";
 const QuizPage = () => {
   const { courseUuid, addressingToUuid } = useCourseAddress();
 
-  return <DashboardQuestionLayout submit={() => null} />;
+  return <DashboardQuestionLayout questionNumber={0} onSubmit={(a) => null} />;
 };
 
 export default QuizPage;
