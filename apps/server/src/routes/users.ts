@@ -30,7 +30,7 @@ userRoutes.post("/login/", async (req, res) => {
 
 		const user = await findUser(nameOrEmail);
 		if (!user) {
-			res.status(404).json({ message: "Invalid user name or email" });
+			res.status(401).json({ message: "Invalid user name or email" });
 			return;
 		}
 
@@ -56,6 +56,10 @@ userRoutes.post("/login/", async (req, res) => {
 	}
 });
 
+userRoutes.get("/auth/", authenticate, async (req, res) => {
+	res.status(200).json(await findUser(req.user.nameOrEmail));
+});
+
 /** Functions */
 export async function sha512(str : string) {
  	const buf = await crypto.subtle.digest("SHA-512", new TextEncoder().encode(str));
@@ -64,6 +68,7 @@ export async function sha512(str : string) {
 
 export async function authenticate(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
+	req.user = {nameOrEmail:"lecturer"};
 	next();
 	return;
 
@@ -76,7 +81,7 @@ export async function authenticate(req : any, res : any, next : any) {
 	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
 		if (err) return res.sendStatus(403);
 		const u = await findUser(user.nameOrEmail);
-		if (!u) return res.sendStatus(404).json({ message: "User not found" });
+		if (!u) return res.sendStatus(401).json({ message: "User not found" });
 		req.user = user;
 		next();
 	});

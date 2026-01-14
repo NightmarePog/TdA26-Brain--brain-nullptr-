@@ -1013,6 +1013,7 @@ async function formatQuizJSON(entry : JSON) {
 /** Formats feed */
 async function formatFeedJSON(entry : JSON) {
 	delete entry.courseUuid;
+	entry.edited = entry.edited ? true : false;
 	return entry;
 }
 

@@ -4,6 +4,6 @@ export type userLoginSend = {
 };
 
 /** user receives a cookie with the auth_token */
-export type userLoginRecieve = {
+export type userLoginReceive = {
   message: string;
 };
