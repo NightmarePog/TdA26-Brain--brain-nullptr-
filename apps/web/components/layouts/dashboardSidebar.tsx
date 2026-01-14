@@ -34,7 +34,9 @@ const DashboardSidebar = () => {
           return (
             <Button
               key={key}
-              onClick={() => router.push(`/courses/${courseUuid}/${item.href}`)}
+              onClick={() =>
+                router.push(`/dashboard/${courseUuid}/${item.href}`)
+              }
               variant="ghost"
               className={`
                 w-full py-2 text-sm font-medium rounded-xl

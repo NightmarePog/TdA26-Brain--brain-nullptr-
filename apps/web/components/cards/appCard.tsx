@@ -15,63 +15,56 @@ export type AppCardType = {
   description?: string;
   key: unknown;
   previewImg: string;
-  onClick: () => void;
   buttonLabel?: string;
 };
 
 export interface AppCardProps {
-  appCards: AppCardType[];
+  appCard: AppCardType;
   buttonLabel?: string;
+  children?: React.ReactNode;
 }
 
-const AppCard: React.FC<AppCardProps> = ({ appCards, buttonLabel }) => {
+const AppCard: React.FC<AppCardProps> = ({
+  appCard,
+
+  children,
+}) => {
   return (
     <div className="flex flex-wrap  justify-center">
       <AnimatePresence mode="popLayout">
-        {appCards.map((card, index) => (
-          <motion.div
-            key={(card.key as string) ?? index}
-            layout
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="px-4 mb-6"
-          >
-            <Card className="group h-125 w-87.5 p-0 overflow-hidden border border-card-foreground hover:shadow-xl transition-all rounded-3xl">
-              <div className="relative h-62.5 w-full overflow-hidden">
-                <Image
-                  src={card.previewImg}
-                  alt={card.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+        <motion.div
+          key={appCard.key as string}
+          layout
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: -10 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="px-4 mb-6"
+        >
+          <Card className="group h-125 w-87.5 p-0 overflow-hidden border border-card-foreground hover:shadow-xl transition-all rounded-3xl">
+            <div className="relative h-62.5 w-full overflow-hidden">
+              <Image
+                src={appCard.previewImg}
+                alt={appCard.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            <CardContent className="flex flex-col justify-between h-62.5 p-6">
+              <div>
+                <Text className="text-xl font-semibold mb-2 line-clamp-1">
+                  {appCard.title}
+                </Text>
+                <Text className="text-base text-foreground/70 line-clamp-3 whitespace-pre-line">
+                  {appCard.description}
+                </Text>
               </div>
 
-              <CardContent className="flex flex-col justify-between h-62.5 p-6">
-                <div>
-                  <Text className="text-xl font-semibold mb-2 line-clamp-1">
-                    {card.title}
-                  </Text>
-                  <Text className="text-base text-foreground/70 line-clamp-3 whitespace-pre-line">
-                    {card.description}
-                  </Text>
-                </div>
-
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => card.onClick()}
-                    variant="secondary"
-                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 rounded-full cursor-pointer px-4 py-2"
-                  >
-                    <span>{buttonLabel || card.buttonLabel || "chyba"}</span>
-                    <ArrowRight size={20} weight="bold" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              <div className="flex justify-end mt-4">{children}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

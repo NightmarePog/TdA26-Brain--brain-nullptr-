@@ -153,7 +153,6 @@ export const CoursesApi = {
         return randomData;
       }
 
-      // normální API call
       const res = await api.post(
         `/courses/${uuid}/quizzes/${quizUuid}/submit`,
         data,

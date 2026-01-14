@@ -62,16 +62,18 @@ export type MultipleChoiceQuestionCreateRequest = {
 
 export type QuizCreateRequest = {
   title: string;
-  questions:
-    | SingleChoiceQuestionCreateRequest[]
-    | MultipleChoiceQuestionCreateRequest[];
+  questions: (
+    | SingleChoiceQuestionCreateRequest
+    | MultipleChoiceQuestionCreateRequest
+  )[];
 };
 
 export type QuizUpdateRequest = {
   title?: string;
-  questions?:
-    | SingleChoiceQuestionCreateRequest[]
-    | MultipleChoiceQuestionCreateRequest[];
+  questions?: (
+    | SingleChoiceQuestionCreateRequest
+    | MultipleChoiceQuestionCreateRequest
+  )[];
 };
 
 export type QuizSubmitRequest = {

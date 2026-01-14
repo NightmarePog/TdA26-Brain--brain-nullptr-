@@ -1,4 +1,5 @@
 "use client";
+import DashboardMaterialCard from "@/components/cards/dashboardMaterialCard";
 import MaterialCard from "@/components/cards/materialCard";
 import { MessageError } from "@/components/ui/errorComponents";
 import PageTitle from "@/components/ui/typography/pageTitle";
@@ -40,7 +41,7 @@ const MaterialsPage = () => {
     <div>
       <PageTitle>Materiály</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
-        <MaterialCard materials={data} />
+        <DashboardMaterialCard materials={data} />
       </div>
     </div>
   );

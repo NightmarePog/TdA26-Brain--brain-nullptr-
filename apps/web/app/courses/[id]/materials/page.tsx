@@ -3,7 +3,6 @@ import AppCard, { AppCardType } from "@/components/cards/appCard";
 import MaterialCard from "@/components/cards/materialCard";
 import { MessageError } from "@/components/ui/errorComponents";
 import PageTitle from "@/components/ui/typography/pageTitle";
-import materials from "@/const/material";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";
