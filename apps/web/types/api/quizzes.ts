@@ -69,15 +69,11 @@ export type QuizCreateRequest = {
 
 export type QuizUpdateRequest = {
   title?: string;
-  questions?: (SingleChoiceQuestionCreateRequest[] | MultipleChoiceQuestionCreateRequest[])[];
+  questions?: (SingleChoiceQuestionCreateRequest | MultipleChoiceQuestionCreateRequest)[];
 };
 
 export type QuizSubmitRequest = {
-<<<<<<< HEAD
   answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
-=======
-  answers: (SingleChoiceQuestionAnswer[] | MultipleChoiceQuestionAnswer[])[];
->>>>>>> courses
 };
 
 export type QuizSubmitResponse = {
