@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageTitle from "../ui/typography/pageTitle";
 import { Input } from "../ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,20 +13,29 @@ import {
   QuizUpdateRequest,
   MultipleChoiceQuestionCreateRequest,
   SingleChoiceQuestionCreateRequest,
+  Question,
 } from "@/types/api/quizzes";
+import { useQuery } from "@tanstack/react-query";
+import { MessageError } from "../ui/errorComponents";
 
 interface DashboardQuizLayoutProps {
   onSubmit: (update: QuizUpdateRequest) => void;
   questionNumber: number;
+  questionData: Question | undefined;
 }
 
-const DashboardQuestionLayout = ({
+const DashboardQuestionEditLayout = ({
   onSubmit,
   questionNumber,
+  questionData,
 }: DashboardQuizLayoutProps) => {
-  const [multipleOptions, setMultipleOptions] = useState(false);
-  const [options, setOptions] = useState<string[]>(["", ""]);
-  const [name, setName] = useState("");
+  const [multipleOptions, setMultipleOptions] = useState(
+    questionData?.type === "multipleChoice" || false,
+  );
+  const [options, setOptions] = useState<string[]>(
+    questionData!.options.map((num) => String(num)),
+  );
+  const [name, setName] = useState(questionData?.question || "");
 
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [correctIndices, setCorrectIndices] = useState<number[]>([]);
@@ -67,6 +76,8 @@ const DashboardQuestionLayout = ({
     onSubmit({ questions: [question] });
   };
 
+  if (questionData === undefined)
+    return <MessageError message="Bohužel jsme nenašli tuto otázku" />;
   return (
     <div className="flex flex-col min-h-screen p-6 bg-background w-full">
       <PageTitle>Quiz</PageTitle>
@@ -144,4 +155,4 @@ const DashboardQuestionLayout = ({
   );
 };
 
-export default DashboardQuestionLayout;
+export default DashboardQuestionEditLayout;

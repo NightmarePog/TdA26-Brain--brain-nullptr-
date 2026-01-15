@@ -2,6 +2,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import path from "node:path/win32";
 import useCourseAddress from "@/hooks/useCourseAddress";
+import { useQuery } from "@tanstack/react-query";
+import { CoursesApi } from "@/lib/api";
 
 interface MenuItem {
   name: string;
@@ -17,12 +19,20 @@ const menuItems: MenuItem[] = [
 const CourseSidebar = () => {
   const router = useRouter();
   const { courseUuid, addressingTo, addressingToUuid } = useCourseAddress();
+  const { isLoading, isError, error, data } = useQuery({
+    queryKey: ["quizzes", addressingToUuid],
+    queryFn: () => CoursesApi.get(courseUuid),
+    enabled: Boolean(courseUuid),
+  });
 
+  if (isError) return <p>chyba, {error.message}</p>;
   return (
     <aside className="w-64 flex-none h-screen bg-sidebar border-r border-white/10 flex flex-col sticky top-0">
       {/* Course name */}
       <div className="px-6 py-4">
-        <span className="text-sm text-white/70 tracking-wide">Název kurzu</span>
+        <span className="text-sm text-white/70 tracking-wide">
+          {isLoading ? "načítání..." : data?.name}
+        </span>
         <div className="mt-2 h-px bg-white/20" />
       </div>
 

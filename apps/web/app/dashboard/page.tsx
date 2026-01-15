@@ -18,7 +18,7 @@ const DashboardPage = () => {
   });
 
   const routeToCourse = (uuid: string) => {
-    router.push("dashboards/" + uuid);
+    router.push("dashboard/" + uuid);
   };
 
   if (error) return <p>nastala chyba: {error.message}</p>;

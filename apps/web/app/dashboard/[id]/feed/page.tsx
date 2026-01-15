@@ -29,12 +29,12 @@ const FeedPage = () => {
   }
 
   // Odeslat zprávu
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!msg.trim()) return;
     const payload: FeedCreateRequest = { message: msg };
 
     try {
-      await toast.promise(CoursesApi.feed.post(courseUuid, payload), {
+      toast.promise(CoursesApi.feed.post(courseUuid, payload), {
         loading: "Odesílám…",
         success: () => "Zpráva odeslána!",
         error: (err) => `Chyba: ${err.message}`,
