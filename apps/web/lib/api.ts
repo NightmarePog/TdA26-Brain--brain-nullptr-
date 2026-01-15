@@ -174,6 +174,6 @@ export const CoursesApi = {
 export const userApi = {
   post: async (data: userLoginSend) => {
     const res = await api.post(`/users/login`, data);
-    return res.data as userLoginRecieve;
+    return res.data as userLoginReceive;
   },
 };
