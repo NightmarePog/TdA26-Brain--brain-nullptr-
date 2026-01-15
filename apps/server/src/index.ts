@@ -6,6 +6,7 @@ import { userRoutes } from "./routes/users.js";
 import { courseRoutes } from "./routes/courses.js";
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import { seed } from "./utils/seed.js";
 
 const app = express();
 
@@ -34,6 +35,8 @@ async function start() {
 	app.listen(port, () => {
 		console.log("Server is running");
 		console.log(`Server port: ${port}`);
+	
+		seed();
 	});
 }
 

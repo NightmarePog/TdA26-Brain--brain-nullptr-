@@ -44,8 +44,8 @@ export async function readFile(path : string, format : string) : Promise<string|
 }
 
 export async function writeFile(path : string, format : string, data : string) : Promise<string|void> {
-    if (await isDirectory(path)) {
-        console.error("Path is a directory");
+    if (await fileOrDirectoryExists(path)) {
+        console.error("File already exists");
         return;
     }
     try {

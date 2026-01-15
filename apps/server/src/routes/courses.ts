@@ -195,6 +195,10 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 					res.status(400).json({ message: err.message });
 					return;
 				}
+				if (req.file == null) {
+					res.status(400).json({ message: "File doesn't exist" });
+					return;
+				}
 
 				let name : string = req.file.originalname, description : string = "";
 				if (req.body) {
@@ -490,7 +494,7 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 
 		await pool.execute(`
 			INSERT INTO quizzes (uuid, courseUuid, title, description)
-			VALUES (?, ?, ?)
+			VALUES (?, ?, ?, ?)
 		`,[quizUuid, uuid, title, desc]);
 
 		for (const q of questions) {
