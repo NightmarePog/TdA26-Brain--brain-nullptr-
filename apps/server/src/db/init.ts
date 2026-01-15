@@ -92,6 +92,7 @@ export async function initDatabase() {
 					courseUuid CHAR(36) NOT NULL,
 					title VARCHAR(255) NOT NULL,
 					attemptsCount INT DEFAULT 0,
+					description VARCHAR(1000),
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
@@ -143,6 +144,7 @@ export async function initDatabase() {
 					type VARCHAR(255) NOT NULL,
 					message VARCHAR(1000) NOT NULL,
 					edited BOOL NOT NULL,
+					author VARCHAR(255) NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE

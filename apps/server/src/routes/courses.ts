@@ -486,11 +486,12 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 
 		const quizUuid : string = randomUUID();
 		const title : string = body.title;
+		const desc : string = body.description != null ? body.description : "";
 
 		await pool.execute(`
-			INSERT INTO quizzes (uuid, courseUuid, title)
+			INSERT INTO quizzes (uuid, courseUuid, title, description)
 			VALUES (?, ?, ?)
-		`,[quizUuid, uuid, title]);
+		`,[quizUuid, uuid, title, desc]);
 
 		for (const q of questions) {
 			const questionUuid : string = randomUUID();
@@ -574,7 +575,8 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 
 		const title : string = body.title != null ? body.title : quiz.title;
 		const questions : JSON[] = body.questions != null ? [] : quiz.questions;
-
+		const desc : string = body.description != null ? body.description : quiz.description;
+		
 		if (body.questions != null) {
 			if (!Array.isArray(body.questions)) {
 				res.status(400).json({ message: "questions must be an array" });
@@ -681,9 +683,9 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 
 		await pool.execute(`
 			UPDATE quizzes
-			SET title = ?, updateCount = ?
+			SET title = ?, updateCount = ?, description = ?
 			WHERE uuid = ?
-		`,[title, quiz.updateCount+1, quizUuid]);
+		`,[title, quiz.updateCount+1, quizUuid, desc]);
 
 		await updateCourseByUUID(uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
 
@@ -845,9 +847,9 @@ courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate
 		const feedUuid = randomUUID();
 
 		await pool.execute(`
-			INSERT INTO feed (uuid, courseUuid, type, message, edited)
-			VALUES (?, ?, ?, ?, ?)
-		`,[feedUuid, uuid, Types.MANUAL, message, false]);
+			INSERT INTO feed (uuid, courseUuid, type, message, edited, author)
+			VALUES (?, ?, ?, ?, ?, ?)
+		`,[feedUuid, uuid, Types.MANUAL, message, false, req.user.nameOrEmail]);
 
 		const [feed] = await pool.execute(`
 			SELECT * FROM feed WHERE uuid = ?
@@ -981,7 +983,10 @@ async function formatQuizJSON(entry : JSON) {
 	const [questions] = await pool.execute(`
 		SELECT * FROM questions WHERE quizUuid = ?
 	`,[entry.uuid]);
+	let q_count = 0;
+	let max_points = 0;
 	for (const q of questions) {
+		q_count++;
 		delete q.quizUuid;
 
 		const [db_options] = await pool.execute(`
@@ -994,6 +999,7 @@ async function formatQuizJSON(entry : JSON) {
 		for (const op of db_options) {
 			options.push(op.opt);
 			if (op.correct) {
+				max_points++;
 				correctIndices.push(op.idx);
 			}
 		}
@@ -1005,6 +1011,8 @@ async function formatQuizJSON(entry : JSON) {
 			q.correctIndices = correctIndices;
 		}
 	};
+	entry.maxPoints = max_points;
+	entry.questionCount = q_count;
 	entry.questions = questions;
 
 	return entry;
@@ -1216,9 +1224,9 @@ async function systemFeedMessage(uuid : string, message : string) {
 	}
 
 	await pool.execute(`
-		INSERT INTO feed (uuid, courseUuid, type, message, edited)
-		VALUES (?, ?, ?, ?, ?)
-	`,[randomUUID(), uuid, Types.SYSTEM, message, false]);
+		INSERT INTO feed (uuid, courseUuid, type, message, edited, author)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`,[randomUUID(), uuid, Types.SYSTEM, message, false, Types.SYSTEM]);
 }
 
 /** Updates course updateCount */

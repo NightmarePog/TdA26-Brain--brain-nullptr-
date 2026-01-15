@@ -11,4 +11,3 @@ done
 
 echo "MySQL is up - starting server"
 npm start
-

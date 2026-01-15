@@ -7,6 +7,9 @@ export type Quiz = {
   updateCount: number;
   answers?: Answer[];
   questions: Question[];
+  questionCount: number;
+  maxPoints: number;
+  description: string;
 };
 
 export type Answer = {
@@ -47,14 +50,14 @@ export type MultipleChoiceQuestionAnswer = {
 };
 
 export type SingleChoiceQuestionCreateRequest = {
-  type: "singleChoice" | "multipleChoice";
+  type: "singleChoice";
   question: string;
   options: string[];
   correctIndex: number;
 };
 
 export type MultipleChoiceQuestionCreateRequest = {
-  type: "singleChoice" | "multipleChoice";
+  type: "multipleChoice";
   question: string;
   options: string[];
   correctIndices: number[];
@@ -62,6 +65,7 @@ export type MultipleChoiceQuestionCreateRequest = {
 
 export type QuizCreateRequest = {
   title: string;
+  description: string;
   questions:
     | SingleChoiceQuestionCreateRequest[]
     | MultipleChoiceQuestionCreateRequest[];
@@ -69,6 +73,7 @@ export type QuizCreateRequest = {
 
 export type QuizUpdateRequest = {
   title?: string;
+  description?: string;
   questions?: (SingleChoiceQuestionCreateRequest | MultipleChoiceQuestionCreateRequest)[];
 };
 
