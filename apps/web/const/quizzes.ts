@@ -4,6 +4,7 @@ export const quizzes: Quiz[] = [
   {
     uuid: "quiz-001",
     title: "Základy TypeScriptu",
+    description: "Úvod do TypeScriptu a jeho základních typů.",
     attemptsCount: 3,
     created_at: "2025-01-01T10:00:00Z",
     updated_at: "2025-01-02T10:00:00Z",
@@ -29,10 +30,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 1, 2],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-002",
     title: "JavaScript – základy",
+    description: "Základní principy a typy v JavaScriptu.",
     attemptsCount: 5,
     created_at: "2025-01-03T09:00:00Z",
     updated_at: "2025-01-03T09:00:00Z",
@@ -53,10 +58,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 1, 3],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-003",
     title: "HTML",
+    description: "Základy HTML a sémantické značky.",
     attemptsCount: 2,
     created_at: "2025-01-04T08:00:00Z",
     updated_at: "2025-01-04T08:00:00Z",
@@ -82,10 +91,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 1, 3],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-004",
     title: "CSS",
+    description: "Styly, barvy a jednotky v CSS.",
     attemptsCount: 4,
     created_at: "2025-01-05T11:00:00Z",
     updated_at: "2025-01-06T11:00:00Z",
@@ -106,10 +119,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [1, 2, 3],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-005",
     title: "React – základy",
+    description: "Základy práce s React komponentami.",
     attemptsCount: 6,
     created_at: "2025-01-06T12:00:00Z",
     updated_at: "2025-01-08T12:00:00Z",
@@ -130,10 +147,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 1, 2],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-006",
     title: "Backend",
+    description: "Základní pojmy backendového vývoje.",
     attemptsCount: 1,
     created_at: "2025-01-07T10:00:00Z",
     updated_at: "2025-01-07T10:00:00Z",
@@ -147,10 +168,14 @@ export const quizzes: Quiz[] = [
         correctIndex: 1,
       },
     ],
+    questionCount: 1,
+    maxPoints: 1,
   },
+
   {
     uuid: "quiz-007",
     title: "Databáze",
+    description: "Relační databáze a SQL.",
     attemptsCount: 8,
     created_at: "2025-01-08T09:30:00Z",
     updated_at: "2025-01-09T09:30:00Z",
@@ -171,10 +196,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 2, 3],
       },
     ],
+    questionCount: 2,
+    maxPoints: 2,
   },
+
   {
     uuid: "quiz-008",
     title: "Git",
+    description: "Základy verzování kódu pomocí Git.",
     attemptsCount: 10,
     created_at: "2025-01-09T14:00:00Z",
     updated_at: "2025-01-10T14:00:00Z",
@@ -188,10 +217,14 @@ export const quizzes: Quiz[] = [
         correctIndex: 1,
       },
     ],
+    questionCount: 1,
+    maxPoints: 1,
   },
+
   {
     uuid: "quiz-009",
     title: "Bezpečnost webu",
+    description: "Základní typy webových útoků.",
     attemptsCount: 0,
     created_at: "2025-01-10T08:00:00Z",
     updated_at: "2025-01-10T08:00:00Z",
@@ -205,10 +238,14 @@ export const quizzes: Quiz[] = [
         correctIndices: [0, 1, 2, 3],
       },
     ],
+    questionCount: 1,
+    maxPoints: 1,
   },
+
   {
     uuid: "quiz-010",
     title: "Algoritmy",
+    description: "Základní pojem algoritmu.",
     attemptsCount: 12,
     created_at: "2025-01-11T10:00:00Z",
     updated_at: "2025-01-12T10:00:00Z",
@@ -227,5 +264,7 @@ export const quizzes: Quiz[] = [
         correctIndex: 1,
       },
     ],
+    questionCount: 1,
+    maxPoints: 1,
   },
 ];
