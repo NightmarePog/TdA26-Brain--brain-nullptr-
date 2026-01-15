@@ -853,7 +853,7 @@ courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate
 			SELECT * FROM feed WHERE uuid = ?
 		`,[feedUuid]);
 
-		res.status(201).json(feed[0]);
+		res.status(201).json(await formatFeedJSON(feed[0]));
 	} catch (error) {
 		console.error("Error creating feed:", error);
 		res.status(500).json({ error: "Failed to create feed" });
