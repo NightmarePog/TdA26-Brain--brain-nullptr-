@@ -194,7 +194,7 @@ export const userApi = {
     if (appConfig.frontendDebug) {
       return {
         message: "Login successful",
-      } as userLoginRecieve;
+      } as userLoginReceive;
     }
 
     const res = await api.post(`/users/login`, data);
