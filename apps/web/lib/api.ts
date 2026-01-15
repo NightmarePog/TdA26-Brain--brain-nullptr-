@@ -24,7 +24,7 @@ import {
   FeedUpdateRequest,
   StreamResponse,
 } from "@/types/api/feed";
-import { userLoginRecieve, userLoginSend } from "@/types/api/user";
+import { userLoginReceive, userLoginSend } from "@/types/api/user";
 import axios from "axios";
 import { appConfig } from "@/const/config";
 
