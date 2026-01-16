@@ -52,6 +52,7 @@ export const CoursesApi = {
     return res.data as Course[];
   },
   post: async (data: CourseCreateRequest) => {
+    if (appConfig.frontendDebug) return courses[0];
     const res = await api.post(`/courses`, data);
     return res.data as Course;
   },

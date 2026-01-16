@@ -27,6 +27,13 @@ const QuizPage = () => {
     return data?.questions.find((question) => question.uuid === questionUuid);
   }, [data?.questions, questionUuid]);
 
+  const questionIndex = useMemo(() => {
+    const index = data?.questions.findIndex(
+      (question) => question.uuid === questionUuid,
+    );
+    return index !== undefined && index >= 0 ? index : 0;
+  }, [data?.questions, questionUuid]);
+
   if (isLoading) return <p>loading...</p>;
   if (isError) return <p>{error.message}</p>;
 
@@ -50,7 +57,7 @@ const QuizPage = () => {
   return (
     <DashboardQuestionLayout
       onSubmit={(question) => editQuestion(question)}
-      questionNumber={1}
+      questionNumber={questionIndex}
       questionData={questionData}
       questionUuid={questionData!.uuid}
     />
