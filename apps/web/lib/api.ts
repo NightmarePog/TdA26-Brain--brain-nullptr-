@@ -120,7 +120,7 @@ export const CoursesApi = {
     },
     get: async (uuid: string, quizUuid: string) => {
       if (appConfig.frontendDebug) return quizzes[0];
-      const res = await api.post(`/courses/${uuid}/quizzes/${quizUuid}`);
+      const res = await api.get(`/courses/${uuid}/quizzes/${quizUuid}`);
       return res.data as Quiz;
     },
     put: async (uuid: string, quizUuid: string, data: QuizUpdateRequest) => {
