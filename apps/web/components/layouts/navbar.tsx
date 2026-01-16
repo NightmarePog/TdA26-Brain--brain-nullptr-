@@ -13,6 +13,11 @@ export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
+  // Přečteme cookie přímo během renderu
+  const hasToken =
+    typeof document !== "undefined" &&
+    document.cookie.split(";").some((c) => c.trim().startsWith("auth_token="));
+
   return (
     <nav className="flex h-16 md:h-20 items-center justify-between bg-primary text-white px-4 md:px-8 z-50">
       {/* Left: logo */}
@@ -32,13 +37,23 @@ export default function Navbar() {
 
       {/* Right: actions */}
       <div className="flex items-center gap-2 md:gap-4">
-        <NavbarButton
-          className="flex items-center gap-2"
-          onClick={() => router.push("/login")}
-        >
-          <User className="w-6 h-6" />
-          {!isMobile && <span className="text-lg">Přihlásit</span>}
-        </NavbarButton>
+        {!hasToken ? (
+          <NavbarButton
+            className="flex items-center gap-2"
+            onClick={() => router.push("/login")}
+          >
+            <User className="w-6 h-6" />
+            {!isMobile && <span className="text-lg">Přihlásit</span>}
+          </NavbarButton>
+        ) : (
+          <NavbarButton
+            className="flex items-center gap-2"
+            onClick={() => router.push("/dashboard")}
+          >
+            <User className="w-6 h-6" />
+            {!isMobile && <span className="text-lg">Dashboard</span>}
+          </NavbarButton>
+        )}
 
         <SettingsPopover />
       </div>

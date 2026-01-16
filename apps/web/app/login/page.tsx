@@ -21,7 +21,6 @@ import { Eye, EyeClosed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { userApi } from "@/lib/api";
 import { userLoginSend } from "@/types/api/user";
-import { Password } from "phosphor-react";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -52,10 +51,15 @@ const Login = () => {
         router.push("/dashboard");
         return "úspěšně přihlášen!";
       },
-      error: (error) => `Chyba! ${error.message}`,
+      error: (error) => {
+        if (error.message === "Already logged in") {
+          router.push("/dashboard");
+          return "Již přihlášen, přesměrovávám...";
+        }
+        return `Chyba! ${error.message}`;
+      },
     });
   };
-
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-64px)] bg-muted/20 px-4">
       <form
