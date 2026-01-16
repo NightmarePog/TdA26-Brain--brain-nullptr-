@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 type UseCourseAddressReturnType = {
   courseUuid: string;
-  addressingTo: "materials" | "quizzes" | "feed" | "none";
+  addressingTo: "materials" | "quizzes" | "feed" | "none" | "user-results";
   addressingToUuid?: string; // změnil jsem na string, protože z URL to je string
 };
 
@@ -18,10 +18,13 @@ const useCourseAddress = (): UseCourseAddressReturnType => {
 
   const addressingToSegment = segments[2];
 
-  const addressingTo = ["materials", "quizzes", "feed"].includes(
-    addressingToSegment,
-  )
-    ? (addressingToSegment as "materials" | "quizzes" | "feed")
+  const addressingTo = [
+    "materials",
+    "quizzes",
+    "feed",
+    "user-results",
+  ].includes(addressingToSegment)
+    ? (addressingToSegment as "materials" | "quizzes" | "feed" | "user-results")
     : "none";
 
   const addressingToUuid = segments[3];

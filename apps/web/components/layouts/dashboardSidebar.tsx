@@ -13,6 +13,7 @@ const menuItems: MenuItem[] = [
   { name: "Podklady", href: "materials" },
   { name: "Kvízy", href: "quizzes" },
   { name: "Feed", href: "feed" },
+  { name: "odpovědi uživatelů", href: "user-results" },
 ];
 
 const DashboardSidebar = () => {
