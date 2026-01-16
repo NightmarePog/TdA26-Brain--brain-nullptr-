@@ -1,6 +1,7 @@
 export type Quiz = {
   uuid: string;
   title: string;
+  description?: string;
   attemptsCount: number;
   created_at: string;
   updated_at: string;
