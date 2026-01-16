@@ -9,8 +9,6 @@ import {
   QuizSubmitRequest,
   SingleChoiceQuestionAnswer,
   MultipleChoiceQuestionAnswer,
-  MultipleChoiceQuestion,
-  SingleChoiceQuestion,
 } from "@/types/api/quizzes";
 import PageTitle from "../ui/typography/pageTitle";
 import { MessageError } from "../ui/errorComponents";
