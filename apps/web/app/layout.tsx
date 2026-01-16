@@ -7,6 +7,10 @@ const dosis = Dosis({
   variable: "--font-dosis",
 });
 
+export const metadata = {
+  title: "ThinkAcademy",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -14,6 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/icon.png" type="image/png" sizes="32x32" />
+      </head>
       <body className={dosis.className}>
         <Providers>{children}</Providers>
       </body>

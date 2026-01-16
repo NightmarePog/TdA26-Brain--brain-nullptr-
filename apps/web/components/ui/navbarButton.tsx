@@ -15,7 +15,7 @@ const NavbarButton = ({ children, className, onClick }: Props) => {
       type="button"
       variant={"ghost"}
       className={
-        "cursor-pointer p-4 m-1 hover:bg-black  transition-colors duration-200 gap-4 font-bold " +
+        "cursor-pointer p-4 m-1   transition-colors duration-200 gap-4 font-bold " +
         className +
         (!isMobile ? " px-4" : "px-2")
       }
