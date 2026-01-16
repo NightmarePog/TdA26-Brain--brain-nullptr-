@@ -1,5 +1,6 @@
 "use client";
 import AppCard, { AppCardType } from "@/components/cards/appCard";
+import { Button } from "@/components/ui/button";
 import NotFound from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
 import { CoursesApi } from "@/lib/api";
@@ -40,24 +41,25 @@ const DashboardPage = () => {
         />
       </div>
       <div>
-        {data ? (
-          <div className="flex justify-center">
-            <div className="sm:flex gap-2 my-2 w-full overflow-hidden">
-              {/*remapping because the input is diffrent than output */}
+        {filtered.length > 0 ? (
+          <div className="flex flex-wrap justify-center gap-2 my-2 w-full overflow-hidden">
+            {/*remapping because the input is diffrent than output */}
+            {filtered.map((item) => (
               <AppCard
-                buttonLabel="změnit"
-                appCards={filtered.map((item) => {
-                  const remap: AppCardType = {
-                    title: item.name,
-                    description: item.description,
-                    key: item.uuid,
-                    previewImg: "/tda.png",
-                    onClick: () => routeToCourse(item.uuid),
-                  };
-                  return remap;
-                })}
-              />
-            </div>
+                key={item.uuid}
+                buttonLabel="Začít"
+                appCard={{
+                  title: item.name,
+                  description: item.description,
+                  key: item.uuid,
+                  previewImg: "/tda.png",
+                }}
+              >
+                <Button onClick={() => routeToCourse(item.uuid)}>
+                  upravit
+                </Button>
+              </AppCard>
+            ))}
           </div>
         ) : (
           <NotFound />

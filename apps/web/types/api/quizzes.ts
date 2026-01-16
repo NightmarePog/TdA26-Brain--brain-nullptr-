@@ -7,9 +7,6 @@ export type Quiz = {
   updateCount: number;
   answers?: Answer[];
   questions: Question[];
-  questionCount: number;
-  maxPoints: number;
-  description: string;
 };
 
 export type Answer = {
@@ -43,6 +40,9 @@ export type SingleChoiceQuestionAnswer = {
   uuid: string;
   selectedIndex: number;
 };
+export type QuizSubmitRequest = {
+  answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
+};
 
 export type MultipleChoiceQuestionAnswer = {
   uuid: string;
@@ -50,14 +50,14 @@ export type MultipleChoiceQuestionAnswer = {
 };
 
 export type SingleChoiceQuestionCreateRequest = {
-  type: "singleChoice";
+  type: "singleChoice" | "multipleChoice";
   question: string;
   options: string[];
   correctIndex: number;
 };
 
 export type MultipleChoiceQuestionCreateRequest = {
-  type: "multipleChoice";
+  type: "singleChoice" | "multipleChoice";
   question: string;
   options: string[];
   correctIndices: number[];
@@ -65,20 +65,18 @@ export type MultipleChoiceQuestionCreateRequest = {
 
 export type QuizCreateRequest = {
   title: string;
-  description: string;
-  questions:
-    | SingleChoiceQuestionCreateRequest[]
-    | MultipleChoiceQuestionCreateRequest[];
+  questions: (
+    | SingleChoiceQuestionCreateRequest
+    | MultipleChoiceQuestionCreateRequest
+  )[];
 };
 
 export type QuizUpdateRequest = {
   title?: string;
-  description?: string;
-  questions?: (SingleChoiceQuestionCreateRequest | MultipleChoiceQuestionCreateRequest)[];
-};
-
-export type QuizSubmitRequest = {
-  answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
+  questions?: (
+    | SingleChoiceQuestionCreateRequest
+    | MultipleChoiceQuestionCreateRequest
+  )[];
 };
 
 export type QuizSubmitResponse = {

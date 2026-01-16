@@ -18,6 +18,7 @@ const FeedPage = () => {
   if (isError || !data) {
     return <MessageError message={error?.message || "neznámá chyba"} />;
   }
+
   return (
     <div className="w-full">
       <PageTitle>Feed</PageTitle>

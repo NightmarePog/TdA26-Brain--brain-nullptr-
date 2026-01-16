@@ -2,12 +2,24 @@ import { Material } from "@/types/api/materials";
 import AppCard, { AppCardType } from "./appCard";
 import { useMemo } from "react";
 import { Button } from "../ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 interface MaterialCardProps {
   materials: Material[];
+  onDelete: () => void;
 }
 
-const MaterialCard = ({ materials }: MaterialCardProps) => {
+const DashboardMaterialCard = ({ materials, onDelete }: MaterialCardProps) => {
   const formattedData = useMemo(() => {
     return materials.map((material) => {
       let card: AppCardType;
@@ -17,14 +29,14 @@ const MaterialCard = ({ materials }: MaterialCardProps) => {
           title: material.name,
           key: material.uuid,
           previewImg: `https://www.google.com/s2/favicons?sz=128&domain=${material.url}`,
-          buttonLabel: "otevřít", // hlavní akce
+          buttonLabel: "otevřít", // hlavní akce k materiálu
         };
       } else if (material.type === "file") {
         card = {
           title: material.name,
           key: material.uuid,
           previewImg: "/tda.png",
-          buttonLabel: "stáhnout", // hlavní akce
+          buttonLabel: "stáhnout", // hlavní akce k materiálu
         };
       } else {
         throw new Error(`invalid material type: ${material}`);
@@ -50,6 +62,31 @@ const MaterialCard = ({ materials }: MaterialCardProps) => {
     <>
       {formattedData.map(({ material, card }) => (
         <AppCard appCard={card} key={card.title}>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Smazat</Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Jste si jistý, že chcete pokračovat?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Změny jsou permanentní a jakýkoliv smazaný obsah již nelze
+                  vrátit.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete}>
+                  Pokračovat
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           {material.type === "url" && (
             <Button onClick={() => handleOpenUrl(material.url)}>Otevřít</Button>
           )}
@@ -64,4 +101,4 @@ const MaterialCard = ({ materials }: MaterialCardProps) => {
   );
 };
 
-export default MaterialCard;
+export default DashboardMaterialCard;

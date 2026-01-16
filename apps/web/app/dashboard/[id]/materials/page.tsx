@@ -1,16 +1,16 @@
 "use client";
-import AppCard, { AppCardType } from "@/components/cards/appCard";
-import MaterialCard from "@/components/cards/materialCard";
+import DashboardMaterialCard from "@/components/cards/dashboardMaterialCard";
 import { MessageError } from "@/components/ui/errorComponents";
 import PageTitle from "@/components/ui/typography/pageTitle";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const MaterialsPage = () => {
   const { courseUuid, addressingToUuid } = useCourseAddress();
-  const { isLoading, isError, error, data } = useQuery({
+  const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ["feed", addressingToUuid],
     queryFn: () => CoursesApi.materials.getAll(courseUuid),
   });
@@ -37,11 +37,25 @@ const MaterialsPage = () => {
   Aktualizováno: ${formatDate(updated)}`;
   };
 
+  const deleteMaterial = (feedUuid: string) => {
+    try {
+      toast.promise(CoursesApi.feed.delete(courseUuid, feedUuid), {
+        loading: "Mažu…",
+        success: () => "Smazáno!",
+        error: (err) => `Chyba: ${err.message}`,
+      });
+      refetch();
+    } catch {}
+  };
+
   return (
     <div>
       <PageTitle>Materiály</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
-        <MaterialCard materials={data} />
+        <DashboardMaterialCard
+          materials={data}
+          onDelete={() => deleteMaterial(addressingToUuid!)}
+        />
       </div>
     </div>
   );

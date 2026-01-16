@@ -9,6 +9,8 @@ import {
   QuizSubmitRequest,
   SingleChoiceQuestionAnswer,
   MultipleChoiceQuestionAnswer,
+  MultipleChoiceQuestion,
+  SingleChoiceQuestion,
 } from "@/types/api/quizzes";
 import PageTitle from "../ui/typography/pageTitle";
 import { MessageError } from "../ui/errorComponents";
@@ -35,17 +37,19 @@ const QuizLayout = ({
   // Initialize answers only once
   useEffect(() => {
     if (quiz && answerRef.current.answers.length === 0) {
-      answerRef.current.answers = quiz.questions.map((q) =>
-        q.type === "singleChoice"
-          ? ({
-              uuid: q.uuid,
-              selectedIndex: -1,
-            } as SingleChoiceQuestionAnswer)
-          : ({
-              uuid: q.uuid,
-              selectedIndices: [],
-            } as MultipleChoiceQuestionAnswer),
-      );
+      answerRef.current.answers = quiz.questions.map((q) => {
+        if (q.type === "singleChoice") {
+          return {
+            uuid: q.uuid,
+            selectedIndex: -1,
+          } as SingleChoiceQuestionAnswer; // Správný typ odpovědi
+        } else {
+          return {
+            uuid: q.uuid,
+            selectedIndices: [],
+          } as MultipleChoiceQuestionAnswer; // Správný typ odpovědi
+        }
+      });
     }
   }, [quiz]);
 
