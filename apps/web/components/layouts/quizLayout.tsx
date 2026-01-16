@@ -15,6 +15,7 @@ import {
 import PageTitle from "../ui/typography/pageTitle";
 import { MessageError } from "../ui/errorComponents";
 import useCourseAddress from "@/hooks/useCourseAddress";
+import { Checkbox } from "../ui/checkbox";
 
 interface QuizLayoutProps {
   quiz: Quiz | undefined;
@@ -30,7 +31,10 @@ const QuizLayout = ({
   submit,
 }: QuizLayoutProps) => {
   const { courseUuid } = useCourseAddress();
-  const [selected, setSelected] = useState<string | undefined>(undefined);
+  const [selectedSingle, setSelectedSingle] = useState<string | undefined>(
+    undefined,
+  );
+  const [selectedMulti, setSelectedMulti] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const answerRef = useRef<QuizSubmitRequest>({ answers: [] });
 
@@ -42,12 +46,12 @@ const QuizLayout = ({
           return {
             uuid: q.uuid,
             selectedIndex: -1,
-          } as SingleChoiceQuestionAnswer; // Správný typ odpovědi
+          } as SingleChoiceQuestionAnswer;
         } else {
           return {
             uuid: q.uuid,
             selectedIndices: [],
-          } as MultipleChoiceQuestionAnswer; // Správný typ odpovědi
+          } as MultipleChoiceQuestionAnswer;
         }
       });
     }
@@ -56,21 +60,18 @@ const QuizLayout = ({
   // Sync selection with stored answer when question changes
   useEffect(() => {
     if (!quiz) return;
-
     const answer = answerRef.current.answers[questionNumber];
     if (!answer) return;
 
-    const timeout = setTimeout(() => {
-      if ("selectedIndex" in answer) {
-        setSelected(
-          answer.selectedIndex >= 0 ? String(answer.selectedIndex) : undefined,
-        );
-      } else {
-        setSelected(undefined);
-      }
-    }, 0);
-
-    return () => clearTimeout(timeout);
+    if ("selectedIndex" in answer) {
+      setSelectedSingle(
+        answer.selectedIndex >= 0 ? String(answer.selectedIndex) : undefined,
+      );
+      setSelectedMulti([]);
+    } else if ("selectedIndices" in answer) {
+      setSelectedSingle(undefined);
+      setSelectedMulti(answer.selectedIndices ?? []);
+    }
   }, [questionNumber, quiz]);
 
   if (!quiz) return <MessageError message="Quiz does not exist" />;
@@ -79,19 +80,24 @@ const QuizLayout = ({
     const answer = answerRef.current.answers[questionNumber];
     if (!answer) return;
 
-    if (!selected) {
+    // Validate selection
+    if (
+      ("selectedIndex" in answer && selectedSingle === undefined) ||
+      ("selectedIndices" in answer && selectedMulti.length === 0)
+    ) {
       setError("není vybrána žádná odpověď");
       return;
-    } else {
-      setError(null);
+    }
+    setError(null);
+
+    // Save selection
+    if ("selectedIndex" in answer && selectedSingle !== undefined) {
+      answer.selectedIndex = Number(selectedSingle);
+    } else if ("selectedIndices" in answer) {
+      answer.selectedIndices = selectedMulti;
     }
 
-    answer.uuid = courseUuid;
-
-    if ("selectedIndex" in answer && selected !== undefined) {
-      answer.selectedIndex = Number(selected);
-    }
-
+    // Move to next question or finish
     if (questionNumber + 1 === quiz.questions.length) {
       submit(answerRef.current);
       setQuestionNumber("finished");
@@ -114,22 +120,45 @@ const QuizLayout = ({
         </div>
         <p className="text-sm mb-6">{question.question}</p>
 
-        <RadioGroup
-          value={selected}
-          onValueChange={setSelected}
-          defaultValue=""
-          className="flex flex-col space-y-3"
-        >
-          {question.options.map((opt, idx) => (
-            <label
-              key={idx}
-              className="flex items-center space-x-2 cursor-pointer"
-            >
-              <RadioGroupItem value={String(opt)} />
-              <span className="text-sm">{opt}</span>
-            </label>
-          ))}
-        </RadioGroup>
+        {question.type === "singleChoice" ? (
+          <RadioGroup
+            value={selectedSingle}
+            onValueChange={setSelectedSingle}
+            defaultValue=""
+            className="flex flex-col space-y-3"
+          >
+            {question.options.map((opt, idx) => (
+              <label
+                key={idx}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <RadioGroupItem value={String(idx)} />
+                <span className="text-sm">{opt}</span>
+              </label>
+            ))}
+          </RadioGroup>
+        ) : (
+          <div className="flex flex-col space-y-3">
+            {question.options.map((opt, idx) => (
+              <label
+                key={idx}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedMulti.includes(idx)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedMulti([...selectedMulti, idx]);
+                    } else {
+                      setSelectedMulti(selectedMulti.filter((i) => i !== idx));
+                    }
+                  }}
+                />
+                <span className="text-sm">{opt}</span>
+              </label>
+            ))}
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col space-y-4">
           <div className="flex justify-between items-center text-sm text-gray-600">
@@ -138,19 +167,19 @@ const QuizLayout = ({
             </span>
           </div>
           <Progress
-            value={(questionNumber / quiz.questions.length) * 100}
+            value={((questionNumber + 1) / quiz.questions.length) * 100}
             className="h-2 rounded-full"
           />
 
           <div className="flex justify-end mt-4">
-            {questionNumber + 1 !== quiz.questions.length ? (
-              <Button onClick={nextQuestion}>Next →</Button>
-            ) : (
-              <Button onClick={nextQuestion}>Finish →</Button>
-            )}
+            <Button onClick={nextQuestion}>
+              {questionNumber + 1 !== quiz.questions.length
+                ? "Next →"
+                : "Finish →"}
+            </Button>
           </div>
         </div>
-        <p className="text-red-500">{error}</p>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
     </div>
   );
