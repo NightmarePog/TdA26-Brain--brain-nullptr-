@@ -40,6 +40,9 @@ export type SingleChoiceQuestionAnswer = {
   uuid: string;
   selectedIndex: number;
 };
+export type QuizSubmitRequest = {
+  answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
+};
 
 export type MultipleChoiceQuestionAnswer = {
   uuid: string;
@@ -74,10 +77,6 @@ export type QuizUpdateRequest = {
     | SingleChoiceQuestionCreateRequest
     | MultipleChoiceQuestionCreateRequest
   )[];
-};
-
-export type QuizSubmitRequest = {
-  answers: (SingleChoiceQuestionAnswer | MultipleChoiceQuestionAnswer)[];
 };
 
 export type QuizSubmitResponse = {

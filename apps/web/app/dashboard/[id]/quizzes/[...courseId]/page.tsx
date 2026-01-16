@@ -4,11 +4,14 @@ import DashboardQuestionLayout from "@/components/layouts/dashboardQuestion";
 import DashboardQuizLayout from "@/components/layouts/dashboardQuizLayout";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
+import { buildCourseDelete, buildCourseUpdate } from "@/lib/buildCourseUpdate";
+
 import { Question } from "@/types/api/quizzes";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
 const QuizPage = () => {
   const { courseUuid, addressingToUuid } = useCourseAddress();
@@ -16,7 +19,7 @@ const QuizPage = () => {
   const questionUuid = searchParams.get("question");
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ["quizzes", addressingToUuid],
+    queryKey: ["dashboardQuizzes", addressingToUuid],
     queryFn: () => CoursesApi.quizzes.get(courseUuid, addressingToUuid!),
   });
 
@@ -28,11 +31,28 @@ const QuizPage = () => {
   if (isError) return <p>{error.message}</p>;
 
   if (!questionUuid) return <DashboardQuizLayout data={data!} />;
+
+  const editQuestion = (question: Question) => {
+    if (!data) return;
+
+    const editData = buildCourseUpdate(data, question);
+
+    toast.promise(
+      CoursesApi.quizzes.put(courseUuid, addressingToUuid!, editData),
+      {
+        loading: "Ukládám otázku…",
+        success: "Otázka byla úspěšně upravena",
+        error: (err) =>
+          err?.response?.data?.message ?? "Nepodařilo se uložit změny",
+      },
+    );
+  };
   return (
     <DashboardQuestionLayout
-      onSubmit={() => null}
+      onSubmit={(question) => editQuestion(question)}
       questionNumber={1}
       questionData={questionData}
+      questionUuid={questionData!.uuid}
     />
   );
 };

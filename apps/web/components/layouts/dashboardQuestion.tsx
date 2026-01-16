@@ -14,19 +14,24 @@ import {
   MultipleChoiceQuestionCreateRequest,
   SingleChoiceQuestionCreateRequest,
   Question,
+  MultipleChoiceQuestion,
+  SingleChoiceQuestionAnswer,
+  SingleChoiceQuestion,
 } from "@/types/api/quizzes";
 import { useQuery } from "@tanstack/react-query";
 import { MessageError } from "../ui/errorComponents";
 
 interface DashboardQuizLayoutProps {
-  onSubmit: (update: QuizUpdateRequest) => void;
+  onSubmit: (update: Question) => void;
   questionNumber: number;
+  questionUuid: string;
   questionData: Question | undefined;
 }
 
 const DashboardQuestionEditLayout = ({
   onSubmit,
   questionNumber,
+  questionUuid,
   questionData,
 }: DashboardQuizLayoutProps) => {
   const [multipleOptions, setMultipleOptions] = useState(
@@ -59,21 +64,22 @@ const DashboardQuestionEditLayout = ({
   const submit = () => {
     if (!name.trim()) return;
 
-    const question = multipleOptions
+    const data = multipleOptions
       ? ({
+          uuid: questionUuid,
           type: "multipleChoice",
           question: name,
           options,
           correctIndices,
-        } satisfies MultipleChoiceQuestionCreateRequest)
+        } satisfies MultipleChoiceQuestion)
       : ({
+          uuid: questionUuid,
           type: "singleChoice",
           question: name,
           options,
           correctIndex: correctIndex ?? 0,
-        } satisfies SingleChoiceQuestionCreateRequest);
-
-    onSubmit({ questions: [question] });
+        } satisfies SingleChoiceQuestion);
+    onSubmit(data);
   };
 
   if (questionData === undefined)
