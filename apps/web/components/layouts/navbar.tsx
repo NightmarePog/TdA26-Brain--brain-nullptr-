@@ -8,16 +8,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Logo from "@/public/Logos/SVG/Think-different-Academy_LOGO_bily.svg";
 import NavbarButton from "../ui/navbarButton";
 import SettingsPopover from "./settingsPopover";
+import { useEffect, useState } from "react";
+import { userApi } from "@/lib/api";
 
 export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const [hasToken, setHasToken] = useState(userApi.check());
 
-  // Přečteme cookie přímo během renderu
-  const hasToken =
-    typeof document !== "undefined" &&
-    document.cookie.split(";").some((c) => c.trim().startsWith("auth_token="));
-
+  console.log(hasToken);
   return (
     <nav className="flex h-16 md:h-20 items-center justify-between bg-primary text-white px-4 md:px-8 z-50">
       {/* Left: logo */}

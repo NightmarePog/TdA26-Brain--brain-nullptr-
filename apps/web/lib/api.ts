@@ -200,4 +200,13 @@ export const userApi = {
     const res = await api.post(`/users/login`, data);
     return res.data as userLoginReceive;
   },
+
+  check: async () => {
+    if (appConfig.frontendDebug) {
+      return true;
+    }
+
+    const res = await api.post(`/users/login/auth`);
+    return res.data;
+  },
 };
