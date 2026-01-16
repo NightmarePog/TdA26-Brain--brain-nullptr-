@@ -179,7 +179,7 @@ export const CoursesApi = {
       return res.data as FeedItem;
     },
     delete: async (uuid: string, feedUuid: string) => {
-      const res = await api.put(`/courses/${uuid}/feed/${feedUuid}`);
+      const res = await api.delete(`/courses/${uuid}/feed/${feedUuid}`);
       return res.data as string;
     },
     getStream: async (uuid: string) => {
