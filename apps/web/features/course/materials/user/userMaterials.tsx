@@ -5,11 +5,10 @@ import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";
 import useSafeQuery from "@/features/query/useSafeQuery";
-import React from "react";
 
 const UserMaterials = () => {
   const { courseUuid } = useCourseAddress();
-  const data = useSafeQuery<Material[]>({
+  const { data, StatusElement, queryStatus } = useSafeQuery<Material[]>({
     queryFn: () => CoursesApi.materials.getAll(courseUuid),
     queryKey: ["materials"],
     enabled: true,
@@ -19,8 +18,8 @@ const UserMaterials = () => {
     <div>
       <PageTitle>Materiály</PageTitle>
       <div className="flex flex-wrap justify-center m-10">
-        {React.isValidElement(data) ? (
-          data
+        {queryStatus !== "finished" ? (
+          StatusElement
         ) : (
           <MaterialCard materials={data as Material[]} />
         )}

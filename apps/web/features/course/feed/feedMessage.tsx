@@ -8,9 +8,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
+} from "../../../components/ui/alert-dialog";
+import { Button } from "../../../components/ui/button";
+import { Separator } from "../../../components/ui/separator";
 
 interface FeedProps {
   author: string;
@@ -19,7 +19,7 @@ interface FeedProps {
   onDelete?: () => void;
 }
 
-const Feed = ({ author, message, editable, onDelete }: FeedProps) => {
+const FeedMessage = ({ author, message, editable, onDelete }: FeedProps) => {
   return (
     <div className="w-full  rounded-lg shadow-2xl p-6">
       <h2 className="text-lg font-semibold">{author}</h2>
@@ -53,4 +53,4 @@ const Feed = ({ author, message, editable, onDelete }: FeedProps) => {
   );
 };
 
-export default Feed;
+export default FeedMessage;
