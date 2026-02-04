@@ -1,6 +1,6 @@
 "use client";
 import MaterialCard from "@/features/course/materials/materialCard";
-import PageTitle from "@/components/ui/typography/pageTitle";
+import PageTitle from "@/components/typography/pageTitle";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";

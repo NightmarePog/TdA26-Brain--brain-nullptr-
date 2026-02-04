@@ -1,30 +1,51 @@
-import { Question, Quiz } from "@/types/api/quizzes";
-import QuestionLayout from "./questionLayout";
+import { Quiz } from "@/types/api/quizzes";
 import { useState } from "react";
-import insertQuestionAnswerData from "./insertQuestionAnswerData";
+import SubmitQuizLayout from "./submit/submit";
+import QuestionLayout from "./question/questionLayout";
+import QuestionBarLayout from "./questionBarLayout";
 
 const QuizLayout = ({ quiz }: { quiz: Quiz }) => {
   const [questionsUserAnswers, setQuestionsUserAnswers] = useState<string[][]>(
     [],
   );
   const [questionNumber, setQuestionNumber] = useState(0);
-  const selectedQuestion = quiz.questions[questionNumber];
+  const [onSubmit, setOnSubmit] = useState<boolean>(false);
+
+  const lastQuestionIndex = quiz.questions.length - 1;
+
+  const setValidPage = (newPage: number) => {
+    if (newPage < 0) return;
+    if (newPage > lastQuestionIndex) {
+      setOnSubmit(true);
+      return;
+    }
+    setQuestionNumber(newPage);
+  };
+
+  if (onSubmit)
+    return (
+      <div>
+        <QuestionBarLayout
+          questionNumber={questionNumber}
+          questionsUserAnswers={questionsUserAnswers}
+          setValidPage={setValidPage}
+        />
+        <SubmitQuizLayout />
+      </div>
+    );
   return (
-    <div className="">
-      <h3>{selectedQuestion.question}</h3>
+    <div>
+      <QuestionBarLayout
+        questionNumber={questionNumber}
+        questionsUserAnswers={questionsUserAnswers}
+        setValidPage={setValidPage}
+      />
       <QuestionLayout
-        key={selectedQuestion.uuid}
-        question={selectedQuestion}
-        selectedOptions={questionsUserAnswers[questionNumber]}
-        setSelectedOptions={(newAnswers) => {
-          setQuestionsUserAnswers(
-            insertQuestionAnswerData(
-              questionsUserAnswers,
-              questionNumber,
-              newAnswers,
-            ),
-          );
-        }}
+        questions={quiz.questions}
+        questionNumber={questionNumber}
+        questionsUserAnswers={questionsUserAnswers}
+        setQuestionsUserAnswers={setQuestionsUserAnswers}
+        setValidPage={setValidPage}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Text from "@/components/ui/typography/text";
+import Text from "@/components/typography/text";
 
 interface props {
   children?: ReactNode;
@@ -8,7 +8,7 @@ interface props {
 
 const SectionTitle = ({ children, className }: props) => {
   return (
-    <Text className={"text-2xl font-bold p-3" + className}>{children}</Text>
+    <Text className={"text-2xl font-bold p-3 " + className}>{children}</Text>
   );
 };
 

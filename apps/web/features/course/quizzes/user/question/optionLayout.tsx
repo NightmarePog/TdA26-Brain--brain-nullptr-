@@ -8,17 +8,17 @@ import MultiQuestionOptions from "./multiQuestionOptions";
 import { MessageError } from "@/components/ui/errorComponents";
 import SingleQuestionOptions from "./singleQuestionOptions";
 
-interface QuestionLayoutProps {
+interface OptionLayoutProps {
   question: Question;
   selectedOptions: string[];
   setSelectedOptions: (options: string[]) => void;
 }
 
-const QuestionLayout = ({
+const OptionsLayout = ({
   question,
   selectedOptions,
   setSelectedOptions,
-}: QuestionLayoutProps) => {
+}: OptionLayoutProps) => {
   const questionType = getQuestionType(question);
 
   switch (questionType) {
@@ -45,4 +45,4 @@ const QuestionLayout = ({
   }
 };
 
-export default QuestionLayout;
+export default OptionsLayout;

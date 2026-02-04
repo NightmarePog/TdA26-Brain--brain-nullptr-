@@ -1,7 +1,7 @@
 "use client";
 import AppCard, { AppCardType } from "@/components/cards/appCard";
 import { Button } from "@/components/ui/button";
-import PageTitle from "@/components/ui/typography/pageTitle";
+import PageTitle from "@/components/typography/pageTitle";
 
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
