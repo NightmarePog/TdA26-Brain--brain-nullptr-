@@ -1,7 +1,7 @@
 "use client";
 
 import PageTitle from "@/components/typography/pageTitle";
-import QuizQuery from "@/features/course/quizzes/user/quizQuery";
+import QuizQuery from "@/features/course/quizzes/user/quiz/question/quizQuery";
 const QuizPage = () => {
   return (
     <>

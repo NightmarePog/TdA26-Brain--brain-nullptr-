@@ -1,31 +1,31 @@
 import { Quiz } from "@/types/api/quizzes";
 import { useState } from "react";
 import SubmitQuizLayout from "./submit/submit";
-import QuestionLayout from "./question/questionLayout";
+import QuestionLayout from "./questionLayout";
 import QuestionBarLayout from "./questionBarLayout";
 
 const QuizLayout = ({ quiz }: { quiz: Quiz }) => {
   const [questionsUserAnswers, setQuestionsUserAnswers] = useState<string[][]>(
-    [],
+    Array.from({ length: quiz.questions.length }, () => ["unvisited"]),
   );
-  const [questionNumber, setQuestionNumber] = useState(0);
-  const [onSubmit, setOnSubmit] = useState<boolean>(false);
+  const [questionNumber, setQuestionNumber] = useState<number | string>(0);
 
   const lastQuestionIndex = quiz.questions.length - 1;
 
   const setValidPage = (newPage: number) => {
     if (newPage < 0) return;
     if (newPage > lastQuestionIndex) {
-      setOnSubmit(true);
+      setQuestionNumber("confirm");
       return;
     }
     setQuestionNumber(newPage);
   };
 
-  if (onSubmit)
+  if (questionNumber === "confirm")
     return (
       <div>
         <QuestionBarLayout
+          questionsCount={quiz.questions.length}
           questionNumber={questionNumber}
           questionsUserAnswers={questionsUserAnswers}
           setValidPage={setValidPage}
@@ -36,6 +36,7 @@ const QuizLayout = ({ quiz }: { quiz: Quiz }) => {
   return (
     <div>
       <QuestionBarLayout
+        questionsCount={quiz.questions.length}
         questionNumber={questionNumber}
         questionsUserAnswers={questionsUserAnswers}
         setValidPage={setValidPage}

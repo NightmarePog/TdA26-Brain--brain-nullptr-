@@ -1,10 +1,8 @@
 "use client";
 
-import { MessageError } from "@/components/ui/errorComponents";
-import PageTitle from "@/components/ui/typography/pageTitle";
+import PageTitle from "@/components/typography/pageTitle";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
 import FeedMessage from "./feedMessage";
 import useSafeQuery from "@/features/query/useSafeQuery";
 import { FeedItem } from "@/types/api/feed";

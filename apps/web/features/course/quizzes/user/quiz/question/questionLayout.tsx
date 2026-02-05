@@ -4,6 +4,8 @@ import { Question } from "@/types/api/quizzes";
 import { ArrowLeft, ArrowRight } from "phosphor-react";
 import OptionsLayout from "./optionLayout";
 import insertQuestionAnswerData from "./insertQuestionAnswerData";
+import ErrorLabel from "@/components/typography/errorText";
+import { useEffect, useState } from "react";
 
 interface QuestionLayoutProps {
   questions: Question[];
@@ -21,6 +23,17 @@ const QuestionLayout = ({
   setValidPage,
 }: QuestionLayoutProps) => {
   const selectedQuestion = questions[questionNumber];
+
+  useEffect(() => {
+    if (questionsUserAnswers[questionNumber][0] === "unvisited") {
+      setQuestionsUserAnswers(
+        insertQuestionAnswerData(questionsUserAnswers, questionNumber, [
+          "visited",
+        ]),
+      );
+    }
+  }, [questionsUserAnswers, setQuestionsUserAnswers, questionNumber]);
+
   return (
     <div>
       <SectionTitle>{selectedQuestion.question}</SectionTitle>
@@ -39,7 +52,6 @@ const QuestionLayout = ({
           );
         }}
       />
-
       <div className="p-5 flex gap-2">
         <Button
           onClick={() => setValidPage(questionNumber - 1)}

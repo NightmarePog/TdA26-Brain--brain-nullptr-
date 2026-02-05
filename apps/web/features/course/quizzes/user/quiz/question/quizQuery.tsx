@@ -1,4 +1,4 @@
-import QuizLayout from "@/features/course/quizzes/user/quizLayout";
+import QuizLayout from "@/features/course/quizzes/user/quiz/question/quizLayout";
 import useSafeQuery from "@/features/query/useSafeQuery";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
