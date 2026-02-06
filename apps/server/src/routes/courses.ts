@@ -16,7 +16,7 @@ enum Types {
 
 /** Messages that show up in course feeds */
 enum FeedMessages {
-	CREATE = "has been uploaded",
+	CREATE = "has been created",
 	EDIT = "has been edited",
 	DELETE = "has been deleted",
 };
@@ -689,18 +689,259 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 			UPDATE quizzes
 			SET title = ?, updateCount = ?, description = ?
 			WHERE uuid = ?
-		`,[title, quiz.updateCount+1, quizUuid, desc]);
+		`,[title, quiz.updateCount+1, desc, quizUuid]);
 
 		await updateCourseByUUID(uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
 
-		const [quizzes] = await pool.execute(`
-			SELECT * FROM quizzes WHERE uuid = ?
-		`,[quizUuid]);
-
-		res.status(201).json(await formatQuizJSON(quizzes[0]));
+		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 	} catch (error) {
 		console.error("Error updating quiz:", error);
 		res.status(500).json({ error: "Failed to update quiz" });
+	}
+});
+
+/** POST/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/questions */
+courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const quizUuid : string = req.params.quizUuid;
+		const body : JSON = req.body;
+		const quiz : JSON = req.quiz;
+
+		const question = body.question;
+		if (question == null) {
+			res.status(400).json({ message: "Missing question" });
+			return;
+		}
+
+		if (question.type == null) {
+			res.status(400).json({ message: "Missing question->type" });
+			return;
+		}
+		if (question.type != Types.SINGLE_CHOICE && question.type != Types.MULTIPLE_CHOICE) {
+			res.status(400).json({ message: `question->type must be '${Types.SINGLE_CHOICE}' or '${Types.MULTIPLE_CHOICE}'` });
+			return;
+		}
+		if (question.question == null) {
+			res.status(400).json({ message: "Missing question->question" });
+			return;
+		}
+		if (question.options == null) {
+			res.status(400).json({ message: "Missing question->options" });
+			return;
+		}
+		if (!Array.isArray(question.options)) {
+			res.status(400).json({ message: "question->options must be an array" });
+			return;
+		}
+		if (question.options.length == 0) {
+			res.status(400).json({ message: "question->options must not be empty" });
+			return;
+		}
+
+		const correctIndices : number[] = [];
+		if (question.type == Types.SINGLE_CHOICE) {
+			if (question.correctIndex == null) {
+				res.status(400).json({ message: "Missing question->correctIndex" });
+				return;
+			}
+
+			if (question.correctIndex > question.options.length-1 || question.correctIndex < 0) {
+				res.status(400).json({ message: `question->correctIndex must be within 0 and ${question.options.length-1}` });
+				return;
+			}
+			correctIndices.push(question.correctIndex);
+			delete question.correctIndex;
+		} else {
+			if (question.correctIndices == null) {
+				res.status(400).json({ message: "Missing question->correctIndices" });
+				return;
+			}
+			if (!Array.isArray(question.correctIndices)) {
+				res.status(400).json({ message: "question->correctIndices must be an array" });
+				return;
+			}
+			if (question.correctIndices.length == 0) {
+				res.status(400).json({ message: "question->correctIndices must not be empty" });
+				return;
+			}
+
+			for (const ci of question.correctIndices) {
+				if (ci > question.options.length-1 || ci < 0) {
+					res.status(400).json({ message: `question->correctIndices->number must be within 0 and ${q.options.length-1}` });
+					return;
+				}
+				correctIndices.push(ci);
+			}
+			delete question.correctIndices;
+		}
+		question.correctIndices = correctIndices;
+
+		const questionUuid = randomUUID();
+
+		await pool.execute(`
+			INSERT INTO questions (uuid, quizUuid, type, question)
+			VALUES (?, ?, ?, ?)
+		`,[questionUuid, quizUuid, question.type, question.question]);
+
+		let idx=0;
+		for (const o of question.options) {
+			await pool.execute(`
+				INSERT INTO options (uuid, questionUuid, idx, opt, correct)
+				VALUES (?, ?, ?, ?, ?)
+			`,[randomUUID(), questionUuid, idx, o, correctIndices.indexOf(idx) != -1]);
+			idx+=1;
+		}
+
+		await pool.execute(`
+			UPDATE quizzes
+			SET updateCount = ?
+			WHERE uuid = ?
+		`,[quiz.updateCount+1, quizUuid]);
+
+		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+
+		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
+
+	} catch (error) {
+		console.error("Error creating question:", error);
+		res.status(500).json({ error: "Failed to create question" });
+	}
+});
+
+courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, checkBody, checkCourse, checkQuiz, checkQuestion, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const quizUuid : string = req.params.quizUuid;
+		const questionUuid : string = req.params.questionUuid;
+		const body : JSON = req.body;
+		const quiz : JSON = req.quiz;
+
+		const question = body.question;
+		if (question != null) {
+			if (question.type == null) {
+				res.status(400).json({ message: "Missing question->type" });
+				return;
+			}
+			if (question.type != Types.SINGLE_CHOICE && question.type != Types.MULTIPLE_CHOICE) {
+				res.status(400).json({ message: `question->type must be '${Types.SINGLE_CHOICE}' or '${Types.MULTIPLE_CHOICE}'` });
+				return;
+			}
+			if (question.question == null) {
+				res.status(400).json({ message: "Missing question->question" });
+				return;
+			}
+			if (question.options == null) {
+				res.status(400).json({ message: "Missing question->options" });
+				return;
+			}
+			if (!Array.isArray(question.options)) {
+				res.status(400).json({ message: "question->options must be an array" });
+				return;
+			}
+			if (question.options.length == 0) {
+				res.status(400).json({ message: "question->options must not be empty" });
+				return;
+			}
+	
+			const correctIndices : number[] = [];
+			if (question.type == Types.SINGLE_CHOICE) {
+				if (question.correctIndex == null) {
+					res.status(400).json({ message: "Missing question->correctIndex" });
+					return;
+				}
+	
+				if (question.correctIndex > question.options.length-1 || question.correctIndex < 0) {
+					res.status(400).json({ message: `question->correctIndex must be within 0 and ${question.options.length-1}` });
+					return;
+				}
+				correctIndices.push(question.correctIndex);
+				delete question.correctIndex;
+			} else {
+				if (question.correctIndices == null) {
+					res.status(400).json({ message: "Missing question->correctIndices" });
+					return;
+				}
+				if (!Array.isArray(question.correctIndices)) {
+					res.status(400).json({ message: "question->correctIndices must be an array" });
+					return;
+				}
+				if (question.correctIndices.length == 0) {
+					res.status(400).json({ message: "question->correctIndices must not be empty" });
+					return;
+				}
+	
+				for (const ci of question.correctIndices) {
+					if (ci > question.options.length-1 || ci < 0) {
+						res.status(400).json({ message: `question->correctIndices->number must be within 0 and ${q.options.length-1}` });
+						return;
+					}
+					correctIndices.push(ci);
+				}
+				delete question.correctIndices;
+			}
+			question.correctIndices = correctIndices;
+
+			await pool.execute(`
+				UPDATE questions
+				SET type = ?, question = ?
+				WHERE uuid = ?
+			`,[question.type, question.question, questionUuid]);
+	
+			await pool.execute(`
+				DELETE FROM options WHERE questionUuid = ?
+			`,[questionUuid]);
+
+			let idx=0;
+			for (const o of question.options) {
+				await pool.execute(`
+					INSERT INTO options (uuid, questionUuid, idx, opt, correct)
+					VALUES (?, ?, ?, ?, ?)
+				`,[randomUUID(), questionUuid, idx, o, correctIndices.indexOf(idx) != -1]);
+				idx+=1;
+			}
+		}
+
+		await pool.execute(`
+			UPDATE quizzes
+			SET updateCount = ?
+			WHERE uuid = ?
+		`,[quiz.updateCount+1, quizUuid]);
+
+		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+
+		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
+
+	} catch (error) {
+		console.error("Error updating question:", error);
+		res.status(500).json({ error: "Failed to update question" });
+	}
+});
+
+courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCourse, checkQuiz, checkQuestion, authenticate, authenticateAdmin, async (req, res) => {
+	try {
+		const uuid : string = req.params.uuid;
+		const quizUuid : string = req.params.quizUuid;
+		const questionUuid: string = req.params.questionUuid;
+		const quiz : JSON = req.quiz;
+
+		await pool.execute(`
+			UPDATE quizzes
+			SET updateCount = ?
+			WHERE uuid = ?
+		`,[quiz.updateCount+1, quizUuid]);
+
+		await pool.execute(`
+			DELETE FROM questions WHERE uuid = ?
+		`,[questionUuid]);
+
+		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+
+		res.status(204).json(({ message: "Question deleted sucessfully" }));
+
+	} catch (error) {
+		console.error("Error deleting question:", error);
+		res.status(500).json({ error: "Failed to delete question" });
 	}
 });
 
@@ -1055,6 +1296,14 @@ async function findQuizByUUID(uuid : string) {
 	return quizzes.length == 1 ? (await formatQuizJSON(quizzes[0])) : null;
 };
 
+/** Finds specific question */
+async function findQuestionByUUID(uuid : string) {
+	const [questions] = await pool.execute(`
+			SELECT * FROM questions WHERE uuid = ?
+	`,[uuid]);
+	return questions.length == 1 ? (questions[0]) : null;
+};
+
 /** Finds specific feed */
 async function findFeedByUUID(uuid : string) {
 	const [feed] = await pool.execute(`
@@ -1201,6 +1450,23 @@ async function checkQuiz(req : any, res : any, next : any) {
 		res.status(500).json({ error: "Failed to check quiz" });
 	}
 }
+
+/** Checks for question in params */
+async function checkQuestion(req : any, res : any, next : any) {
+	try {
+		const question = await findQuestionByUUID(req.params.questionUuid);
+		if (!question) {
+			res.status(404).json({ message: "Question not found" });
+			return;
+		}
+		req.question = question;
+		next();
+	} catch (error) {
+		console.error("Error checking question:", error);
+		res.status(500).json({ error: "Failed to check question" });
+	}
+}
+
 
 /** Checks for feed in params */
 async function checkFeed(req : any, res : any, next : any) {
