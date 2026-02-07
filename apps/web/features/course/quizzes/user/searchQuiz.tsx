@@ -25,7 +25,6 @@ const SearchQuiz = () => {
   };
 
   if (queryStatus !== "finished" || !data) return StatusElement;
-  console.log("Data:", data);
   return (
     <div>
       <div className="flex flex-wrap justify-center m-10">

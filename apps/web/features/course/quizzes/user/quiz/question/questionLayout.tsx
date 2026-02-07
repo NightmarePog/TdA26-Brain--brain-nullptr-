@@ -3,15 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Question } from "@/types/api/quizzes";
 import { ArrowLeft, ArrowRight } from "phosphor-react";
 import OptionsLayout from "./optionLayout";
-import insertQuestionAnswerData from "./insertQuestionAnswerData";
-import ErrorLabel from "@/components/typography/errorText";
-import { useEffect, useState } from "react";
+
+import { useEffect } from "react";
+import insertQuestionAnswerData, {
+  setVisited,
+} from "./hooks/insertQuestionAnswerData";
+import { QuestionUserAnswerType } from "./quizLayout";
 
 interface QuestionLayoutProps {
   questions: Question[];
-  questionNumber: number;
-  questionsUserAnswers: string[][];
-  setQuestionsUserAnswers: (answer: string[][]) => void;
+  questionNumber: number | string;
+  questionsUserAnswers: QuestionUserAnswerType[];
+  setQuestionsUserAnswers: React.Dispatch<
+    React.SetStateAction<QuestionUserAnswerType[]>
+  >;
   setValidPage: (page: number) => void;
 }
 
@@ -22,17 +27,17 @@ const QuestionLayout = ({
   setQuestionsUserAnswers,
   setValidPage,
 }: QuestionLayoutProps) => {
-  const selectedQuestion = questions[questionNumber];
-
   useEffect(() => {
-    if (questionsUserAnswers[questionNumber][0] === "unvisited") {
-      setQuestionsUserAnswers(
-        insertQuestionAnswerData(questionsUserAnswers, questionNumber, [
-          "visited",
-        ]),
-      );
-    }
-  }, [questionsUserAnswers, setQuestionsUserAnswers, questionNumber]);
+    if (typeof questionNumber !== "number") return;
+    setQuestionsUserAnswers((prev) => {
+      if (prev[questionNumber].visited) return prev;
+
+      return setVisited(prev, questionNumber, prev[questionNumber].answers);
+    });
+  }, [questionNumber, setQuestionsUserAnswers]);
+
+  if (typeof questionNumber !== "number") return; //shouldn't happen
+  const selectedQuestion = questions[questionNumber];
 
   return (
     <div>
@@ -41,17 +46,14 @@ const QuestionLayout = ({
       <OptionsLayout
         key={selectedQuestion.uuid}
         question={selectedQuestion}
-        selectedOptions={questionsUserAnswers[questionNumber] ?? []}
+        selectedOptions={questionsUserAnswers[questionNumber].answers}
         setSelectedOptions={(newAnswers) => {
-          setQuestionsUserAnswers(
-            insertQuestionAnswerData(
-              questionsUserAnswers,
-              questionNumber,
-              newAnswers,
-            ),
+          setQuestionsUserAnswers((prev) =>
+            insertQuestionAnswerData(prev, questionNumber, newAnswers),
           );
         }}
       />
+
       <div className="p-5 flex gap-2">
         <Button
           onClick={() => setValidPage(questionNumber - 1)}
@@ -60,11 +62,12 @@ const QuestionLayout = ({
           <ArrowLeft />
         </Button>
 
-        {
-          <Button onClick={() => setValidPage(questionNumber + 1)}>
-            <ArrowRight />
-          </Button>
-        }
+        <Button
+          onClick={() => setValidPage(questionNumber + 1)}
+          disabled={questionNumber === questions.length - 1}
+        >
+          <ArrowRight />
+        </Button>
       </div>
     </div>
   );

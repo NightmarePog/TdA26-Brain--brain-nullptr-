@@ -4,10 +4,23 @@ import SubmitQuizLayout from "./submit/submit";
 import QuestionLayout from "./questionLayout";
 import QuestionBarLayout from "./questionBarLayout";
 
+export type QuestionUserAnswerType = {
+  visited: boolean;
+  answers: string[];
+  answered: boolean;
+};
+
 const QuizLayout = ({ quiz }: { quiz: Quiz }) => {
-  const [questionsUserAnswers, setQuestionsUserAnswers] = useState<string[][]>(
-    Array.from({ length: quiz.questions.length }, () => ["unvisited"]),
+  const [questionsUserAnswers, setQuestionsUserAnswers] = useState<
+    QuestionUserAnswerType[]
+  >(
+    Array.from({ length: quiz.questions.length }, () => ({
+      visited: false,
+      answers: [],
+      answered: false,
+    })),
   );
+
   const [questionNumber, setQuestionNumber] = useState<number | string>(0);
 
   const lastQuestionIndex = quiz.questions.length - 1;

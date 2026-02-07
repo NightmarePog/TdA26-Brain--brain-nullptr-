@@ -1,21 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Question } from "@/types/api/quizzes";
+import { QuestionUserAnswerType } from "./quizLayout";
 
 interface QuestionBarLayoutProps {
-  questionNumber: number;
-  questionsUserAnswers: string[][];
+  questionNumber: number | string;
+  questionsUserAnswers: QuestionUserAnswerType[];
   setValidPage: (num: number) => void;
   questionsCount: number;
 }
 
 const getStyleOnStatus = (
-  status: string[],
+  status: QuestionUserAnswerType,
   currentQuestionNumber: number,
   buttonIndex: number,
 ) => {
+  console.log("status::", status, buttonIndex);
   if (currentQuestionNumber === buttonIndex) return "bg-blue-500";
-  if (status[0] === "unvisited") return "bg-gray-600";
-  if (status[0] === "visited") return "bg-yellow-600";
+  if (status.visited === false) return "bg-gray-600";
+  if (status.answered === false) return "bg-yellow-600";
   return "bg-green-500";
 };
 
@@ -25,6 +26,7 @@ const QuestionBarLayout = ({
   setValidPage,
   questionsCount,
 }: QuestionBarLayoutProps) => {
+  if (typeof questionNumber === "string") return; // shouldn't happen
   return (
     <div className="flex justify-center gap-2">
       {Array.from({ length: questionsCount }).map((_, index) => (
