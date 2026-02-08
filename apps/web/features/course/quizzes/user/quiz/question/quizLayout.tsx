@@ -43,7 +43,10 @@ const QuizLayout = ({ quiz }: { quiz: Quiz }) => {
           questionsUserAnswers={questionsUserAnswers}
           setValidPage={setValidPage}
         />
-        <SubmitQuizLayout />
+        <SubmitQuizLayout
+          questions={quiz.questions}
+          answers={questionsUserAnswers}
+        />
       </div>
     );
   return (

@@ -62,10 +62,7 @@ const QuestionLayout = ({
           <ArrowLeft />
         </Button>
 
-        <Button
-          onClick={() => setValidPage(questionNumber + 1)}
-          disabled={questionNumber === questions.length - 1}
-        >
+        <Button onClick={() => setValidPage(questionNumber + 1)}>
           <ArrowRight />
         </Button>
       </div>

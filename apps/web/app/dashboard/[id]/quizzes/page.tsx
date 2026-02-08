@@ -1,7 +1,7 @@
 "use client";
 import AppCard, { AppCardType } from "@/components/cards/appCard";
+import PageTitle from "@/components/typography/pageTitle";
 import { Button } from "@/components/ui/button";
-import PageTitle from "@/components/ui/typography/pageTitle";
 
 import { quizzes } from "@/const/quizzes";
 import { usePathname, useRouter } from "next/navigation";

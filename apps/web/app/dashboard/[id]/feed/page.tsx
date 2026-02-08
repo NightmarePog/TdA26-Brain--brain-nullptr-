@@ -1,9 +1,9 @@
 "use client";
 
+import PageTitle from "@/components/typography/pageTitle";
 import { Button } from "@/components/ui/button";
 import { MessageError } from "@/components/ui/errorComponents";
 import { Input } from "@/components/ui/input";
-import PageTitle from "@/components/ui/typography/pageTitle";
 import FeedMessage from "@/features/course/feed/feedMessage";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";

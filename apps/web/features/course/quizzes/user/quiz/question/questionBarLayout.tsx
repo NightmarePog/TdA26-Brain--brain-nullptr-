@@ -16,8 +16,8 @@ const getStyleOnStatus = (
   console.log("status::", status, buttonIndex);
   if (currentQuestionNumber === buttonIndex) return "bg-blue-500";
   if (status.visited === false) return "bg-gray-600";
-  if (status.answered === false) return "bg-yellow-600";
-  return "bg-green-500";
+  if (status.answered === false) return "border-yellow-600 bg-gray-600 border";
+  return "border-green-500 bg-gray-600 border";
 };
 
 const QuestionBarLayout = ({

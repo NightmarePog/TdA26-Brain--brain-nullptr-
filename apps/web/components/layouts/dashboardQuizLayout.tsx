@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import PageTitle from "../ui/typography/pageTitle";
 
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
@@ -24,6 +23,7 @@ import {
   Question,
   MultipleChoiceQuestionCreateRequest,
 } from "@/types/api/quizzes";
+import PageTitle from "../typography/pageTitle";
 
 // --- HELPERS ---
 

@@ -1,9 +1,9 @@
 "use client";
 
+import PageTitle from "@/components/typography/pageTitle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { CoursesApi } from "@/lib/api";
-import PageTitle from "@/components/ui/typography/pageTitle";
 import { useQuery } from "@tanstack/react-query";
 
 export type Answer = {

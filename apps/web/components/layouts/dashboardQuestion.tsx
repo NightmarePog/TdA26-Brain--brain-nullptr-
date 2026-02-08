@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import PageTitle from "../ui/typography/pageTitle";
+import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -20,6 +19,7 @@ import {
 } from "@/types/api/quizzes";
 import { useQuery } from "@tanstack/react-query";
 import { MessageError } from "../ui/errorComponents";
+import PageTitle from "../typography/pageTitle";
 
 interface DashboardQuizLayoutProps {
   onSubmit: (update: Question) => void;

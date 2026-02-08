@@ -10,10 +10,10 @@ import {
   SingleChoiceQuestionAnswer,
   MultipleChoiceQuestionAnswer,
 } from "@/types/api/quizzes";
-import PageTitle from "../ui/typography/pageTitle";
 import { MessageError } from "../ui/errorComponents";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { Checkbox } from "../ui/checkbox";
+import PageTitle from "../typography/pageTitle";
 
 interface QuizLayoutProps {
   quiz: Quiz | undefined;
@@ -28,7 +28,6 @@ const QuizLayout = ({
   setQuestionNumber,
   submit,
 }: QuizLayoutProps) => {
-  const { courseUuid } = useCourseAddress();
   const [selectedSingle, setSelectedSingle] = useState<string | undefined>(
     undefined,
   );
