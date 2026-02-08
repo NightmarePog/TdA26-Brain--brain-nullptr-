@@ -25,7 +25,6 @@ const DashboardSidebar = () => {
     queryFn: () => CoursesApi.get(courseUuid),
     enabled: Boolean(courseUuid),
   });
-  console.log();
   if (isError) {
     return <p className="p-4 text-red-500">{error.message}</p>;
   }

@@ -3,12 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "phosphor-react";
-import Text from "@/components/ui/typography/text";
+import Text from "@/components/typography/text";
 import { motion, AnimatePresence } from "framer-motion";
-import { CourseDetails } from "@/types/api/courses";
-import { useRouter } from "next/navigation";
 
 export type AppCardType = {
   title: string;

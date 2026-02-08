@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Text from "@/components/ui/typography/text";
+import Text from "@/components/typography/text";
 
 interface props {
   children?: ReactNode;

@@ -1,7 +1,7 @@
 "use client";
 import DashboardMaterialCard from "@/components/cards/dashboardMaterialCard";
+import PageTitle from "@/components/typography/pageTitle";
 import { MessageError } from "@/components/ui/errorComponents";
-import PageTitle from "@/components/ui/typography/pageTitle";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
 import { Material } from "@/types/api/materials";
