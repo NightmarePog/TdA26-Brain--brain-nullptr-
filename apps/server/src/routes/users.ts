@@ -7,7 +7,7 @@ const authTokenSecret = process.env.AUTH_TOKEN_SECRET || "secwet";
 export const userRoutes = express.Router();
 
 /** GET on /users/ */
-userRoutes.get("/", authenticate, authenticateAdmin, async (req, res) => {
+userRoutes.get("/", authenticate, async (req, res) => {
 	try {
 		const [users] = await pool.execute("SELECT * FROM users");
 		res.status(200).json(users);
@@ -20,17 +20,17 @@ userRoutes.get("/", authenticate, authenticateAdmin, async (req, res) => {
 /** POST on /users/login/ */
 userRoutes.post("/login/", async (req, res) => {
 	try {
-		const nameOrEmail = req.body.nameOrEmail;
+		const name = req.body.name;
 		const password = req.body.password;
 
-		if (!password || !nameOrEmail) {
+		if (!password || !name) {
 			res.status(400).json({ message: "Invalid data" });
 			return;
 		}
 
-		const user = await findUser(nameOrEmail);
+		const user = await findUser(name);
 		if (!user) {
-			res.status(401).json({ message: "Invalid user name or email" });
+			res.status(401).json({ message: "Invalid username" });
 			return;
 		}
 
@@ -44,7 +44,7 @@ userRoutes.post("/login/", async (req, res) => {
 			return;
 		}
 
-		const token = jwt.sign({nameOrEmail}, authTokenSecret);
+		const token = jwt.sign({name}, authTokenSecret);
 		console.log(token);
 		/** Token for 12 hours */
 		res.cookie("auth_token",token,{ maxAge: 1000 * 3600 * 12, httpOnly: true, secure: true });
@@ -57,7 +57,7 @@ userRoutes.post("/login/", async (req, res) => {
 });
 
 userRoutes.get("/auth/", authenticate, async (req, res) => {
-	res.status(200).json(await findUser(req.user.nameOrEmail));
+	res.status(200).json(await findUser(req.user.name));
 });
 
 /** Functions */
@@ -68,7 +68,7 @@ export async function sha512(str : string) {
 
 export async function authenticate(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
-	req.user = {nameOrEmail:"lecturer"};
+	req.user = {name:"lecturer"};
 	next();
 	return;
 
@@ -80,53 +80,16 @@ export async function authenticate(req : any, res : any, next : any) {
 
 	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
 		if (err) return res.sendStatus(403);
-		const u = await findUser(user.nameOrEmail);
-		if (!u) return res.sendStatus(401).json({ message: "User not found" });
+		const u = await findUser(user.name);
+		if (u == null) return res.sendStatus(401).json({ message: "User not found" });
 		req.user = user;
 		next();
 	});
 }
 
-export async function authenticateOptional(req : any, res : any, next : any) {
-	let authToken;
-	try {
-		authToken = req.cookies.auth_token;
-	} catch (err) {};
-	if (authToken == null) {
-		next();
-		return;
-	}
-
-	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
-		if (err) {
-			next();
-			return;
-		}
-		const u = await findUser(user.nameOrEmail);
-		if (!u) {
-			next();
-			return;
-		}
-		req.user = user;
-		next();
-	});
-}
-
-export async function authenticateAdmin(req : any, res : any, next : any) {
-	/** temporary authenticate skip */
-	next();
-	return;
-	
-	const user = await findUser(req.user.nameOrEmail);
-	if (!user.admin) {
-		return res.sendStatus(403);
-	}
-	next();
-}
-
-export async function findUser(nameOrEmail : string) {
+export async function findUser(name : string) {
 	const [users] = await pool.execute(`
-			SELECT * FROM users WHERE name = ? OR email = ?
-	`,[nameOrEmail, nameOrEmail]);
+			SELECT * FROM users WHERE name = ?
+	`,[name]);
 	return users.length == 1 ? users[0] : null;
 }

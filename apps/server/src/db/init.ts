@@ -24,10 +24,8 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS users (
 					id INT AUTO_INCREMENT PRIMARY KEY,
-					email VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
 					password VARCHAR(255) NOT NULL,
-					admin BOOL NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					CONSTRAINT UC_Person UNIQUE (name,email)
@@ -128,7 +126,6 @@ export async function initDatabase() {
 				CREATE TABLE IF NOT EXISTS answers (
 					uuid CHAR(36) PRIMARY KEY,
 					quizUuid CHAR(36) NOT NULL,
-					userId INT,
 					score INT NOT NULL,
 					maxScore INT NOT NULL,
 					submittedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -155,16 +152,10 @@ export async function initDatabase() {
 			console.log("\nCreating users..");
 
 			await pool.execute(`
-				INSERT IGNORE INTO users (email, name, password, admin)
-				VALUES (?, ?, ?, ?)
-			`, ["lecturer@email.com", "lecturer", await sha512(`TdA26!${process.env.PASSWORD_SALT}`), true]);
-			console.log("admin user OK");
-
-			await pool.execute(`
-				INSERT IGNORE INTO users (email, name, password, admin)
-				VALUES (?, ?, ?, ?)
-			`, ["student@email.com", "student", await sha512(`1234${process.env.PASSWORD_SALT}`), false]);
-			console.log("student user OK");
+				INSERT IGNORE INTO users (name, password)
+				VALUES (?, ?)
+			`, ["lecturer", await sha512(`TdA26!${process.env.PASSWORD_SALT}`)]);
+			console.log("lecturer OK");
 
 			break;
 

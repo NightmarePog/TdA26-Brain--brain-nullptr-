@@ -3,7 +3,7 @@ import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
-import { authenticate, authenticateAdmin, authenticateOptional, findUser } from "./users";
+import { authenticate, findUser } from "./users";
 
 enum Types {
 	FILE = "file",
@@ -65,7 +65,7 @@ courseRoutes.get("/", async (req, res) => {
 	}
 });
 
-courseRoutes.post("/", checkJSON, checkBody, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.post("/", checkJSON, checkBody, authenticate, async (req, res) => {
   	try {
 		const name: string = req.body.name;
 		if (!name) {
@@ -99,7 +99,7 @@ courseRoutes.get("/:uuid", checkCourse, async (req, res) => {
 	}
 });
 
-courseRoutes.delete("/:uuid", checkCourse, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid", checkCourse, authenticate, async (req, res) => {
 	try {
 		const uuid = req.params.uuid;
 
@@ -114,7 +114,7 @@ courseRoutes.delete("/:uuid", checkCourse, authenticate, authenticateAdmin, asyn
 	}
 });
 
-courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
 		const name: string = req.body.name != null ? req.body.name : req.course.name;
@@ -151,7 +151,7 @@ courseRoutes.get("/:uuid/materials", checkCourse, async (req, res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdmin, async (req, res, next) => {
+courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res, next) => {
 	try {
 		const courseUuid : string = req.params.uuid;
 		const uuid : string = randomUUID();
@@ -255,7 +255,7 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, authenticateAdm
 });
 
 /** PUT/DELETE on /courses/:uuid/materials/:materialUuid/ */
-courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res, next) => {
+courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, async (req, res, next) => {
 	try {
 		const uuid: string = req.params.uuid;
 		const materialUuid: string = req.params.materialUuid;
@@ -353,7 +353,7 @@ courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, a
 	res.status(200).json(await findMaterialByUUID(req.material.uuid));
 });
 
-courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, async (req, res) => {
 	try {
 		const uuid: string = req.params.uuid;
 		const materialUuid: string = req.params.materialUuid;
@@ -374,22 +374,18 @@ courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial
 
 /** QUIZZES */
 /** GET/POST on /courses/:uuid/quizzes/ */
-courseRoutes.get("/:uuid/quizzes", checkCourse, authenticateOptional, async (req,res) => {
+courseRoutes.get("/:uuid/quizzes", checkCourse, async (req,res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizzes = await getQuizzesByCourseUUID(uuid);
-		if (req.user != null) {
-			const user = await findUser(req.user.nameOrEmail);
-			if (user != null && user.admin) {
-				for (const quiz of quizzes) {
-					const [answers] = await pool.execute(`
-						SELECT * FROM answers WHERE quizUuid = ?
-					`,[quiz.uuid]);
-					
-					quiz.answers = answers;
-				}
-			}
+		for (const quiz of quizzes) {
+			const [answers] = await pool.execute(`
+				SELECT * FROM answers WHERE quizUuid = ?
+			`,[quiz.uuid]);
+			
+			quiz.answers = answers;
 		}
+		
 		res.status(200).json(quizzes);
 	} catch (error) {
 		console.error("Error fetching quizzes:", error);
@@ -397,7 +393,7 @@ courseRoutes.get("/:uuid/quizzes", checkCourse, authenticateOptional, async (req
 	}
 });
 
-courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authenticate, async (req, res) => {
   	try {
 		const uuid = req.params.uuid;
 		const body = req.body;
@@ -533,18 +529,14 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 });
 
 /** GET/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/ */
-courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticateOptional, async (req, res) => {
+courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, async (req, res) => {
 	try {
-		if (req.user != null) {
-			const user = await findUser(req.user.nameOrEmail);
-			if (user != null && user.admin) {
-				const [answers] = await pool.execute(`
-					SELECT * FROM answers WHERE quizUuid = ?
-				`,[req.quiz.uuid]);
-				
-				req.quiz.answers = answers;
-			}
-		}
+		const [answers] = await pool.execute(`
+			SELECT * FROM answers WHERE quizUuid = ?
+		`,[req.quiz.uuid]);
+		
+		req.quiz.answers = answers;
+
 		res.status(200).json(req.quiz);
 	} catch (error) {
 		console.error("Error fetching quiz:", error);
@@ -552,7 +544,7 @@ courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticat
 	}
 });
 
-courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticate, async (req, res) => {
 	try {
 		const uuid = req.params.uuid;
 		const quizUuid = req.params.quizUuid;
@@ -570,7 +562,7 @@ courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenti
 	}
 });
 
-courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
@@ -701,7 +693,7 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 });
 
 /** POST/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/questions */
-courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
@@ -809,7 +801,7 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, ch
 	}
 });
 
-courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, checkBody, checkCourse, checkQuiz, checkQuestion, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, checkBody, checkCourse, checkQuiz, checkQuestion, authenticate, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
@@ -918,7 +910,7 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, 
 	}
 });
 
-courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCourse, checkQuiz, checkQuestion, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCourse, checkQuiz, checkQuestion, authenticate, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
@@ -946,9 +938,8 @@ courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCou
 });
 
 /** POST on /courses/:uuid/quizzes/:quizUuid/submit/ */
-courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, authenticateOptional, async (req, res) => {
+courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, async (req, res) => {
 	try {
-		const user = req.user != null ? await findUser(req.user.nameOrEmail) : null;
 		const quizUuid : string = req.params.quizUuid;
 		const answers : JSON[] = req.body.answers;
 		if (answers == null) {
@@ -1041,9 +1032,9 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, check
 		const answerUuid : string = randomUUID();
 
 		await pool.execute(`
-			INSERT INTO answers (uuid, quizUuid, userId, score, maxScore)
-			VALUES (?, ?, ?, ?, ?)
-		`,[answerUuid, quizUuid, user != null ? user.id : null, score, maxScore]);
+			INSERT INTO answers (uuid, quizUuid, score, maxScore)
+			VALUES (?, ?, ?, ?)
+		`,[answerUuid, quizUuid, score, maxScore]);
 
 		await pool.execute(`
 			UPDATE quizzes
@@ -1056,7 +1047,6 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, check
 		`,[answerUuid]);
 
 		db_answers[0].correctPerQuestion = correctPerQuestion;
-		delete db_answers[0].userId;
 		delete db_answers[0].uuid;
 
 		res.status(200).json(db_answers[0]);
@@ -1080,7 +1070,7 @@ courseRoutes.get("/:uuid/feed", checkCourse, async (req, res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const message : string = req.body.message;
@@ -1094,7 +1084,7 @@ courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate
 		await pool.execute(`
 			INSERT INTO feed (uuid, courseUuid, type, message, edited, author)
 			VALUES (?, ?, ?, ?, ?, ?)
-		`,[feedUuid, uuid, Types.MANUAL, message, false, req.user.nameOrEmail]);
+		`,[feedUuid, uuid, Types.MANUAL, message, false, req.user.name]);
 
 		const [feed] = await pool.execute(`
 			SELECT * FROM feed WHERE uuid = ?
@@ -1108,7 +1098,7 @@ courseRoutes.post("/:uuid/feed", checkJSON, checkBody, checkCourse, authenticate
 });
 
 /** PUT/DELETE on /courses/:uuid/feed/:feedUuid/ */
-courseRoutes.put("/:uuid/feed/:feedUuid", checkJSON, checkBody, checkCourse, checkFeed, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.put("/:uuid/feed/:feedUuid", checkJSON, checkBody, checkCourse, checkFeed, authenticate, async (req, res) => {
 	try {
 		if (req.feed.type == Types.SYSTEM) {
 			res.status(400).json({ message: "Can not update system feed message" });
@@ -1130,7 +1120,7 @@ courseRoutes.put("/:uuid/feed/:feedUuid", checkJSON, checkBody, checkCourse, che
 	}
 });
 
-courseRoutes.delete("/:uuid/feed/:feedUuid", checkCourse, checkFeed, authenticate, authenticateAdmin, async (req, res) => {
+courseRoutes.delete("/:uuid/feed/:feedUuid", checkCourse, checkFeed, authenticate, async (req, res) => {
 	try {
 		if (req.feed.type == Types.SYSTEM) {
 			res.status(400).json({ message: "Can not delete system feed message" });
