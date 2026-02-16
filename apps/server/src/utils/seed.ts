@@ -37,6 +37,12 @@ export async function seed() {
         "courses",
         '{"name":"Welcome, TdA 2026!"}'
     );
+    const module = await call(
+        "POST",
+        "application/json",
+        `courses/${course.uuid}/modules`,
+        '{"name":"Introduction"}'
+    );
     const url_material = await call(
         "POST",
         "application/json",
@@ -133,6 +139,14 @@ export async function seed() {
             ]
         }`
     );
+    const answer = await call(
+        "POST",
+        "application/json",
+        `courses/${course.uuid}/quizzes/${quiz_mix.uuid}/submit`,
+        `{
+            "answers":[]
+        }`
+    )
     const feed = await call(
         "POST",
         "application/json",
