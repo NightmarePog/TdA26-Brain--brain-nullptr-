@@ -56,7 +56,7 @@ export async function initDatabase() {
 					state VARCHAR(255) NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					updateCount INT DEFAULT 0
+					updateCount INT DEFAULT 0,
 					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
 				)
 			`);
@@ -65,11 +65,11 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS materials (
 					uuid CHAR(36) PRIMARY KEY,
-					courseUuid CHAR(36) NOT NULL,
+					moduleUuid CHAR(36) NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
-					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					FOREIGN KEY (moduleUuid) REFERENCES modules(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("materials OK");
@@ -104,14 +104,14 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS quizzes (
 					uuid CHAR(36) PRIMARY KEY,
-					courseUuid CHAR(36) NOT NULL,
+					moduleUuid CHAR(36) NOT NULL,
 					title VARCHAR(255) NOT NULL,
 					attemptsCount INT DEFAULT 0,
 					description VARCHAR(1000),
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
-					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					FOREIGN KEY (moduleUuid) REFERENCES modules(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("quizzes OK");

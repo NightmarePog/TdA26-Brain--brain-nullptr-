@@ -197,12 +197,62 @@ courseRoutes.post("/:uuid/state", checkJSON, checkBody, checkCourse, authenticat
 	}
 });
 
-/** MATERIALS */
-/** GET/POST on /courses/:uuid/materials/ */
-courseRoutes.get("/:uuid/materials", checkCourse, async (req, res) => {
+/** MODULES */
+/** GET/POST on /courses/:uuid/modules/ */
+courseRoutes.get("/:uuid/modules", checkCourse, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
-		const materials = await getMaterialsByCourseUUID(uuid);
+		const modules = await getModulesByCourseUUID(uuid);
+		res.status(200).json(modules);
+	} catch (error) {
+		console.error("Error fetching modules:", error);
+		res.status(500).json({ error: "Failed to fetch modules" });
+	}
+});
+
+courseRoutes.post("/:uuid/modules", checkJSON, checkBody, checkCourse, authenticate, async (req, res) => {
+  	try {
+		const name: string = req.body.name;
+		if (name == null) {
+			res.status(400).json({ message: "Missing name" });
+			return;
+		}
+
+		const uuid: string = randomUUID();
+		const courseUuid: string = req.course.uuid;
+
+		await pool.execute(`
+			INSERT INTO modules (uuid, courseUuid, name, state)
+			VALUES (?, ?, ?, ?)
+		`,[uuid, courseUuid, name, Types.MODULE_CLOSED]);
+
+		const module = await findModuleByUUID(uuid);
+		res.status(201).json(module);
+	} catch (error) {
+		console.error("Error creating module:", error);
+		res.status(500).json({ error: "Failed to create module" });
+	}
+});
+
+/** GET/PUT/DELETE on /courses/:uuid/modules/:moduleUuid/ */
+courseRoutes.get("/:uuid/modules/:moduleUuid", checkCourse, checkModule, async (req, res) => {
+	try {
+		res.status(200).json(await formatModuleJSON(req.module));
+	} catch (error) {
+		console.error("Error fetching module:", error);
+		res.status(500).json({ error: "Failed to fetch module" });
+	}
+});
+
+
+
+
+/** MATERIALS */
+/** GET/POST on /courses/:uuid/modules/:moduleUuid/materials/ */
+courseRoutes.get("/:uuid/modules/:moduleUuid/materials", checkCourse, checkModule, async (req, res) => {
+	try {
+		const moduleUuid : string = req.params.moduleUuid;
+		const materials = await getMaterialsByModuleUUID(moduleUuid);
 		res.status(200).json(materials);
 	} catch (error) {
 		console.error("Error fetching materials:", error);
@@ -210,9 +260,9 @@ courseRoutes.get("/:uuid/materials", checkCourse, async (req, res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res, next) => {
+courseRoutes.post("/:uuid/modules/:moduleUuid/materials", checkCourse, checkModule, authenticate, async (req, res, next) => {
 	try {
-		const courseUuid : string = req.params.uuid;
+		const moduleUuid : string = req.params.moduleUuid;
 		const uuid : string = randomUUID();
 
 		if (req.is('application/json')) {
@@ -234,9 +284,9 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res
 				const desc : string = req.body.description || "";
 	
 				await pool.execute(`
-					INSERT INTO materials (uuid, courseUuid)
+					INSERT INTO materials (uuid, moduleUuid)
 					VALUES (?, ?)
-				`,[uuid, courseUuid]);
+				`,[uuid, moduleUuid]);
 	
 				await pool.execute(`
 					INSERT INTO urls (uuid, name, type, url, faviconUrl, description)
@@ -272,8 +322,8 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res
 				const sizeBytes : number = req.file.size;
 				const type : string = Types.MATERIAL_FILE;
 	
-				const tmpFilePath = `/app/tmp/${courseUuid}`;
-				const newDirPath = `/app/materials/${courseUuid}`;
+				const tmpFilePath = `/app/tmp/${moduleUuid}`;
+				const newDirPath = `/app/materials/${moduleUuid}`;
 				const newFilePath = `${newDirPath}/${uuid}`;
 	
 				if (!(await fileOrDirectoryExists(newDirPath))) {
@@ -282,9 +332,9 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res
 				await moveFile(tmpFilePath, newFilePath);
 	
 				await pool.execute(`
-					INSERT INTO materials (uuid, courseUuid)
+					INSERT INTO materials (uuid, moduleUuid)
 					VALUES (?, ?)
-				`,[uuid, courseUuid]);
+				`,[uuid, moduleUuid]);
 	
 				await pool.execute(`
 					INSERT INTO files (uuid, name, type, fileUrl, description, mimeType, sizeBytes)
@@ -313,10 +363,10 @@ courseRoutes.post("/:uuid/materials", checkCourse, authenticate, async (req, res
 	res.status(201).json(await formatMaterialJSON(materials[0]));
 });
 
-/** PUT/DELETE on /courses/:uuid/materials/:materialUuid/ */
-courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, async (req, res, next) => {
+/** PUT/DELETE on /courses/:uuid/modules/:moduleUuid/materials/:materialUuid/ */
+courseRoutes.put("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkCourse, checkModule, checkMaterial, authenticate, async (req, res, next) => {
 	try {
-		const uuid: string = req.params.uuid;
+		const moduleUuid: string = req.params.moduleUuid;
 		const materialUuid: string = req.params.materialUuid;
 		const material = req.material;
 		const type = material.type;
@@ -341,8 +391,8 @@ courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, a
 					const mimeType : string = req.file.mimetype;
 					const sizeBytes : number = req.file.size;
 		
-					const tmpFilePath = `/app/tmp/${uuid}`;
-					const newDirPath = `/app/materials/${uuid}`;
+					const tmpFilePath = `/app/tmp/${moduleUuid}`;
+					const newDirPath = `/app/materials/${moduleUuid}`;
 					const newFilePath = `${newDirPath}/${materialUuid}`;
 
 					if (!(await fileOrDirectoryExists(newDirPath))) {
@@ -412,16 +462,15 @@ courseRoutes.put("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, a
 	res.status(200).json(await findMaterialByUUID(req.material.uuid));
 });
 
-courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial, authenticate, async (req, res) => {
+courseRoutes.delete("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkCourse, checkModule, checkMaterial, authenticate, async (req, res) => {
 	try {
-		const uuid: string = req.params.uuid;
 		const materialUuid: string = req.params.materialUuid;
 
 		await pool.execute(`
 			DELETE FROM materials WHERE uuid = ?
 		`,[materialUuid]);
 
-		await updateCourseByUUID(uuid, `Material ${req.material.name} ${FeedMessages.DELETE}`);
+		await updateCourseByUUID(req.params.uuid, `Material ${req.material.name} ${FeedMessages.DELETE}`);
 
 		res.status(204).json({ message: "Material deleted sucessfully" });
 	} catch (error) {
@@ -432,11 +481,11 @@ courseRoutes.delete("/:uuid/materials/:materialUuid", checkCourse, checkMaterial
 
 
 /** QUIZZES */
-/** GET/POST on /courses/:uuid/quizzes/ */
-courseRoutes.get("/:uuid/quizzes", checkCourse, async (req,res) => {
+/** GET/POST on /courses/:uuid/modules/:moduleUuid/quizzes/ */
+courseRoutes.get("/:uuid/modules/:moduleUuid/quizzes", checkCourse, checkModule, async (req,res) => {
 	try {
-		const uuid : string = req.params.uuid;
-		const quizzes = await getQuizzesByCourseUUID(uuid);
+		const moduleUuid : string = req.params.uuid;
+		const quizzes = await getQuizzesByModuleUUID(moduleUuid);
 		for (const quiz of quizzes) {
 			const [answers] = await pool.execute(`
 				SELECT * FROM answers WHERE quizUuid = ?
@@ -452,9 +501,9 @@ courseRoutes.get("/:uuid/quizzes", checkCourse, async (req,res) => {
 	}
 });
 
-courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authenticate, async (req, res) => {
+courseRoutes.post("/:uuid/modules/:moduleUuid/quizzes", checkJSON, checkBody, checkCourse, checkModule, authenticate, async (req, res) => {
   	try {
-		const uuid = req.params.uuid;
+		const moduleUuid = req.params.moduleUuid;
 		const body = req.body;
 
 		if (body.title == null) {
@@ -548,9 +597,9 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 		const desc : string = body.description != null ? body.description : "";
 
 		await pool.execute(`
-			INSERT INTO quizzes (uuid, courseUuid, title, description)
+			INSERT INTO quizzes (uuid, moduleUuid, title, description)
 			VALUES (?, ?, ?, ?)
-		`,[quizUuid, uuid, title, desc]);
+		`,[quizUuid, moduleUuid, title, desc]);
 
 		for (const q of questions) {
 			const questionUuid : string = randomUUID();
@@ -574,7 +623,7 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 			}
 		}
 
-		await updateCourseByUUID(uuid, `Quiz '${title}' ${FeedMessages.CREATE}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${title}' ${FeedMessages.CREATE}`);
 
 		const [quizzes] = await pool.execute(`
 			SELECT * FROM quizzes WHERE uuid = ?
@@ -587,12 +636,12 @@ courseRoutes.post("/:uuid/quizzes", checkJSON, checkBody, checkCourse, authentic
 	}
 });
 
-/** GET/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/ */
-courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, async (req, res) => {
+/** GET/DELETE/PUT on /courses/:uuid/modules/:moduleUuid/quizzes/:quizUuid/ */
+courseRoutes.get("/:uuid/modules/:moduleUuid/quizzes/:quizUuid", checkCourse, checkModule, checkQuiz, async (req, res) => {
 	try {
 		const [answers] = await pool.execute(`
 			SELECT * FROM answers WHERE quizUuid = ?
-		`,[req.quiz.uuid]);
+		`,[req.params.quizUuid]);
 		
 		req.quiz.answers = await formatAnswersJSON(answers);
 
@@ -603,16 +652,15 @@ courseRoutes.get("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, async (req,
 	}
 });
 
-courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenticate, async (req, res) => {
+courseRoutes.delete("/:uuid/modules/:moduleUuid/quizzes/:quizUuid", checkCourse, checkModule, checkQuiz, authenticate, async (req, res) => {
 	try {
-		const uuid = req.params.uuid;
 		const quizUuid = req.params.quizUuid;
 
 		await pool.execute(`
 			DELETE FROM quizzes WHERE uuid = ?
 		`,[quizUuid]);
 
-		await updateCourseByUUID(uuid, `Quiz '${req.quiz.title}' ${FeedMessages.DELETE}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${req.quiz.title}' ${FeedMessages.DELETE}`);
 
 		res.status(204).json(({ message: "Quiz deleted sucessfully" }));
 	} catch (error) {
@@ -621,9 +669,8 @@ courseRoutes.delete("/:uuid/quizzes/:quizUuid", checkCourse, checkQuiz, authenti
 	}
 });
 
-courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
+courseRoutes.put("/:uuid/modules/:moduleUuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, checkModule, checkQuiz, authenticate, async (req, res) => {
 	try {
-		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
 		const body : JSON = req.body;
 		const quiz : JSON = req.quiz;
@@ -742,7 +789,7 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 			WHERE uuid = ?
 		`,[title, quiz.updateCount+1, desc, quizUuid]);
 
-		await updateCourseByUUID(uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 	} catch (error) {
@@ -751,10 +798,9 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid", checkJSON, checkBody, checkCourse, 
 	}
 });
 
-/** POST/DELETE/PUT on /courses/:uuid/quizzes/:quizUuid/questions */
-courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, checkCourse, checkQuiz, authenticate, async (req, res) => {
+/** POST/DELETE/PUT on /courses/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions/ */
+courseRoutes.post("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions", checkJSON, checkBody, checkCourse, checkModule, checkQuiz, authenticate, async (req, res) => {
 	try {
-		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
 		const body : JSON = req.body;
 		const quiz : JSON = req.quiz;
@@ -850,7 +896,7 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, ch
 			WHERE uuid = ?
 		`,[quiz.updateCount+1, quizUuid]);
 
-		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 
@@ -860,9 +906,8 @@ courseRoutes.post("/:uuid/quizzes/:quizUuid/questions", checkJSON, checkBody, ch
 	}
 });
 
-courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, checkBody, checkCourse, checkQuiz, checkQuestion, authenticate, async (req, res) => {
+courseRoutes.put("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, checkBody, checkCourse, checkModule, checkQuiz, checkQuestion, authenticate, async (req, res) => {
 	try {
-		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
 		const questionUuid : string = req.params.questionUuid;
 		const body : JSON = req.body;
@@ -959,7 +1004,7 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, 
 			WHERE uuid = ?
 		`,[quiz.updateCount+1, quizUuid]);
 
-		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 
@@ -969,9 +1014,8 @@ courseRoutes.put("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkJSON, 
 	}
 });
 
-courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCourse, checkQuiz, checkQuestion, authenticate, async (req, res) => {
+courseRoutes.delete("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions/:questionUuid", checkCourse, checkModule, checkQuiz, checkQuestion, authenticate, async (req, res) => {
 	try {
-		const uuid : string = req.params.uuid;
 		const quizUuid : string = req.params.quizUuid;
 		const questionUuid: string = req.params.questionUuid;
 		const quiz : JSON = req.quiz;
@@ -986,7 +1030,7 @@ courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCou
 			DELETE FROM questions WHERE uuid = ?
 		`,[questionUuid]);
 
-		await updateCourseByUUID(uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
 
 		res.status(204).json(({ message: "Question deleted sucessfully" }));
 
@@ -996,8 +1040,8 @@ courseRoutes.delete("/:uuid/quizzes/:quizUuid/questions/:questionUuid", checkCou
 	}
 });
 
-/** POST on /courses/:uuid/quizzes/:quizUuid/submit/ */
-courseRoutes.post("/:uuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkQuiz, async (req, res) => {
+/** POST on /courses/:uuid/modules/:moduleUuid/quizzes/:quizUuid/submit/ */
+courseRoutes.post("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/submit", checkJSON, checkBody, checkCourse, checkModule, checkQuiz, async (req, res) => {
 	try {
 		const quizUuid : string = req.params.quizUuid;
 		const answers : JSON[] = req.body.answers;
@@ -1338,6 +1382,21 @@ async function formatFeedJSON(entry : JSON) {
 	return entry;
 }
 
+/** Formats module */
+async function formatModuleJSON(entry : JSON) {
+	delete entry.courseUuid;
+
+	const materials = await getMaterialsByModuleUUID(entry.uuid);
+	if (!materials) return;
+	entry.materials = materials;
+
+	const quizzes = await getQuizzesByModuleUUID(entry.uuid);
+	if (!quizzes) return;
+	entry.quizzes = quizzes;
+
+	return entry;
+}
+
 
 /** FIND FUNCTIONS */
 /** Finds specific course */
@@ -1346,6 +1405,14 @@ async function findCourseByUUID(uuid : string) {
 			SELECT * FROM courses WHERE uuid = ?
 	`,[uuid]);
 	return courses.length == 1 ? courses[0] : null;
+};
+
+/** Finds specific module */
+async function findModuleByUUID(uuid : string) {
+	const [modules] = await pool.execute(`
+			SELECT * FROM modules WHERE uuid = ?
+	`,[uuid]);
+	return modules.length == 1 ? modules[0] : null;
 };
 
 /** Finds specific material */
@@ -1382,11 +1449,23 @@ async function findFeedByUUID(uuid : string) {
 
 
 /** GET FUNCTIONS */
-/** Gets all course materials */
-async function getMaterialsByCourseUUID(uuid : string) {
+/** Gets all course modules */
+async function getModulesByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
+	const [modules] = await pool.execute(`
+			SELECT * FROM modules WHERE courseUuid = ? ORDER BY createdAt DESC
+	`,[uuid]);
+	for (const entry of modules) {
+		await formatModuleJSON(entry);
+	};
+	return modules;
+};
+
+/** Gets all course materials */
+async function getMaterialsByModuleUUID(uuid : string) {
+	if (!(await findModuleByUUID(uuid))) return;
 	const [materials] = await pool.execute(`
-			SELECT * FROM materials WHERE courseUuid = ? ORDER BY createdAt DESC
+			SELECT * FROM materials WHERE moduleUuid = ? ORDER BY createdAt DESC
 	`,[uuid]);
 	for (const entry of materials) {
 		await formatMaterialJSON(entry);
@@ -1395,10 +1474,10 @@ async function getMaterialsByCourseUUID(uuid : string) {
 };
 
 /** Gets all course quizzes */
-async function getQuizzesByCourseUUID(uuid : string) {
-	if (!(await findCourseByUUID(uuid))) return;
+async function getQuizzesByModuleUUID(uuid : string) {
+	if (!(await findModuleByUUID(uuid))) return;
 	const [quizzes] = await pool.execute(`
-			SELECT * FROM quizzes WHERE courseUuid = ? ORDER BY createdAt DESC
+			SELECT * FROM quizzes WHERE moduleUuid = ? ORDER BY createdAt DESC
 	`,[uuid]);
 	for (const entry of quizzes) {
 		await formatQuizJSON(entry);
@@ -1424,17 +1503,17 @@ async function getCourseDetailsByUUID(uuid : string) {
 	const course = await findCourseByUUID(uuid);
 	if (!course) return;
 
-	const materials = await getMaterialsByCourseUUID(uuid);
-	if (!materials) return;
-
-	const quizzes = await getQuizzesByCourseUUID(uuid);
-	if (!quizzes) return;
+	const modules = await getModulesByCourseUUID(uuid);
+	if (!modules) return;
+	for (const m of modules) {
+		delete m.materials;
+		delete m.quizzes;
+	}
 
 	const feed = await getFeedByCourseUUID(uuid);
 	if (!feed) return;
 
-	course.materials = materials;
-	course.quizzes = quizzes;
+	course.modules = modules;
 	course.feed = feed;
 
 	return course;
@@ -1484,6 +1563,22 @@ async function checkCourse(req : any, res : any, next : any) {
 	} catch (error) {
 		console.error("Error checking course:", error);
 		res.status(500).json({ error: "Failed to check course" });
+	}
+}
+
+/** Checks for module in params */
+async function checkModule(req : any, res : any, next : any) {
+	try {
+		const module = await findModuleByUUID(req.params.moduleUuid);
+		if (!module) {
+			res.status(404).json({ message: "Module not found" });
+			return;
+		}
+		req.module = module;
+		next();
+	} catch (error) {
+		console.error("Error checking module:", error);
+		res.status(500).json({ error: "Failed to check module" });
 	}
 }
 

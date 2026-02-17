@@ -46,7 +46,7 @@ export async function seed() {
     const url_material = await call(
         "POST",
         "application/json",
-        `courses/${course.uuid}/materials`,
+        `courses/${course.uuid}/modules/${module.uuid}/materials`,
         '{"name":"Seznam Website", "description":"The website for Seznam", "url":"https://seznam.cz"}'
     );
 
@@ -62,7 +62,7 @@ export async function seed() {
     const quiz_single_choice = await call(
         "POST",
         "application/json",
-        `courses/${course.uuid}/quizzes`,
+        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
         `{
             "title": "Basic Programming Quiz",
             "description": "Test your basic programming knowledge",
@@ -90,7 +90,7 @@ export async function seed() {
     const quiz_multiple_choice = await call(
         "POST",
         "application/json",
-        `courses/${course.uuid}/quizzes`,
+        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
         `{
             "title": "Web Development Basics",
             "description": "Multiple choice quiz about web technologies",
@@ -113,7 +113,7 @@ export async function seed() {
     const quiz_mix = await call(
         "POST",
         "application/json",
-        `courses/${course.uuid}/quizzes`,
+        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
         `{
             "title": "Ari Lore",
             "description": "Quiz about me, the backend developer",
@@ -142,7 +142,7 @@ export async function seed() {
     const answer = await call(
         "POST",
         "application/json",
-        `courses/${course.uuid}/quizzes/${quiz_mix.uuid}/submit`,
+        `courses/${course.uuid}/modules/${module.uuid}/quizzes/${quiz_mix.uuid}/submit`,
         `{
             "answers":[]
         }`
