@@ -39,6 +39,7 @@ export async function initDatabase() {
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
 					state VARCHAR(255) NOT NULL,
+					theme VARCHAR(255),
 					openedAt TIMESTAMP,
 					closedAt TIMESTAMP,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -81,13 +81,14 @@ courseRoutes.post("/", checkJSON, checkBody, authenticate, async (req, res) => {
 
 		const uuid: string = randomUUID();
 		const desc: string = req.body.description || "";
+		const theme: string = req.body.theme || "";
 		const openedAt: string = req.body.openedAt != null ? req.body.openedAt : null;
 		const closedAt: string = req.body.closedAt != null ? req.body.closedAt : null;
 
 		await pool.execute(`
-			INSERT INTO courses (uuid, name, description, state, openedAt, closedAt)
-			VALUES (?, ?, ?, ?, ?, ?)
-		`,[uuid, name, desc, Types.COURSE_DRAFT, openedAt, closedAt]);
+			INSERT INTO courses (uuid, name, description, state, theme, openedAt, closedAt)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
+		`,[uuid, name, desc, Types.COURSE_DRAFT, theme, openedAt, closedAt]);
 
 		const course = await findCourseByUUID(uuid);
 		res.status(201).json(course);
@@ -127,14 +128,15 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 		const uuid: string = req.params.uuid;
 		const name: string = req.body.name != null ? req.body.name : req.course.name;
 		const desc: string = req.body.description != null ? req.body.description : req.course.description;
+		const theme: string = req.body.theme != null ? req.body.theme : req.course.theme;
 		const openedAt: string = req.body.openedAt != null ? req.body.openedAt : req.course.openedAt;
 		const closedAt: string = req.body.closedAt != null ? req.body.closedAt : req.course.closedAt;
 
 		await pool.execute(`
 			UPDATE courses
-			SET name = ?, description = ?, openedAt = ?, closedAt = ?
+			SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?
 			WHERE uuid = ?
-		`, [name, desc, openedAt, closedAt, uuid]);
+		`, [name, desc, theme, openedAt, closedAt, uuid]);
 
 		let useAnd: boolean = false;
 		async function getAnd(b: boolean) {
@@ -148,8 +150,18 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 			return " and";
 		}
 
-		const nameChanged = name != req.course.name, descChanged = desc != req.course.description, openedAtChanged = openedAt != req.course.openedAt, closedAtChanged = closedAt != req.course.closedAt;
-		await updateCourseByUUID(uuid, `Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""} ${FeedMessages.EDIT}`);
+		const 	nameChanged = name != req.course.name,
+				descChanged = desc != req.course.description,
+				openedAtChanged = openedAt != req.course.openedAt,
+				closedAtChanged = closedAt != req.course.closedAt,
+				themeChanged = theme != req.course.theme;
+		
+		const msg: any =
+		`{
+			"content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}",
+			"type": "${FeedMessages.EDIT}"
+		}`
+		await updateCourseByUUID(uuid, msg);
 
 		res.status(200).json(await findCourseByUUID(uuid));
 			
@@ -219,12 +231,19 @@ courseRoutes.post("/:uuid/modules", checkJSON, checkBody, checkCourse, authentic
 		}
 
 		const uuid: string = randomUUID();
-		const courseUuid: string = req.course.uuid;
+		const courseUuid: string = req.params.uuid;
 
 		await pool.execute(`
 			INSERT INTO modules (uuid, courseUuid, name, state)
 			VALUES (?, ?, ?, ?)
 		`,[uuid, courseUuid, name, Types.MODULE_CLOSED]);
+
+		const msg: any =
+			`{
+				"content": "Module '${name}'",
+				"type": "${FeedMessages.CREATE}"
+			}`
+		await updateCourseByUUID(courseUuid, msg);
 
 		const module = await findModuleByUUID(uuid);
 		res.status(201).json(module);
@@ -244,8 +263,70 @@ courseRoutes.get("/:uuid/modules/:moduleUuid", checkCourse, checkModule, async (
 	}
 });
 
+courseRoutes.put("/:uuid/modules/:moduleUuid", checkJSON, checkBody, checkCourse, checkModule, authenticate, async (req, res) => {
+	try {
+		const moduleUuid: string = req.params.moduleUuid;
+		const name: string = req.body.name != null ? req.body.name : req.module.name;
+		const state: string = req.body.state != null ? req.body.state : req.module.state;
 
+		await pool.execute(`
+			UPDATE modules
+			SET name = ?, state = ?, updateCount = ?
+			WHERE uuid = ?
+		`, [name, state, req.module.updateCount+1, moduleUuid]);
 
+		let useAnd: boolean = false;
+		async function getAnd(b: boolean) {
+			if (!b) {
+				return "";
+			}
+			if (!useAnd) {
+				useAnd = true;
+				return "";
+			}
+			return " and";
+		}
+
+		const 	nameChanged = name != req.module.name,
+				stateChanged = state != req.module.state;
+		
+		const msg: any =
+			`{
+				"module": "${req.module.name}",
+				"content": "${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(stateChanged)}${stateChanged ? " state" : ""}",
+				"type": "${FeedMessages.EDIT}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
+
+		res.status(200).json(await findModuleByUUID(moduleUuid));
+			
+	} catch (error) {
+		console.error("Error updating module:", error);
+		res.status(500).json({ error: "Failed to update module" });
+	}
+});
+
+courseRoutes.delete("/:uuid/modules/:moduleUuid", checkCourse, checkModule, authenticate, async (req, res) => {
+	try {
+		const moduleUuid = req.params.moduleUuid;
+
+		await pool.execute(`
+			DELETE FROM modules WHERE uuid = ?
+		`,[moduleUuid]);
+
+		const msg: any =
+			`{
+				"content": "Module '${req.module.name}'",
+				"type": "${FeedMessages.DELETE}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
+
+		res.status(204).json({ message: "Module deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting module:", error);
+		res.status(500).json({ error: "Failed to delete module" });
+	}
+});
 
 /** MATERIALS */
 /** GET/POST on /courses/:uuid/modules/:moduleUuid/materials/ */
@@ -354,7 +435,14 @@ courseRoutes.post("/:uuid/modules/:moduleUuid/materials", checkCourse, checkModu
 		res.status(500).json({ error: "Failed to create material" });
 	}
 }, async (req, res) => {
-	await updateCourseByUUID(req.params.uuid, `Material '${req.name}' ${FeedMessages.CREATE}`);
+	const msg: any =
+		`{
+			"moduleUuid": "${req.params.moduleUuid}",
+			"module": "${req.module.name}",
+			"content": "Material '${req.name}'",
+			"type": "${FeedMessages.CREATE}"
+		}`
+	await updateCourseByUUID(req.params.uuid, msg);
 
 	const [materials] = await pool.execute(`
 		SELECT * FROM materials WHERE uuid = ?
@@ -457,7 +545,14 @@ courseRoutes.put("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkCour
 		WHERE uuid = ?
 	`, [req.material.updateCount+1, req.material.uuid]);
 
-	await updateCourseByUUID(req.params.uuid, `Material '${req.name}'${(req.name != req.material.name ? ` (originally '${req.material.name}')` : "")} ${FeedMessages.EDIT}`);
+	const msg: any =
+		`{
+			"moduleUuid": "${req.params.moduleUuid}",
+			"module": "${req.module.name}",
+			"content": "Material '${req.material.name}'",
+			"type": "${FeedMessages.EDIT}"
+		}`
+	await updateCourseByUUID(req.params.uuid, msg);
 
 	res.status(200).json(await findMaterialByUUID(req.material.uuid));
 });
@@ -470,7 +565,14 @@ courseRoutes.delete("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkC
 			DELETE FROM materials WHERE uuid = ?
 		`,[materialUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Material ${req.material.name} ${FeedMessages.DELETE}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Material ${req.material.name}",
+				"type": "${FeedMessages.DELETE}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(204).json({ message: "Material deleted sucessfully" });
 	} catch (error) {
@@ -623,7 +725,14 @@ courseRoutes.post("/:uuid/modules/:moduleUuid/quizzes", checkJSON, checkBody, ch
 			}
 		}
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${title}' ${FeedMessages.CREATE}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${title}'",
+				"type": "${FeedMessages.CREATE}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		const [quizzes] = await pool.execute(`
 			SELECT * FROM quizzes WHERE uuid = ?
@@ -660,7 +769,14 @@ courseRoutes.delete("/:uuid/modules/:moduleUuid/quizzes/:quizUuid", checkCourse,
 			DELETE FROM quizzes WHERE uuid = ?
 		`,[quizUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${req.quiz.title}' ${FeedMessages.DELETE}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${req.quiz.title}'",
+				"type": "${FeedMessages.DELETE}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(204).json(({ message: "Quiz deleted sucessfully" }));
 	} catch (error) {
@@ -789,7 +905,14 @@ courseRoutes.put("/:uuid/modules/:moduleUuid/quizzes/:quizUuid", checkJSON, chec
 			WHERE uuid = ?
 		`,[title, quiz.updateCount+1, desc, quizUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${title}'${(title != quiz.title ? ` (originally '${quiz.title}')` : "")} ${FeedMessages.EDIT}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${req.quiz.title}'",
+				"type": "${FeedMessages.EDIT}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 	} catch (error) {
@@ -896,7 +1019,14 @@ courseRoutes.post("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions", chec
 			WHERE uuid = ?
 		`,[quiz.updateCount+1, quizUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${quiz.title}'",
+				"type": "${FeedMessages.EDIT}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 
@@ -1004,7 +1134,14 @@ courseRoutes.put("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions/:questi
 			WHERE uuid = ?
 		`,[quiz.updateCount+1, quizUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${quiz.title}'",
+				"type": "${FeedMessages.EDIT}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(201).json(await formatQuizJSON(await findQuizByUUID(quizUuid)));
 
@@ -1030,7 +1167,14 @@ courseRoutes.delete("/:uuid/modules/:moduleUuid/quizzes/:quizUuid/questions/:que
 			DELETE FROM questions WHERE uuid = ?
 		`,[questionUuid]);
 
-		await updateCourseByUUID(req.params.uuid, `Quiz '${quiz.title}')} ${FeedMessages.EDIT}`);
+		const msg: any =
+			`{
+				"moduleUuid": "${req.params.moduleUuid}",
+				"module": "${req.module.name}",
+				"content": "Quiz '${quiz.title}'",
+				"type": "${FeedMessages.EDIT}"
+			}`
+		await updateCourseByUUID(req.params.uuid, msg);
 
 		res.status(204).json(({ message: "Question deleted sucessfully" }));
 
@@ -1662,14 +1806,34 @@ async function systemFeedMessage(uuid : string, message : string) {
 	`,[randomUUID(), uuid, Types.FEED_SYSTEM, message, false, Types.FEED_SYSTEM]);
 }
 
+/** Updates module updateCount */
+async function updateModuleByUUID(uuid: string) {
+	const module = await findModuleByUUID(uuid);
+	if (!module) {
+		return;
+	}
+
+	await pool.execute(`
+		UPDATE modules
+		SET updateCount = ?
+		WHERE uuid = ?
+	`, [module.updateCount+1, uuid]);
+}
+
 /** Updates course updateCount */
-async function updateCourseByUUID(uuid : string, message? : string) {
+async function updateCourseByUUID(uuid : string, message? : any) {
 	const course = await findCourseByUUID(uuid);
 	if (!course) {
 		return;
 	}
 
-	if (message != null) systemFeedMessage(uuid, message);
+	if (message != null) {
+		message = JSON.parse(message);
+		if (message.moduleUuid != null) await updateModuleByUUID(message.moduleUuid);
+
+		const msg = `${message.content != null ? message.content : ""}${message.type != null ? " "+message.type : ""}${message.module != null ? " in module '"+message.module+"'" : ""}`;
+		systemFeedMessage(uuid, msg);
+	}
 
 	await pool.execute(`
 		UPDATE courses
