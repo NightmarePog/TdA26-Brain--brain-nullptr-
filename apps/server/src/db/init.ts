@@ -24,13 +24,11 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS users (
 					id INT AUTO_INCREMENT PRIMARY KEY,
-					email VARCHAR(255) NOT NULL,
 					name VARCHAR(255) NOT NULL,
 					password VARCHAR(255) NOT NULL,
-					admin BOOL NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-					CONSTRAINT UC_Person UNIQUE (name,email)
+					CONSTRAINT UC_Person UNIQUE (name)
 				)
 			`);
 			console.log("users OK");
@@ -40,6 +38,10 @@ export async function initDatabase() {
 					uuid CHAR(36) PRIMARY KEY,
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
+					state VARCHAR(255) NOT NULL,
+					theme VARCHAR(255),
+					openedAt TIMESTAMP,
+					closedAt TIMESTAMP,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0
@@ -48,13 +50,27 @@ export async function initDatabase() {
 			console.log("courses OK");
 
 			await pool.execute(`
-				CREATE TABLE IF NOT EXISTS materials (
+				CREATE TABLE IF NOT EXISTS modules (
 					uuid CHAR(36) PRIMARY KEY,
 					courseUuid CHAR(36) NOT NULL,
+					name VARCHAR(255) NOT NULL,
+					state VARCHAR(255) NOT NULL,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
 					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
+				)
+			`);
+			console.log("modules OK");
+
+			await pool.execute(`
+				CREATE TABLE IF NOT EXISTS materials (
+					uuid CHAR(36) PRIMARY KEY,
+					moduleUuid CHAR(36) NOT NULL,
+					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					updateCount INT DEFAULT 0,
+					FOREIGN KEY (moduleUuid) REFERENCES modules(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("materials OK");
@@ -89,14 +105,14 @@ export async function initDatabase() {
 			await pool.execute(`
 				CREATE TABLE IF NOT EXISTS quizzes (
 					uuid CHAR(36) PRIMARY KEY,
-					courseUuid CHAR(36) NOT NULL,
+					moduleUuid CHAR(36) NOT NULL,
 					title VARCHAR(255) NOT NULL,
 					attemptsCount INT DEFAULT 0,
 					description VARCHAR(1000),
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
-					FOREIGN KEY (courseUuid) REFERENCES courses(uuid) ON DELETE CASCADE
+					FOREIGN KEY (moduleUuid) REFERENCES modules(uuid) ON DELETE CASCADE
 				)
 			`);
 			console.log("quizzes OK");
@@ -128,9 +144,9 @@ export async function initDatabase() {
 				CREATE TABLE IF NOT EXISTS answers (
 					uuid CHAR(36) PRIMARY KEY,
 					quizUuid CHAR(36) NOT NULL,
-					userId INT,
 					score INT NOT NULL,
 					maxScore INT NOT NULL,
+					correctPerQuestion VARCHAR(1000) NOT NULL,
 					submittedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					FOREIGN KEY (quizUuid) REFERENCES quizzes(uuid) ON DELETE CASCADE
 				)
@@ -155,16 +171,10 @@ export async function initDatabase() {
 			console.log("\nCreating users..");
 
 			await pool.execute(`
-				INSERT IGNORE INTO users (email, name, password, admin)
-				VALUES (?, ?, ?, ?)
-			`, ["lecturer@email.com", "lecturer", await sha512(`TdA26!${process.env.PASSWORD_SALT}`), true]);
-			console.log("admin user OK");
-
-			await pool.execute(`
-				INSERT IGNORE INTO users (email, name, password, admin)
-				VALUES (?, ?, ?, ?)
-			`, ["student@email.com", "student", await sha512(`1234${process.env.PASSWORD_SALT}`), false]);
-			console.log("student user OK");
+				INSERT IGNORE INTO users (name, password)
+				VALUES (?, ?)
+			`, ["lecturer", await sha512(`TdA26!${process.env.PASSWORD_SALT}`)]);
+			console.log("lecturer OK");
 
 			break;
 
