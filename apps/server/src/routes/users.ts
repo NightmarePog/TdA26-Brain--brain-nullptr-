@@ -87,6 +87,27 @@ export async function authenticate(req : any, res : any, next : any) {
 	});
 }
 
+export async function authenticateOptional(req : any, res : any, next : any) {
+	/** temporary authenticate skip */
+	req.user = {name:"lecturer"};
+	next();
+	return;
+
+	let authToken;
+	try {
+		authToken = req.cookies.auth_token;
+	} catch (err) {};
+	if (authToken == null) next();
+
+	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
+		if (err) return next();
+		const u = await findUser(user.name);
+		if (u == null) next();
+		req.user = user;
+		next();
+	});
+}
+
 export async function findUser(name : string) {
 	const [users] = await pool.execute(`
 			SELECT * FROM users WHERE name = ?
