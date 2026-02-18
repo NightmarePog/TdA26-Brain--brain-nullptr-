@@ -3,7 +3,7 @@ import multer from 'multer';
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
-import { authenticate, findUser } from "./users";
+import { authenticate, authenticateOptional, findUser } from "./users";
 
 enum Types {
 	MATERIAL_FILE = "file",
@@ -211,10 +211,17 @@ courseRoutes.post("/:uuid/state", checkJSON, checkBody, checkCourse, authenticat
 
 /** MODULES */
 /** GET/POST on /courses/:uuid/modules/ */
-courseRoutes.get("/:uuid/modules", checkCourse, async (req, res) => {
+courseRoutes.get("/:uuid/modules", checkCourse, authenticateOptional, async (req, res) => {
 	try {
 		const uuid : string = req.params.uuid;
 		const modules = await getModulesByCourseUUID(uuid);
+		const isLecturer = req.user != null && await findUser(req.user.name);
+
+		for (const module of modules) {
+			delete module.materials;
+			delete module.quizzes;
+		}
+
 		res.status(200).json(modules);
 	} catch (error) {
 		console.error("Error fetching modules:", error);
@@ -254,9 +261,17 @@ courseRoutes.post("/:uuid/modules", checkJSON, checkBody, checkCourse, authentic
 });
 
 /** GET/PUT/DELETE on /courses/:uuid/modules/:moduleUuid/ */
-courseRoutes.get("/:uuid/modules/:moduleUuid", checkCourse, checkModule, async (req, res) => {
+courseRoutes.get("/:uuid/modules/:moduleUuid", checkCourse, checkModule, authenticateOptional, async (req, res) => {
 	try {
-		res.status(200).json(await formatModuleJSON(req.module));
+		const module = await formatModuleJSON(req.module);
+		const isLecturer = req.user != null && await findUser(req.user.name);
+
+		if (!isLecturer && module.state == Types.MODULE_CLOSED) {
+			delete module.materials;
+			delete module.quizzes;
+		}
+
+		res.status(200).json(module);
 	} catch (error) {
 		console.error("Error fetching module:", error);
 		res.status(500).json({ error: "Failed to fetch module" });
