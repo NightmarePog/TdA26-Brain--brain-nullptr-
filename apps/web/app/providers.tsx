@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import Navbar from "@/components/layouts/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
+import Footer from "@/features/footer/footer";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -21,6 +22,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Navbar />
         {children}
         <Toaster />
+        <Footer />
       </ThemeProvider>
     </QueryClientProvider>
   );
