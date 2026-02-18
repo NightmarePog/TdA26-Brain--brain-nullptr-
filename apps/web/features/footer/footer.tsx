@@ -14,7 +14,7 @@ export default function Footer() {
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Aplikace co přináší do učení zábavu a výzvu k vývoji výsledků.
-              Připoj se ještě dnes!1
+              Připoj se ještě dnes!
             </p>
           </div>
 
