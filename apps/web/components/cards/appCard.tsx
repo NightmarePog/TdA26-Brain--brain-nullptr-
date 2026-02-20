@@ -44,7 +44,7 @@ const AppCard: React.FC<AppCardProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: -10 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="px-4 mb-6"
+        className=" mb-6"
       >
         <Card className="relative mx-auto max-w-sm pt-0 w-80 overflow-hidden">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
