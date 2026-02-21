@@ -14,6 +14,7 @@ const NavbarButton = ({ children, className, onClick }: Props) => {
     <Button
       type="button"
       variant={"ghost"}
+      size={"lg"}
       className={
         "cursor-pointer p-4 m-1   transition-colors duration-200 gap-4 font-bold " +
         className +

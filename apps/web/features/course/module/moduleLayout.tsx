@@ -3,9 +3,6 @@
 import { Separator } from "@/components/ui/separator";
 import ModulesPageHeader from "./modulesPageHeader";
 import ModuleCardLayout from "./moduleCardLayout";
-import ModuleFeedScreen from "./moduleFeedScreen";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import useSidebar from "@/features/sidebar/useSidebar";
 import { useEffect } from "react";
 
 export const TEST_MODULE_CARDS = [
@@ -32,8 +29,6 @@ export const TEST_MODULE_CARDS = [
 ];
 
 const ModuleLayout = () => {
-  const { open } = useSidebar();
-  useEffect(() => open(), [open]);
   return (
     <div className="w-full gap-6 p-6">
       {/* Levý panel */}

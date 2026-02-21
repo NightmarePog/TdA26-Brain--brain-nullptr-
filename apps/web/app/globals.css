@@ -72,7 +72,7 @@
 
     /* MUTED: Místo šedé použijeme jemný nádech brandové modro-zelené */
     --muted: #f0f7fa;
-    --muted-foreground: #49b3b4; /* Jedna z tvých doplňkových barev pro neaktivní text */
+    --muted-foreground: #000000; /* Jedna z tvých doplňkových barev pro neaktivní text */
 
     /* ACCENT: Tady to září. Mint zelená pro aktivní stavy a zvýraznění. */
     --accent: #91f5ad;

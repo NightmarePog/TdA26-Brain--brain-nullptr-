@@ -46,7 +46,7 @@ const AppCard: React.FC<AppCardProps> = ({
         transition={{ duration: 0.3, ease: "easeOut" }}
         className=" mb-6"
       >
-        <Card className="relative mx-auto max-w-sm pt-0 w-80 overflow-hidden">
+        <Card className="relative mx-auto max-w-sm pt-0 w-80 overflow-hidden bg-foreground/10">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img
             src="https://avatar.vercel.sh/shadcn1"

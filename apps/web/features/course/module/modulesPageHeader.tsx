@@ -41,7 +41,9 @@ const ModulePageHeader = ({
         <ModuleNotificationDropdown notificationCount={notificationCount} />
       </div>
       <div>
-        <Text className="text-gray-400 max-w-200">{courseDescription}</Text>
+        <Text className="text-foreground/80 max-w-200">
+          {courseDescription}
+        </Text>
       </div>
     </div>
   );
