@@ -12,6 +12,8 @@ import {
   UrlMaterialUpdateRequest,
 } from "@/types/api/materials";
 import {
+  QuestionCreateRequest,
+  QuestionUpdateRequest,
   Quiz,
   QuizCreateRequest,
   QuizSubmitRequest,
@@ -24,7 +26,7 @@ import {
   FeedUpdateRequest,
   StreamResponse,
 } from "@/types/api/feed";
-import { userLoginReceive, userLoginSend } from "@/types/api/user";
+import { User, UserLoginReceive, UserLoginSend } from "@/types/api/users";
 import axios from "axios";
 import { appConfig } from "@/const/config";
 
@@ -32,6 +34,8 @@ import materials from "@/const/material";
 import { quizzes } from "@/const/quizzes";
 import { feedItems } from "@/const/feed";
 import { courses } from "@/const/courses";
+import { modules } from "@/const/modules";
+import { Module, ModuleCreateRequest, ModuleDetails, ModuleUpdateRequest } from "@/types/api/modules";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -69,39 +73,69 @@ export const CoursesApi = {
     return res.data as string;
   },
   /**
+   * MODULES
+   */
+  modules: {
+    getAll: async (uuid: string) => {
+      if (appConfig.frontendDebug) return modules;
+      const res = await api.get(`/courses/${uuid}/modules`);
+      return res.data as Module[];
+    },
+    post: async (uuid: string, data: ModuleCreateRequest) => {
+      if (appConfig.frontendDebug) return modules[1];
+      const res = await api.post(`/courses/${uuid}/modules`, data);
+      return res.data as Module;
+    },
+    get: async (uuid: string, moduleUuid: string) => {
+      if (appConfig.frontendDebug) return modules[1];
+      const res = await api.get(`/courses/${uuid}/modules/${moduleUuid}`);
+      return res.data as ModuleDetails;
+    },
+    put: async (uuid: string, moduleUuid : string, data: ModuleUpdateRequest) => {
+      const res = await api.put(`/courses/${uuid}/modules/${moduleUuid}`, data);
+      return res.data as Module;
+    },
+    delete: async (uuid: string, moduleUuid: string) => {
+      const res = await api.delete(`/courses/${uuid}/modules/${moduleUuid}`);
+      return res.data as string;
+    }
+  },
+  /**
    * MATERIALS
    */
   materials: {
-    getAll: async (uuid: string) => {
+    getAll: async (uuid: string, moduleUuid: string) => {
       if (appConfig.frontendDebug) return materials;
-      const res = await api.get(`/courses/${uuid}/materials`);
+      const res = await api.get(`/courses/${uuid}/modules/${moduleUuid}/materials`);
       return res.data as Material[];
     },
-    get: async (courseId: string, materialId: string) => {
+    get: async (uuid: string, moduleUuid: string, materialUuid: string) => {
       if (appConfig.frontendDebug) return materials[1];
-      const res = await api.get(`/courses/${courseId}/materials/${materialId}`);
+      const res = await api.get(`/courses/${uuid}/modules/${moduleUuid}/materials/${materialUuid}`);
       return res.data as Material;
     },
     post: async (
       uuid: string,
+      moduleUuid: string,
       data: UrlMaterialCreateRequest | FileMaterialCreateRequest,
     ) => {
-      const res = await api.post(`/courses/${uuid}/materials`, data);
+      const res = await api.post(`/courses/${uuid}/modules/${moduleUuid}/materials`, data);
       return res.data as Material;
     },
     put: async (
       uuid: string,
+      moduleUuid: string,
       materialUuid: string,
       data: FileMaterialUpdateRequest | UrlMaterialUpdateRequest,
     ) => {
       const res = await api.put(
-        `/courses/${uuid}/materials/${materialUuid}`,
+        `/courses/${uuid}/modules/${moduleUuid}/materials/${materialUuid}`,
         data,
       );
       return res.data as Material;
     },
-    delete: async (uuid: string, materialUuid: string) => {
-      const res = await api.put(`/courses/${uuid}/materials/${materialUuid}`);
+    delete: async (uuid: string, moduleUuid: string, materialUuid: string) => {
+      const res = await api.put(`/courses/${uuid}/modules/${moduleUuid}/materials/${materialUuid}`);
       return res.data as string;
     },
   },
@@ -109,31 +143,45 @@ export const CoursesApi = {
    * QUIZZES
    */
   quizzes: {
-    getAll: async (uuid: string) => {
+    getAll: async (uuid: string, moduleUuid: string) => {
       if (appConfig.frontendDebug) return quizzes;
-      const res = await api.get(`/courses/${uuid}/quizzes`);
+      const res = await api.get(`/courses/${uuid}/modules/${moduleUuid}/quizzes`);
       return res.data as Quiz[];
     },
-    post: async (uuid: string, data: QuizCreateRequest) => {
-      const res = await api.post(`/courses/${uuid}/quizzes`, data);
+    post: async (uuid: string, moduleUuid: string, data: QuizCreateRequest) => {
+      const res = await api.post(`/courses/${uuid}/modules/${moduleUuid}/quizzes`, data);
       return res.data as Quiz;
     },
-    get: async (uuid: string, quizUuid: string) => {
+    get: async (uuid: string, moduleUuid: string, quizUuid: string) => {
       if (appConfig.frontendDebug) return quizzes[0];
-      const res = await api.post(`/courses/${uuid}/quizzes/${quizUuid}`);
+      const res = await api.post(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}`);
       return res.data as Quiz;
     },
-    put: async (uuid: string, quizUuid: string, data: QuizUpdateRequest) => {
-      const res = await api.put(`/courses/${uuid}/quizzes/${quizUuid}`, data);
+    put: async (uuid: string, moduleUuid: string, quizUuid: string, data: QuizUpdateRequest) => {
+      const res = await api.put(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}`, data);
       return res.data as Quiz;
     },
-    delete: async (uuid: string, quizUuid: string) => {
-      const res = await api.put(`/courses/${uuid}/quizzes/${quizUuid}`);
+    delete: async (uuid: string, moduleUuid: string, quizUuid: string) => {
+      const res = await api.put(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}`);
+      return res.data as string;
+    },
+
+    questionsPost: async (uuid: string, moduleUuid: string, quizUuid: string, data: QuestionCreateRequest) => {
+      const res = await api.post(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}/questions`, data);
+      return res.data as Quiz;
+    },
+    questionsPut: async (uuid: string, moduleUuid: string, quizUuid: string, questionUuid: string, data: QuestionUpdateRequest) => {
+      const res = await api.put(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}/questions/${questionUuid}`, data);
+      return res.data as Quiz;
+    },
+    questionsDelete: async (uuid: string, moduleUuid: string, quizUuid: string, questionUuid: string) => {
+      const res = await api.delete(`/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}/questions/${questionUuid}`);
       return res.data as string;
     },
 
     postSubmit: async (
       uuid: string,
+      moduleUuid: string,
       quizUuid: string,
       data: QuizSubmitRequest,
     ) => {
@@ -155,7 +203,7 @@ export const CoursesApi = {
 
       // normální API call
       const res = await api.post(
-        `/courses/${uuid}/quizzes/${quizUuid}/submit`,
+        `/courses/${uuid}/modules/${moduleUuid}/quizzes/${quizUuid}/submit`,
         data,
       );
       return res.data as QuizSubmitResponse;
@@ -190,14 +238,24 @@ export const CoursesApi = {
 };
 
 export const userApi = {
-  post: async (data: userLoginSend) => {
+  get: async () => {
+    if (appConfig.frontendDebug) {
+      return {
+        name: "lecturer",
+      };
+    }
+
+    const res = await api.get(`/users/auth`);
+    return res.data as User;
+  },
+  post: async (data: UserLoginSend) => {
     if (appConfig.frontendDebug) {
       return {
         message: "Login successful",
-      } as userLoginReceive;
+      } as UserLoginReceive;
     }
 
     const res = await api.post(`/users/login`, data);
-    return res.data as userLoginReceive;
+    return res.data as UserLoginReceive;
   },
 };

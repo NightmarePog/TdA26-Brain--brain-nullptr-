@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { userApi } from "@/lib/api";
-import { userLoginSend } from "@/types/api/user";
+import { userLoginSend } from "@/types/api/users";
 import { Password } from "phosphor-react";
 import { useRouter } from "next/navigation";
 
