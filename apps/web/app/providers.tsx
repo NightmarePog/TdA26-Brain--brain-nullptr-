@@ -11,7 +11,6 @@ import Navbar from "@/components/layouts/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import Footer from "@/features/footer/footer";
-import useSidebar from "@/features/sidebar/useSidebar";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
