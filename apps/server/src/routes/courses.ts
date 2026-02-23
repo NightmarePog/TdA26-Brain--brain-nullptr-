@@ -236,14 +236,18 @@ courseRoutes.post("/:uuid/modules", checkJSON, checkBody, checkCourse, authentic
 			res.status(400).json({ message: "Missing name" });
 			return;
 		}
+		const desc: string = req.body.description != null ? req.body.description : "";
 
 		const uuid: string = randomUUID();
 		const courseUuid: string = req.params.uuid;
 
+		const modules: any = await getModulesByCourseUUID(courseUuid);
+		const moduleCount: number = modules != null ? modules.length : 0;
+
 		await pool.execute(`
-			INSERT INTO modules (uuid, courseUuid, name, state)
-			VALUES (?, ?, ?, ?)
-		`,[uuid, courseUuid, name, Types.MODULE_CLOSED]);
+			INSERT INTO modules (uuid, courseUuid, name, description, idx, state)
+			VALUES (?, ?, ?, ?, ?, ?)
+		`,[uuid, courseUuid, name, desc, moduleCount, Types.MODULE_CLOSED]);
 
 		const msg: any =
 			`{
@@ -328,6 +332,13 @@ courseRoutes.delete("/:uuid/modules/:moduleUuid", checkCourse, checkModule, auth
 		await pool.execute(`
 			DELETE FROM modules WHERE uuid = ?
 		`,[moduleUuid]);
+
+		await pool.execute(`
+			UPDATE modules
+			SET idx = idx - 1
+			WHERE courseUuid = ? AND idx > ?
+		`, [req.params.uuid, req.module.idx]);
+
 
 		const msg: any =
 			`{
@@ -1612,7 +1623,7 @@ async function findFeedByUUID(uuid : string) {
 async function getModulesByCourseUUID(uuid : string) {
 	if (!(await findCourseByUUID(uuid))) return;
 	const [modules] = await pool.execute(`
-			SELECT * FROM modules WHERE courseUuid = ? ORDER BY createdAt DESC
+			SELECT * FROM modules WHERE courseUuid = ? ORDER BY idx ASC
 	`,[uuid]);
 	for (const entry of modules) {
 		await formatModuleJSON(entry);

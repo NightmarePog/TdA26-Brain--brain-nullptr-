@@ -55,6 +55,8 @@ export async function initDatabase() {
 					courseUuid CHAR(36) NOT NULL,
 					name VARCHAR(255) NOT NULL,
 					state VARCHAR(255) NOT NULL,
+					description VARCHAR(255),
+					idx INT DEFAULT 0,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
