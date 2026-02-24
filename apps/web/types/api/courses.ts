@@ -3,7 +3,7 @@ export type CourseCreateRequest = {
   description?: string;
   theme?: string;
   openedAt?: string;
-  closedAt?: string; 
+  closedAt?: string;
 };
 
 export type CourseUpdateRequest = {
@@ -18,6 +18,8 @@ export type CourseStateUpdateRequest = {
   state: "draft" | "life" | "archived" | "paused";
 };
 
+export type CourseStates = "draft" | "life" | "archived" | "paused";
+
 export type Course = {
   uuid: string;
   name: string;
@@ -29,7 +31,7 @@ export type Course = {
   createdAt: string;
   updatedAt: string;
   updateCount: number;
-}
+};
 
 export type CourseDetails = {
   uuid: string;

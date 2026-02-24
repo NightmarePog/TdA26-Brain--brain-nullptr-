@@ -8,7 +8,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "http.cat",
-        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatar.vercel.sh",
         pathname: "/**",
       },
     ],

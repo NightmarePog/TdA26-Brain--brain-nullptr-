@@ -1,6 +1,7 @@
 import PageTitle from "@/components/typography/pageTitle";
 import Text from "@/components/typography/text";
 import { Card } from "@/components/ui/card";
+import { getRandomFact } from "@/const/cool-facts";
 import Image from "next/image";
 
 const COURSES_MOTIVATIONAL_TEXT =
@@ -26,7 +27,7 @@ const CoursesHeader = () => {
             />
             <div className="p-5">
               <Text className="text-2xl font-bold">Věděl jsi že?</Text>
-              <Text>nejaky cool fact</Text>
+              <Text>{getRandomFact()}</Text>
             </div>
           </div>
         </Card>

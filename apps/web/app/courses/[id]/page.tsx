@@ -1,17 +1,7 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import ModuleLayout from "@/features/course/module/moduleLayout";
 
-export default function CourseRouter({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const router = useRouter();
-  const { id } = use(params);
-  useEffect(() => {
-    router.push(`/courses/${id}/materials`);
-  }, [id, router]);
+const ModuleTestPage = () => {
+  return <ModuleLayout />;
+};
 
-  return null;
-}
+export default ModuleTestPage;
