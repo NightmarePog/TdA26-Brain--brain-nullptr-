@@ -320,12 +320,11 @@ export const userApi = {
     return res.data as UserLoginReceive;
   },
 
-  check: async () => {
+  check: async (): Promise<boolean> => {
     if (appConfig.frontendDebug) {
       return true;
     }
-
     const res = await api.post(`/users/login/auth`);
-    return res.data;
+    return res.data as boolean;
   },
 };

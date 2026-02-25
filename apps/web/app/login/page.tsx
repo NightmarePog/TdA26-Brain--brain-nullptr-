@@ -20,13 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { userApi } from "@/lib/api";
-<<<<<<< HEAD
-import { userLoginSend } from "@/types/api/user";
-=======
-import { userLoginSend } from "@/types/api/users";
-import { Password } from "phosphor-react";
->>>>>>> courses
+
 import { useRouter } from "next/navigation";
+import { UserLoginSend } from "@/types/api/users";
 
 const formSchema = z.object({
   username: z.string().min(1, "Zadej uživatelské jméno"),
@@ -46,8 +42,8 @@ const Login = () => {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    const dataSend: userLoginSend = {
-      nameOrEmail: data.username,
+    const dataSend: UserLoginSend = {
+      name: data.username,
       password: data.password,
     };
     toast.promise(userApi.post(dataSend), {

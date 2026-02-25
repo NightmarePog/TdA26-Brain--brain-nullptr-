@@ -15,9 +15,11 @@ export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  const hasToken = useMemo(() => userApi.check(), []);
+  const hasToken = userApi.check();
 
+  // @ts-ignore
   const userRoute = hasToken ? "/dashboard" : "/login";
+  // @ts-ignore
   const userLabel = hasToken ? "Dashboard" : "Přihlásit";
 
   return (

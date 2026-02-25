@@ -11,6 +11,8 @@ type FileMaterial = {
   updateCount: number;
 };
 
+export type ModuleState = "open" | "closed";
+
 type UrlMaterial = {
   uuid: string;
   name: string;
