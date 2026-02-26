@@ -71,6 +71,29 @@ export default function Footer() {
           </div>
         </div>
 
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium">Informace</h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>
+              <Link
+                href="terms-of-use"
+                className="transition-colors hover:text-foreground"
+              >
+                O nás
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="gdpr"
+                className="transition-colors hover:text-foreground"
+              >
+                Kontakty
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+
         <Separator className="my-8 bg-border" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground md:flex-row">

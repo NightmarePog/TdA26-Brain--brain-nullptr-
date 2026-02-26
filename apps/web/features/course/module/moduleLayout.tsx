@@ -9,6 +9,12 @@ import { Module, ModulesRecieve } from "@/types/api/modules";
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import ErrorLabel from "@/components/typography/errorText";
+import ModuleList from "./moduleList/moduleList";
+import ModuleListHeader from "./moduleList/moduleListHeader";
+import ModuleAction from "./moduleList/moduleListItem";
+import { Button } from "@/components/ui/button";
+import ModuleListAction from "./moduleList/ModuleListAction";
+import ModuleListItem from "./moduleList/moduleListItem";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
@@ -24,21 +30,18 @@ const ModuleLayout = () => {
   return (
     <div className="w-full gap-6 p-6">
       <div className="flex-1 space-y-5">
-        <ModulesPageHeader
-          courseName={data.courseName}
-          moduleCount={data.count}
-          courseDescription={data.description}
-          doneModules={5}
-          unfinishedModules={10}
-          notificationCount={0}
-        />
-        <Separator />
-        <ModuleCardLayout
-          cards={data.modules.map((module) => ({
-            name: module.name,
-            description: module.description || "",
-          }))}
-        />
+        <ModuleList>
+          <ModuleListHeader>Module 1: Introduction</ModuleListHeader>
+          <ModuleListItem type="pdf">
+            <ModuleListAction>bwa</ModuleListAction>
+          </ModuleListItem>
+          <ModuleListItem type="word">
+            <ModuleListAction>bwa</ModuleListAction>
+          </ModuleListItem>
+          <ModuleListItem type="pdf">
+            <ModuleListAction>bwa</ModuleListAction>
+          </ModuleListItem>
+        </ModuleList>
       </div>
     </div>
   );

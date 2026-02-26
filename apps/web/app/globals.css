@@ -68,7 +68,7 @@
     /* SECONDARY: Použijeme tu světlejší tyrkysovou z doplňkových barev.
        Skvělé pro sekundární tlačítka nebo pozadí sekcí. */
     --secondary: #ddf7f0; /* Velmi světlá verze tvé 6DD4B1 */
-    --secondary-foreground: #0070bb;
+    --secondary-foreground: #64748b;
 
     /* MUTED: Místo šedé použijeme jemný nádech brandové modro-zelené */
     --muted: #f0f7fa;
@@ -117,7 +117,7 @@
 
     /* Sekundární prvky tmavší tyrkysová */
     --secondary: #1e2f38;
-    --secondary-foreground: #6dd4b1;
+    --secondary-foreground: #64748b;
 
     /* Muted prvky tmavě šedomodré */
     --muted: #2a2a2a;
