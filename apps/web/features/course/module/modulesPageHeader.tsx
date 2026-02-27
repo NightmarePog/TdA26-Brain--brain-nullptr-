@@ -24,7 +24,7 @@ const ModulePageHeader = ({
   notificationCount,
 }: ModulePageHeaderProps) => {
   return (
-    <div className="p-5">
+    <div className="p-5 min-w-[50%]">
       <PageTitle>{courseName}</PageTitle>
       <div className="flex justify-between">
         <div className="lg:flex gap-5 ">

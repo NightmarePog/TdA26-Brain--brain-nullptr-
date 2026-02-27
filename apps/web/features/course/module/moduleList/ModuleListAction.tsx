@@ -8,7 +8,7 @@ interface ModuleActionProps {
 const ModuleListAction = ({ children }: ModuleActionProps) => {
   return (
     <div className="flex items-center space-x-2  p-5 w-full h-full">
-      <p className="text-2xl font-bold">{children}</p>
+      <p className="text-2xl ">{children}</p>
     </div>
   );
 };

@@ -20,8 +20,8 @@ interface ModuleActionProps {
 const ModuleListItem = ({ children, type, onAction }: ModuleActionProps) => {
   return (
     <div
-      className="flex justify-between items-center  bg-foreground/10 border border-secondary-foreground last:rounded-b-2xl
-                    transition-all duration-300 ease-in-out hover:bg-foreground-20 hover:shadow-lg cursor-pointer hover:bg-secondary-foreground/10"
+      className="flex justify-between items-center  bg-foreground/5 border border-secondary-foreground last:rounded-b-2xl
+                    transition-all duration-300 ease-in-out hover:bg-white/10 hover:shadow-lg cursor-pointer "
     >
       <div className="flex justify-between w-full mx-5">
         <div
