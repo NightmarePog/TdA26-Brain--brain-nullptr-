@@ -3,34 +3,18 @@ import { Check } from "lucide-react";
 import { FilePdf, MicrosoftPowerpointLogo } from "phosphor-react";
 import { ReactNode } from "react";
 
-export type FileType = "pdf" | "word";
-
-export type StringToIconMap = Record<FileType, ReactNode>;
-
-export const stringToIcon: StringToIconMap = {
-  pdf: <FilePdf className="text-2xl text-red-600" />,
-  word: <MicrosoftPowerpointLogo className="text-2xl" />,
-};
 interface ModuleActionProps {
   children: ReactNode;
-  type: FileType;
-  onAction?: () => void;
 }
 
-const ModuleListItem = ({ children, type, onAction }: ModuleActionProps) => {
+const ModuleListItem = ({ children }: ModuleActionProps) => {
   return (
     <div
-      className="flex justify-between items-center  bg-foreground/5 border border-secondary-foreground last:rounded-b-2xl
-                    transition-all duration-300 ease-in-out hover:bg-white/10 hover:shadow-lg cursor-pointer "
+      className="flex justify-between items-center border border-secondary-foreground/30 last:rounded-b-2xl
+                    transition-all duration-300 ease-in-out hover:bg-secondary hover:shadow-lg cursor-pointer "
     >
       <div className="flex justify-between w-full mx-5">
-        <div
-          className="flex items-center w-full h-full"
-          onClick={() => onAction?.()}
-        >
-          {stringToIcon[type]}
-          <div className="ml-2">{children}</div>
-        </div>
+        {children}
         <Button className="m-5" variant={"ghost"}>
           <Check />
         </Button>

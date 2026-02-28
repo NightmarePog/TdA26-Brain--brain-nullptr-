@@ -13,6 +13,7 @@ import ModuleListAction from "./moduleList/ModuleListAction";
 import ModuleListItem from "./moduleList/moduleListItem";
 import PageTitle from "@/components/typography/pageTitle";
 import { ModuleChart } from "./moduleChart";
+import ModuleQuizStartDialog from "./moduleList/moduleQuizStartDialog";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
@@ -28,7 +29,7 @@ const ModuleLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex gap-8">
+      <div className="lg:flex gap-8">
         <div className="flex-1">
           <ModulePageHeader
             doneModules={0}
@@ -48,16 +49,22 @@ const ModuleLayout = () => {
           <ModuleList>
             <ModuleListHeader>Module 1: vývoj v jazyce</ModuleListHeader>
 
-            <ModuleListItem type="pdf">
-              <ModuleListAction>informace o IDE</ModuleListAction>
+            <ModuleListItem>
+              <ModuleListAction type="pdf">informace o IDE</ModuleListAction>
             </ModuleListItem>
 
-            <ModuleListItem type="word">
-              <ModuleListAction>pip</ModuleListAction>
+            <ModuleListItem>
+              <ModuleListAction type="word">pip</ModuleListAction>
             </ModuleListItem>
 
-            <ModuleListItem type="pdf">
-              <ModuleListAction>python interpreter</ModuleListAction>
+            <ModuleListItem>
+              <ModuleQuizStartDialog quizName="pip">
+                <ModuleListAction type="word">pip</ModuleListAction>
+              </ModuleQuizStartDialog>
+            </ModuleListItem>
+
+            <ModuleListItem>
+              <ModuleListAction type="pdf">python interpreter</ModuleListAction>
             </ModuleListItem>
           </ModuleList>
         </div>

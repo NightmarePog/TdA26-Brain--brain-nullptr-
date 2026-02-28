@@ -36,6 +36,12 @@ const chartData = [
   { month: "June", desktop: 214, mobile: 140 },
 ];
 
+const testData = [
+  { name: "modul 1", percentage: 80 },
+  { name: "modul 2", percentage: 40 },
+  { name: "modul 3", percentage: 20 },
+  { name: "modul 4", percentage: 10 },
+];
 const chartConfig = {
   desktop: {
     label: "Desktop",
@@ -43,7 +49,7 @@ const chartConfig = {
   },
   mobile: {
     label: "Mobile",
-    color: "var(--chart-2)",
+    color: "var(--chart-1)",
   },
   label: {
     color: "var(--background)",
@@ -54,14 +60,13 @@ export function ModuleChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Custom Label</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Statistiky dokončení kurzů</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={testData}
             layout="vertical"
             margin={{
               right: 16,
@@ -69,7 +74,7 @@ export function ModuleChart() {
           >
             <CartesianGrid horizontal={false} />
             <YAxis
-              dataKey="month"
+              dataKey="name"
               type="category"
               tickLine={false}
               tickMargin={10}
@@ -77,19 +82,19 @@ export function ModuleChart() {
               tickFormatter={(value) => value.slice(0, 3)}
               hide
             />
-            <XAxis dataKey="desktop" type="number" hide />
+            <XAxis dataKey="percentage" type="number" hide />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
             <Bar
-              dataKey="desktop"
+              dataKey="percentage"
               layout="vertical"
               fill="var(--color-primary)"
               radius={4}
             >
               <LabelList
-                dataKey="month"
+                dataKey="name"
                 position="insideLeft"
                 offset={8}
                 className="fill-(--color-foreground)"
@@ -106,14 +111,6 @@ export function ModuleChart() {
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   );
 }
