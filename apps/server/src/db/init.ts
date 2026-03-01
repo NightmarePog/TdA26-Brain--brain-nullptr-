@@ -41,7 +41,8 @@ export async function initDatabase() {
 					state VARCHAR(255) NOT NULL,
 					theme VARCHAR(255),
 					openedAt TIMESTAMP,
-					duration TIMESTAMP,
+					closedAt TIMESTAMP,
+					pausedAt TIMESTAMP,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0
