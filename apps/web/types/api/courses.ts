@@ -3,7 +3,7 @@ export type CourseCreateRequest = {
   description?: string;
   theme?: string;
   openedAt?: string;
-  closedAt?: string; 
+  duration?: string;
 };
 
 export type CourseUpdateRequest = {
@@ -15,7 +15,7 @@ export type CourseUpdateRequest = {
 };
 
 export type CourseStateUpdateRequest = {
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
 };
 
 export type Course = {
@@ -23,7 +23,7 @@ export type Course = {
   name: string;
   description?: string;
   theme?: string;
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
   createdAt: string;
@@ -36,7 +36,7 @@ export type CourseDetails = {
   name: string;
   description?: string;
   theme?: string;
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
   createdAt: string;

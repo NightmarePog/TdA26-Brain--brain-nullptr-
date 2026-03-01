@@ -15,6 +15,7 @@ enum Types {
 	COURSE_DRAFT = "draft",
 	COURSE_LIFE = "life",
 	COURSE_ARCHIVED = "archived",
+	COURSE_SCHEDULED = "scheduled",
 	COURSE_PAUSED = "paused",
 	MODULE_OPEN = "open",
 	MODULE_CLOSED = "closed",
@@ -61,9 +62,10 @@ export const courseRoutes = express.Router();
 
 /** COURSES */
 /** GET/POST on /courses/ */
-courseRoutes.get("/", async (req, res) => {
+courseRoutes.get("/", authenticateOptional, async (req, res) => {
 	try {
-		const [courses] = await pool.execute("SELECT * FROM courses ORDER BY createdAt DESC");
+		const isLecturer = req.user != null && await findUser(req.user.name);
+		const [courses] = await pool.execute(`SELECT * FROM courses ${!isLecturer && "WHERE state != 'draft' AND state != 'archived'" || ""} ORDER BY createdAt DESC`);
 		res.status(200).json(courses);
 	} catch (error) {
 		console.error("Error fetching course summaries:", error);
@@ -83,12 +85,12 @@ courseRoutes.post("/", checkJSON, checkBody, authenticate, async (req, res) => {
 		const desc: string = req.body.description || "";
 		const theme: string = req.body.theme || "";
 		const openedAt: string = req.body.openedAt != null ? req.body.openedAt : null;
-		const closedAt: string = req.body.closedAt != null ? req.body.closedAt : null;
+		const duration: string = req.body.duration != null ? req.body.duration : null;
 
 		await pool.execute(`
-			INSERT INTO courses (uuid, name, description, state, theme, openedAt, closedAt)
+			INSERT INTO courses (uuid, name, description, state, theme, openedAt, duration)
 			VALUES (?, ?, ?, ?, ?, ?, ?)
-		`,[uuid, name, desc, Types.COURSE_DRAFT, theme, openedAt, closedAt]);
+		`,[uuid, name, desc, Types.COURSE_DRAFT, theme, openedAt, duration]);
 
 		const course = await findCourseByUUID(uuid);
 		res.status(201).json(course);
@@ -130,13 +132,13 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 		const desc: string = req.body.description != null ? req.body.description : req.course.description;
 		const theme: string = req.body.theme != null ? req.body.theme : req.course.theme;
 		const openedAt: string = req.body.openedAt != null ? req.body.openedAt : req.course.openedAt;
-		const closedAt: string = req.body.closedAt != null ? req.body.closedAt : req.course.closedAt;
+		const duration: string = req.body.duration != null ? req.body.duration : req.course.duration;
 
 		await pool.execute(`
 			UPDATE courses
-			SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?
+			SET name = ?, description = ?, theme = ?, openedAt = ?, duration = ?
 			WHERE uuid = ?
-		`, [name, desc, theme, openedAt, closedAt, uuid]);
+		`, [name, desc, theme, openedAt, duration, uuid]);
 
 		let useAnd: boolean = false;
 		async function getAnd(b: boolean) {
@@ -153,12 +155,12 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 		const 	nameChanged = name != req.course.name,
 				descChanged = desc != req.course.description,
 				openedAtChanged = openedAt != req.course.openedAt,
-				closedAtChanged = closedAt != req.course.closedAt,
+				durationChanged = duration != req.course.duration,
 				themeChanged = theme != req.course.theme;
 		
 		const msg: any =
 		`{
-			"content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}",
+			"content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(durationChanged)}${durationChanged ? " duration" : ""}",
 			"type": "${FeedMessages.EDIT}"
 		}`
 		await updateCourseByUUID(uuid, msg);
@@ -187,6 +189,7 @@ courseRoutes.post("/:uuid/state", checkJSON, checkBody, checkCourse, authenticat
 		/** Future functionality? */
 		switch (state) {
 			case Types.COURSE_DRAFT:
+			case Types.COURSE_SCHEDULED:
 			case Types.COURSE_ARCHIVED:
 			case Types.COURSE_LIFE:
 			case Types.COURSE_PAUSED:
