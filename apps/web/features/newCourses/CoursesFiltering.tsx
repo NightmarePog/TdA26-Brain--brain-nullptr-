@@ -6,15 +6,21 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Course } from "@/types/api/courses";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useState } from "react";
+import DashboardCourseCreate from "../dashboard/dashboardCourseCreate";
 
 interface CoursesFilteringProps {
   data: Course[];
   children: (filteredData: Course[]) => React.ReactNode;
+  canAdd?: boolean;
 }
 
-const CoursesFiltering = ({ data, children }: CoursesFilteringProps) => {
+const CoursesFiltering = ({
+  data,
+  children,
+  canAdd = false,
+}: CoursesFilteringProps) => {
   const [search, setSearch] = useState("");
 
   const filtered = data.filter((course) =>
@@ -23,7 +29,7 @@ const CoursesFiltering = ({ data, children }: CoursesFilteringProps) => {
 
   return (
     <div>
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-2 items-center">
         <div className="w-80 flex">
           <Field className="border-4 border-secondary rounded-xl">
             <InputGroup>
@@ -38,6 +44,7 @@ const CoursesFiltering = ({ data, children }: CoursesFilteringProps) => {
             </InputGroup>
           </Field>
         </div>
+        {canAdd && <DashboardCourseCreate />}
       </div>
 
       {children(filtered)}

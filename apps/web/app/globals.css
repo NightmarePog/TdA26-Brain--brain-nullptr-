@@ -84,7 +84,7 @@
 
     /* Border použijeme jemně modrý, ne šedý */
     --border: #e5ebf0;
-    --input: #ffffff;
+    --input: #d0d0d0;
     --ring: #91f5ad; /* Ring (focus) bude svítit zeleně */
 
     /* SIDEBAR Light: Čistý bílý s modrými prvky */
@@ -146,7 +146,7 @@
 
 @layer base {
     * {
-        @apply border-border outline-ring/50;
+        @apply border-border outline-ring/20;
     }
     body {
         @apply bg-background text-foreground;
