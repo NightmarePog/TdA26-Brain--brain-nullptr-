@@ -15,6 +15,7 @@ enum Types {
 	COURSE_DRAFT = "draft",
 	COURSE_LIFE = "life",
 	COURSE_ARCHIVED = "archived",
+	COURSE_SCHEDULED = "scheduled",
 	COURSE_PAUSED = "paused",
 	MODULE_OPEN = "open",
 	MODULE_CLOSED = "closed",
@@ -61,9 +62,11 @@ export const courseRoutes = express.Router();
 
 /** COURSES */
 /** GET/POST on /courses/ */
-courseRoutes.get("/", async (req, res) => {
+courseRoutes.get("/", authenticateOptional, async (req, res) => {
 	try {
-		const [courses] = await pool.execute("SELECT * FROM courses ORDER BY createdAt DESC");
+		const isLecturer = req.user != null && await findUser(req.user.name);
+		const [courses] = await pool.execute(`SELECT * FROM courses ${!isLecturer && "WHERE state != 'draft' AND state != 'archived'" || ""} ORDER BY createdAt DESC`);
+		for (const c of courses) await formatCourseJSON(c);
 		res.status(200).json(courses);
 	} catch (error) {
 		console.error("Error fetching course summaries:", error);
@@ -99,8 +102,12 @@ courseRoutes.post("/", checkJSON, checkBody, authenticate, async (req, res) => {
 });
 
 /** GET/DELETE/PUT on /courses/:uuid/ */
-courseRoutes.get("/:uuid", checkCourse, async (req, res) => {
+courseRoutes.get("/:uuid", checkCourse, authenticateOptional, async (req, res) => {
 	try {
+		const isLecturer = req.user != null && await findUser(req.user.name);
+		if (!isLecturer && (req.course.state == Types.COURSE_DRAFT || req.course.state == Types.COURSE_ARCHIVED)) {
+			res.status(403).json({"message":`This course has been made ${req.course.state}`});
+		}
 		res.status(200).json(await getCourseDetailsByUUID(req.course.uuid));
 	} catch (error) {
 		console.error("Error getting course details:", error);
@@ -184,16 +191,44 @@ courseRoutes.post("/:uuid/state", checkJSON, checkBody, checkCourse, authenticat
 			return;
 		}
 
-		/** Future functionality? */
 		switch (state) {
 			case Types.COURSE_DRAFT:
+				if (req.course.state == Types.COURSE_LIFE || req.course.state == Types.COURSE_PAUSED || req.course.state == Types.COURSE_ARCHIVED) {
+					res.status(400).json({ message: "Course cannot be drafted" });
+					return;
+				}
+				break;
 			case Types.COURSE_ARCHIVED:
+				if (req.course.state == Types.COURSE_DRAFT || req.course.state == Types.COURSE_SCHEDULED) {
+					res.status(400).json({ message: "Course cannot be archived" });
+					return;
+				}
+				break;
+			case Types.COURSE_SCHEDULED:
+				if (req.course.state == Types.COURSE_LIFE || req.course.state == Types.COURSE_ARCHIVED) {
+					res.status(400).json({ message: "Course cannot be scheduled" });
+					return;
+				}
+				if (req.course.openedAt == null || req.course.closedAt == null) {
+					res.status(400).json({"message":"missing course open time and/or close time"});
+					return;
+				}
+				break;
 			case Types.COURSE_LIFE:
+				if (req.course.state == Types.COURSE_ARCHIVED) {
+					res.status(400).json({ message: "Course cannot be made live" });
+					return;
+				}
+				break;
 			case Types.COURSE_PAUSED:
+				if (req.course.state == Types.COURSE_DRAFT || req.course.state == Types.COURSE_SCHEDULED || req.course.state == Types.COURSE_ARCHIVED) {
+					res.status(400).json({ message: "Course cannot be paused" });
+					return;
+				}
 				break;
 			default:
 				res.status(400).json({ message: "Incorrect state type" });
-				break;
+				return;
 		}
 
 		await pool.execute(`
@@ -1567,6 +1602,13 @@ async function formatModuleJSON(entry : JSON) {
 	return entry;
 }
 
+/** Formats course */
+async function formatCourseJSON(entry : JSON) {
+	await updateCourseByTime(entry);
+	delete entry.pausedAt;
+
+	return entry;
+}
 
 /** FIND FUNCTIONS */
 /** Finds specific course */
@@ -1574,7 +1616,7 @@ async function findCourseByUUID(uuid : string) {
 	const [courses] = await pool.execute(`
 			SELECT * FROM courses WHERE uuid = ?
 	`,[uuid]);
-	return courses.length == 1 ? courses[0] : null;
+	return courses.length == 1 ? (await formatCourseJSON(courses[0])) : null;
 };
 
 /** Finds specific module */
@@ -1867,3 +1909,76 @@ async function updateCourseByUUID(uuid : string, message? : any) {
 		WHERE uuid = ?
 	`, [course.updateCount+1, uuid]);
 };
+
+/** Updates course by time */
+async function updateCourseByTime(course : any) {
+	switch (course.state) {
+		case Types.COURSE_SCHEDULED:
+			if (course.pausedAt != null) {
+				await pool.execute(`
+					UPDATE courses
+					SET pausedAt = null
+					WHERE uuid = ?
+				`, [course.uuid]);
+			}
+			const [timeToStart] = await pool.execute(`
+				SELECT TIMESTAMPDIFF(SECOND,CURRENT_TIMESTAMP(),openedAt) AS timeToStart FROM courses WHERE uuid = ?;
+			`, [course.uuid]);
+
+			if (timeToStart[0]["timeToStart"] <= 0) {
+				if (course.pausedAt != null) {
+					await pool.execute(`
+						UPDATE courses
+						SET state = ?
+						WHERE uuid = ?
+					`, [Types.COURSE_DRAFT, course.uuid]);
+					course.state = Types.COURSE_DRAFT;
+				} else {
+					await pool.execute(`
+						UPDATE courses
+						SET state = ?
+						WHERE uuid = ?
+					`, [Types.COURSE_LIFE, course.uuid]);
+					course.state = Types.COURSE_LIFE;
+				}
+			}
+			break;
+		case Types.COURSE_LIFE:
+			if (course.pausedAt != null) {
+				await pool.execute(`
+					UPDATE courses
+					SET pausedAt = null
+					WHERE uuid = ?
+				`, [course.uuid]);
+			}
+			break;
+		case Types.COURSE_PAUSED:
+			if (course.pausedAt == null) {
+				await pool.execute(`
+					UPDATE courses
+					SET pausedAt = CURRENT_TIMESTAMP()
+					WHERE uuid = ?
+				`, [course.uuid]);
+			}
+			if (course.closedAt != null) {
+				const [timeDiff] = await pool.execute(`
+					SELECT TIMESTAMPDIFF(SECOND,pausedAt,CURRENT_TIMESTAMP()) AS timeDiff FROM courses WHERE uuid = ?;
+				`, [course.uuid]);
+
+				await pool.execute(`
+					UPDATE courses
+					SET closedAt = TIMESTAMPADD(SECOND,${timeDiff[0]["timeDiff"]},closedAt), pausedAt = CURRENT_TIMESTAMP()
+					WHERE uuid = ?
+				`, [course.uuid]);
+				
+				const [closedAt] = await pool.execute(`
+					SELECT closedAt FROM courses WHERE uuid = ?
+				`,[course.uuid]);
+				course.closedAt = closedAt[0]["closedAt"];
+			}
+		default:
+			break;
+	}
+
+	return course;
+}

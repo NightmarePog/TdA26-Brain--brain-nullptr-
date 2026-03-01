@@ -15,7 +15,7 @@ export type CourseUpdateRequest = {
 };
 
 export type CourseStateUpdateRequest = {
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
 };
 
 export type CourseStates = "draft" | "life" | "archived" | "paused";
@@ -25,7 +25,7 @@ export type Course = {
   name: string;
   description?: string;
   theme?: string;
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
   createdAt: string;
@@ -38,7 +38,7 @@ export type CourseDetails = {
   name: string;
   description?: string;
   theme?: string;
-  state: "draft" | "life" | "archived" | "paused";
+  state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
   createdAt: string;

@@ -35,7 +35,8 @@ export async function seed() {
         "POST",
         "application/json",
         "courses",
-        '{"name":"Welcome, TdA 2026!"}'
+        // '{"name":"Welcome, TdA 2026!"}'
+        '{"name":"Welcome, TdA 2026!", "openedAt":"2026-03-01T19:00:00", "closedAt":"2026-03-01T19:20:00"}'
     );
     const module = await call(
         "POST",
