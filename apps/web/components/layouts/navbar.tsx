@@ -10,17 +10,21 @@ import Logo from "@/public/Logos/SVG/Think-different-Academy_LOGO_bily.svg";
 import NavbarButton from "../ui/navbarButton";
 import SettingsPopover from "./settingsPopover";
 import { userApi } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  const hasToken = userApi.check();
+  const { data } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => userApi.check(),
+    refetchOnMount: true,
+  });
 
-  // @ts-ignore
-  const userRoute = hasToken ? "/dashboard" : "/login";
-  // @ts-ignore
-  const userLabel = hasToken ? "Dashboard" : "Přihlásit";
+  const userRoute = data ? "/dashboard" : "/login";
+
+  const userLabel = data ? "Dashboard" : "Přihlásit";
 
   return (
     <nav className="flex h-16 md:h-20 w-full items-center justify-between bg-primary px-4 md:px-8 text-white">

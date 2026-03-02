@@ -17,7 +17,7 @@ const CoursesHeader = () => {
             {COURSES_MOTIVATIONAL_TEXT}
           </Text>
         </div>
-        <Card className="p-5 shadow-xl min-w-120 max-h-50 bg-foreground/10">
+        <Card className="p-5 shadow-xl min-w-100 max-h-50 bg-foreground/10">
           <div className="flex">
             <Image
               width="200"

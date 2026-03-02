@@ -23,7 +23,7 @@ const CourseCard = ({ cardKey, title, description, state }: CardTestProps) => {
           className="h-full flex justify-center items-center transition duration-500 ease-out hover:scale-110 cursor-pointer"
           onClick={() => router.push(`/courses/${cardKey}`)}
         >
-          <Play size={60} fill="white" />
+          <Play size={60} fill="white" className="text-white" />
         </div>
       </BaseCardImage>
       <BaseCardHeader title={title} description={description} />
