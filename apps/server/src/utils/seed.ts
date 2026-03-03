@@ -52,10 +52,10 @@ export async function seed() {
     );
 
     const formData  = new FormData();
-    formData.append("file", new File(["Hello, world!"], "file.png", {type: "image/png"}))
+    formData.append("file", new File(["Hello, world!"], "file.txt", {type: "text/plain"}))
     formData.append("description", "A file!");
 
-    const res = await fetch(`http://localhost:3000/api/courses/${course.uuid}/materials`, {
+    const res = await fetch(`http://localhost:3000/api/courses/${course.uuid}/modules/${module.uuid}/materials`, {
         method: 'POST',
         body: formData
     });

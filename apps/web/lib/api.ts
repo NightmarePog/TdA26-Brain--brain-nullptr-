@@ -64,6 +64,11 @@ export const CoursesApi = {
     const res = await api.get(`/courses/${uuid}`);
     return res.data as CourseDetails;
   },
+  getImage: async (uuid: string) => {
+      if (appConfig.frontendDebug) return "bwa";
+      const res = await api.get(`/courses/${uuid}/image`);
+      return res.data as "LINK" | "FILE";
+    },
   put: async (uuid: string, data: CourseUpdateRequest) => {
     const res = await api.put(`/courses/${uuid}`, data);
     return res.data as Course;
@@ -110,9 +115,9 @@ export const CoursesApi = {
       return res.data as Material[];
     },
     get: async (uuid: string, moduleUuid: string, materialUuid: string) => {
-      if (appConfig.frontendDebug) return materials[1];
+      if (appConfig.frontendDebug) return "bwa";
       const res = await api.get(`/courses/${uuid}/modules/${moduleUuid}/materials/${materialUuid}`);
-      return res.data as Material;
+      return res.data as "LINK" | "FILE";
     },
     post: async (
       uuid: string,

@@ -115,6 +115,24 @@ courseRoutes.get("/:uuid", checkCourse, authenticateOptional, async (req, res) =
 	}
 });
 
+courseRoutes.get("/:uuid/image", checkCourse, async (req, res) => {
+	try {
+		if (req.course.imageUrl != null) {
+			res.download(req.course.imageUrl, req.course.name, (err) => {
+				if (err) {
+					console.error("Error downloading course image:", err);
+					res.status(500).json({ error: "Failed to download course image" });
+				}
+			});
+			return;
+		}
+		res.status(200).json({message:'No image available'});
+	} catch (error) {
+		console.error("Error getting course image:", error);
+		res.status(500).json({ error: "Failed to get course image" });
+	}
+});
+
 courseRoutes.delete("/:uuid", checkCourse, authenticate, async (req, res) => {
 	try {
 		const uuid = req.params.uuid;
@@ -138,12 +156,18 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 		const theme: string = req.body.theme != null ? req.body.theme : req.course.theme;
 		const openedAt: string = req.body.openedAt != null ? req.body.openedAt : req.course.openedAt;
 		const closedAt: string = req.body.closedAt != null ? req.body.closedAt : req.course.closedAt;
+		let imageUrl: string|null = null;
+		if (req.body.imageUrl != null) {
+			if (req.body.imageUrl.includes(`/app/materials/${req.params.uuid}/`) || req.body.imageUrl.includes(`/app/materials/presets/`)) {
+				imageUrl = req.body.imageUrl;
+			}
+		}
 
 		await pool.execute(`
 			UPDATE courses
-			SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?
+			SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?, imageUrl = ?
 			WHERE uuid = ?
-		`, [name, desc, theme, openedAt, closedAt, uuid]);
+		`, [name, desc, theme, openedAt, closedAt, imageUrl, uuid]);
 
 		let useAnd: boolean = false;
 		async function getAnd(b: boolean) {
@@ -161,11 +185,12 @@ courseRoutes.put("/:uuid", checkJSON, checkBody, checkCourse, authenticate, asyn
 				descChanged = desc != req.course.description,
 				openedAtChanged = openedAt != req.course.openedAt,
 				closedAtChanged = closedAt != req.course.closedAt,
-				themeChanged = theme != req.course.theme;
+				themeChanged = theme != req.course.theme,
+				imageUrlChanged = imageUrl != req.course.imageUrl;
 		
 		const msg: any =
 		`{
-			"content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}",
+			"content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}${await getAnd(imageUrlChanged)}${imageUrlChanged ? " image" : ""}",
 			"type": "${FeedMessages.EDIT}"
 		}`
 		await updateCourseByUUID(uuid, msg);
@@ -464,8 +489,8 @@ courseRoutes.post("/:uuid/modules/:moduleUuid/materials", checkCourse, checkModu
 				const sizeBytes : number = req.file.size;
 				const type : string = Types.MATERIAL_FILE;
 	
-				const tmpFilePath = `/app/tmp/${moduleUuid}`;
-				const newDirPath = `/app/materials/${moduleUuid}`;
+				const tmpFilePath = `/app/tmp/${req.params.uuid}`;
+				const newDirPath = `/app/materials/${req.params.uuid}`;
 				const newFilePath = `${newDirPath}/${uuid}`;
 	
 				if (!(await fileOrDirectoryExists(newDirPath))) {
@@ -512,7 +537,31 @@ courseRoutes.post("/:uuid/modules/:moduleUuid/materials", checkCourse, checkModu
 	res.status(201).json(await formatMaterialJSON(materials[0]));
 });
 
-/** PUT/DELETE on /courses/:uuid/modules/:moduleUuid/materials/:materialUuid/ */
+/** GET/PUT/DELETE on /courses/:uuid/modules/:moduleUuid/materials/:materialUuid/ */
+courseRoutes.get("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkCourse, checkModule, checkMaterial, async (req, res) => {
+	try {
+		const material = req.material;
+
+		if (material.type == Types.MATERIAL_URL) {
+			res.send(material.url);
+			return;
+		} else if (material.type == Types.MATERIAL_FILE) {
+			res.download(material.fileUrl, material.name, (err) => {
+				if (err) {
+					console.error("Error downloading material:", err);
+					res.status(500).json({ error: "Failed to download material" });
+				}
+			});
+			return;
+		}
+		res.status(400);
+		
+	} catch (error) {
+		console.error("Error fetching material:", error);
+		res.status(500).json({ error: "Failed to fetch material" });
+	}
+});
+
 courseRoutes.put("/:uuid/modules/:moduleUuid/materials/:materialUuid", checkCourse, checkModule, checkMaterial, authenticate, async (req, res, next) => {
 	try {
 		const moduleUuid: string = req.params.moduleUuid;
@@ -1495,7 +1544,7 @@ courseRoutes.get("/:uuid/feed/stream", checkCourse, async (req, res) => {
 /** FORMAT FUNCTIONS */
 /** Formats materials */
 async function formatMaterialJSON(entry : JSON) {
-	delete entry.courseUuid;
+	delete entry.moduleUuid;
 
 	/** Prioritize file instead of url, shouldnt cause problems */
 	const [files] = await pool.execute(`
@@ -1521,7 +1570,7 @@ async function formatMaterialJSON(entry : JSON) {
 
 /** Formats quizzes */
 async function formatQuizJSON(entry : JSON) {
-	delete entry.courseUuid;
+	delete entry.moduleUuid;
 
 	const [questions] = await pool.execute(`
 		SELECT * FROM questions WHERE quizUuid = ?

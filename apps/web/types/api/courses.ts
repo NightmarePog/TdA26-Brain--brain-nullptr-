@@ -12,6 +12,7 @@ export type CourseUpdateRequest = {
   theme?: string;
   openedAt?: string;
   closedAt?: string;
+  imageUrl?: string;
 };
 
 export type CourseStateUpdateRequest = {
@@ -26,6 +27,7 @@ export type Course = {
   state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
+  imageUrl: string;
   createdAt: string;
   updatedAt: string;
   updateCount: number;
@@ -39,6 +41,7 @@ export type CourseDetails = {
   state: "draft" | "scheduled" | "life" | "archived" | "paused";
   openedAt: string;
   closedAt: string;
+  imageUrl: string;
   createdAt: string;
   updatedAt: string;
   updateCount: number;

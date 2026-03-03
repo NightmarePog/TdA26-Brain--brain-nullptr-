@@ -38,6 +38,7 @@ export async function initDatabase() {
 					uuid CHAR(36) PRIMARY KEY,
 					name VARCHAR(255) NOT NULL,
 					description VARCHAR(1000),
+					imageUrl VARCHAR(1000),
 					state VARCHAR(255) NOT NULL,
 					theme VARCHAR(255),
 					openedAt TIMESTAMP,
