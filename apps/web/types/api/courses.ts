@@ -3,7 +3,7 @@ export type CourseCreateRequest = {
   description?: string;
   theme?: string;
   openedAt?: string;
-  closedAt?: string;
+  courseTime?: number;
 };
 
 export type CourseUpdateRequest = {

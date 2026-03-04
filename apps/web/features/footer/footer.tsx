@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="space-y-4">
             <h3 className="text-xl font-semibold tracking-tight">
-              Think Diffrent Academy
+              Think diffrent Academy
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Aplikace co přináší do učení zábavu a výzvu k vývoji výsledků.

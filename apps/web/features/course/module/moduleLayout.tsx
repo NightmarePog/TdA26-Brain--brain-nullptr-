@@ -1,19 +1,19 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import ModulePageHeader from "./modulesPageHeader";
 import useSafeQuery from "@/features/query/useSafeQuery";
 import { ModulesRecieve } from "@/types/api/modules";
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import ErrorLabel from "@/components/typography/errorText";
-import ModuleList from "./moduleList/moduleList";
-import ModuleListHeader from "./moduleList/moduleListHeader";
-import ModuleListAction from "./moduleList/ModuleListAction";
-import ModuleListItem from "./moduleList/moduleListItem";
+import ModuleList from "../../moduleList/moduleList";
+import ModuleListHeader from "../../moduleList/moduleListHeader";
+import ModuleListAction from "../../moduleList/ModuleListAction";
+import ModuleListItem from "../../moduleList/moduleListItem";
 import PageTitle from "@/components/typography/pageTitle";
 import { ModuleChart } from "./moduleChart";
-import ModuleQuizStartDialog from "./moduleList/moduleQuizStartDialog";
+import ModuleQuizStartDialog from "../../moduleList/moduleQuizStartDialog";
+import { Button } from "@/components/ui/button";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
@@ -44,13 +44,14 @@ const ModuleLayout = () => {
 
         <div className="w-px bg-gray-800" />
 
-        <div className="flex-1">
+        <div className="flex-1 ">
           <PageTitle className="py-5">Moduly</PageTitle>
           <ModuleList>
             <ModuleListHeader>Module 1: vývoj v jazyce</ModuleListHeader>
 
             <ModuleListItem>
               <ModuleListAction type="pdf">informace o IDE</ModuleListAction>
+              <Button>test</Button>
             </ModuleListItem>
 
             <ModuleListItem>

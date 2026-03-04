@@ -19,7 +19,7 @@ export function BaseCard({ CardKey, children }: BaseCardProps) {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className=" mb-6"
       >
-        <Card className="relative mx-auto max-w-sm pt-0 w-80 overflow-hidden bg-foreground/10">
+        <Card className="whitespace-pre-line relative mx-auto max-w-sm pt-0 w-80 overflow-hidden bg-foreground/10">
           {children}
         </Card>
       </motion.div>
