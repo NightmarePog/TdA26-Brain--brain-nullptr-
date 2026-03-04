@@ -3,10 +3,11 @@ import cors from "cors";
 import express from "express";
 import { initDatabase } from "./db/init.js";
 import { userRoutes } from "./routes/users.js";
-import { courseRoutes } from "./routes/courses.js";
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { seed } from "./utils/seed.js";
+import { courseRoutes } from "./routes/courses.js";
+import { moduleRoutes } from "./routes/modules.js";
 
 const app = express();
 
@@ -15,18 +16,61 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(compression());
 
+/** Declare more request variables */
+declare global {
+    namespace Express {
+        interface Request {
+            user?: {
+				name: string;
+			};
+			course? : {
+				uuid: string;
+				name: string;
+				description?: string;
+				imageUrl?: string;
+				state: string;
+				theme?: string;
+				openedAt?: string;
+				closedAt?: string;
+				createdAt: string;
+				updatedAt: string;
+				updateCount: number;
+			}
+        }
+    }
+}
+
+/** Common types */
+export enum Types {
+	MATERIAL_FILE = "file",
+	MATERIAL_URL = "url",
+	QUESTION_SINGLE_CHOICE = "singleChoice",
+	QUESTION_MULTIPLE_CHOICE = "multipleChoice",
+	FEED_MANUAL = "manual",
+	FEED_SYSTEM = "system",
+	COURSE_DRAFT = "draft",
+	COURSE_LIFE = "life",
+	COURSE_ARCHIVED = "archived",
+	COURSE_SCHEDULED = "scheduled",
+	COURSE_PAUSED = "paused",
+	MODULE_OPEN = "open",
+	MODULE_CLOSED = "closed",
+};
+
 const apiRoutes = express.Router();
+/** Initial api call */
 apiRoutes.get("/", (_req, res) => {
 	res.status(200).json({ organization: "Student Cyber Games" });
 });
+/** Teapot */
 apiRoutes.get("/coffee", (_req, res) => {
 	res.status(418).send("I'm a teapot");
 });
 
 app.use("/api", apiRoutes);
-
 apiRoutes.use("/users", userRoutes);
 apiRoutes.use("/courses", courseRoutes);
+courseRoutes.use("/:uuid/modules", moduleRoutes);
 
 const port = process.env.PORT || 3000;
 async function start() {

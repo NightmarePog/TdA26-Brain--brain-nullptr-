@@ -1,6 +1,9 @@
 import express from "express";
 import { pool } from "@/db";
 import jwt from "jsonwebtoken";
+import * as z from "zod";
+import { User } from "@/types/users";
+import type { RowDataPacket } from "mysql2";
 
 const authTokenSecret = process.env.AUTH_TOKEN_SECRET || "secwet";
 
@@ -20,13 +23,12 @@ userRoutes.get("/", authenticate, async (req, res) => {
 /** POST on /users/login/ */
 userRoutes.post("/login/", async (req, res) => {
 	try {
-		const name = req.body.name;
-		const password = req.body.password;
-
-		if (!password || !name) {
-			res.status(400).json({ message: "Invalid data" });
+		const result: z.ZodSafeParseResult<User> = await User.safeParseAsync(req.body);
+		if (!result.success) {
+			res.status(400).json({ message: "Invalid body" });
 			return;
 		}
+		const password: string = result.data.password, name: string = result.data.name;
 
 		const user = await findUser(name);
 		if (!user) {
@@ -44,8 +46,7 @@ userRoutes.post("/login/", async (req, res) => {
 			return;
 		}
 
-		const token = jwt.sign({name}, authTokenSecret);
-		console.log(token);
+		const token: string = jwt.sign({name}, authTokenSecret);
 		/** Token for 12 hours */
 		res.cookie("auth_token",token,{ maxAge: 1000 * 3600 * 12, httpOnly: true, secure: true });
 		res.status(200).json({ message: "Login successful" });
@@ -56,7 +57,12 @@ userRoutes.post("/login/", async (req, res) => {
 	}
 });
 
+/** GET on /users/auth/ */
 userRoutes.get("/auth/", authenticate, async (req, res) => {
+	if (req.user == null) {
+		res.status(401).json({ message: "Invalid username" });
+		return;
+	}
 	res.status(200).json(await findUser(req.user.name));
 });
 
@@ -108,8 +114,8 @@ export async function authenticateOptional(req : any, res : any, next : any) {
 	});
 }
 
-export async function findUser(name : string) {
-	const [users] = await pool.execute(`
+export async function findUser(name : string): Promise<RowDataPacket|null> {
+	const [users] = await pool.execute<RowDataPacket[]>(`
 			SELECT * FROM users WHERE name = ?
 	`,[name]);
 	return users.length == 1 ? users[0] : null;
