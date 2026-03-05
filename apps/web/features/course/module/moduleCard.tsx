@@ -3,6 +3,8 @@ import ModuleList from "@/features/moduleList/moduleList";
 import ModuleListAction from "@/features/moduleList/ModuleListAction";
 import ModuleListHeader from "@/features/moduleList/moduleListHeader";
 import ModuleListItem from "@/features/moduleList/moduleListItem";
+import ModuleQuizStartDialog from "@/features/moduleList/moduleQuizStartDialog";
+import { Module } from "node:vm";
 
 interface CourseModuleCardProps {
   name: string;

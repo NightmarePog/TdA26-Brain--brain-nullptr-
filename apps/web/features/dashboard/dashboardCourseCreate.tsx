@@ -1,3 +1,4 @@
+/**
 "use client";
 
 import { useState } from "react";
@@ -23,9 +24,6 @@ import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CourseCreateRequest } from "@/types/api/courses";
 
-/* ============================= */
-/* Schema */
-/* ============================= */
 
 const formSchema = z.object({
   title: z
@@ -61,9 +59,6 @@ type FormSchema = typeof formSchema;
 type FormInput = z.input<FormSchema>;
 type FormValues = z.output<FormSchema>;
 
-/* ============================= */
-/* Component */
-/* ============================= */
 
 const DashboardCourseCreate = () => {
   const [open, setOpen] = useState(false);
@@ -217,3 +212,4 @@ const DashboardCourseCreate = () => {
 };
 
 export default DashboardCourseCreate;
+**/
