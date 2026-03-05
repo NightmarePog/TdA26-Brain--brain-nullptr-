@@ -17,15 +17,16 @@ const CoursesHeader = () => {
             {COURSES_MOTIVATIONAL_TEXT}
           </Text>
         </div>
-        <Card className="p-5 shadow-xl min-w-100 max-h-50 bg-foreground/10">
-          <div className="flex">
+        <Card className="p-5 shadow-xl min-w-80 max-h-100 bg-foreground/10">
+          <div className="flex items-start gap-5">
             <Image
-              width="200"
-              height="200"
+              width={200}
+              height={200}
               alt="zarivka"
-              src={"/Icons/raster/Idea/zarivka_idea_modre.png"}
+              src="/Icons/raster/Idea/zarivka_idea_modre.png"
+              className="shrink-0"
             />
-            <div className="p-5">
+            <div className="flex-1">
               <Text className="text-2xl font-bold">Věděl jsi že?</Text>
               <Text>{getRandomFact()}</Text>
             </div>
