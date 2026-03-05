@@ -9,13 +9,6 @@ export type Module = {
   updateCount: number;
 };
 
-export type ModulesRecieve = {
-  courseName: string;
-  count: number;
-  description: string;
-  modules: Module[];
-};
-
 export type ModuleCreateRequest = {
   name: string;
   description?: string;

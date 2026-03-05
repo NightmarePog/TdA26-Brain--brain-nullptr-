@@ -18,7 +18,7 @@ export default function Navbar() {
 
   const { data } = useQuery({
     queryKey: ["user"],
-    queryFn: () => userApi.check(),
+    queryFn: () => userApi.get(),
     refetchOnMount: true,
   });
 

@@ -1,12 +1,10 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import ModulePageHeader from "./modulesPageHeader";
-import useSafeQuery from "@/features/query/useSafeQuery";
-import { ModulesRecieve } from "@/types/api/modules";
+
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
-import ErrorLabel from "@/components/typography/errorText";
+
 import ModuleList from "./moduleList/moduleList";
 import ModuleListHeader from "./moduleList/moduleListHeader";
 import ModuleListAction from "./moduleList/ModuleListAction";
@@ -14,18 +12,40 @@ import ModuleListItem from "./moduleList/moduleListItem";
 import PageTitle from "@/components/typography/pageTitle";
 import { ModuleChart } from "./moduleChart";
 import ModuleQuizStartDialog from "./moduleList/moduleQuizStartDialog";
+import { useQueries } from "@tanstack/react-query";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
 
-  const { queryStatus, StatusElement, data } = useSafeQuery<ModulesRecieve>({
-    queryFn: () => CoursesApi.modules.getAll(courseUuid),
-    queryKey: ["courses", courseUuid],
-    enabled: !!courseUuid,
+  const queries = useQueries({
+    queries: [
+      {
+        queryKey: ["modules", courseUuid],
+        queryFn: () => CoursesApi.modules.getAll(courseUuid),
+        enabled: !!courseUuid,
+      },
+      {
+        queryKey: ["course", courseUuid],
+        queryFn: () => CoursesApi.get(courseUuid),
+        enabled: !!courseUuid,
+      },
+    ],
   });
 
-  if (queryStatus !== "finished") return StatusElement;
-  if (!data) return <ErrorLabel>Žádné data</ErrorLabel>;
+  const [modulesQuery, courseQuery] = queries;
+
+  if (modulesQuery.isLoading || courseQuery.isLoading) {
+    return <div>Načítání...</div>;
+  }
+
+  if (modulesQuery.isError || courseQuery.isError) {
+    return <div>Chyba při načítání dat</div>;
+  }
+
+  const courseData = courseQuery.data ?? {
+    name: "Modul se nenačetl",
+    description: "",
+  };
 
   return (
     <div className="p-6">
@@ -34,10 +54,10 @@ const ModuleLayout = () => {
           <ModulePageHeader
             doneModules={0}
             unfinishedModules={0}
-            courseName="Python základy"
-            courseDescription="v tomto kurzu se dozvíte úplné základy programovacího jazyka Python"
+            courseName={courseData.name}
+            courseDescription={courseData.description}
             notificationCount={1}
-            moduleCount={1}
+            moduleCount={modulesQuery.data?.length || 0}
           />
           <ModuleChart />
         </div>
