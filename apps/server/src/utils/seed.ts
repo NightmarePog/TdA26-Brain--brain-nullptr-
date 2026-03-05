@@ -35,8 +35,7 @@ export async function seed() {
         "POST",
         "application/json",
         "courses",
-        // '{"name":"Welcome, TdA 2026!"}'
-        '{"name":"Welcome, TdA 2026!", "openedAt":"2026-03-01T19:00:00", "closedAt":"2026-03-01T19:20:00"}'
+        '{"name":"Welcome, TdA 2026!"}'
     );
     const module = await call(
         "POST",
@@ -52,10 +51,10 @@ export async function seed() {
     );
 
     const formData  = new FormData();
-    formData.append("file", new File(["Hello, world!"], "file.png", {type: "image/png"}))
+    formData.append("file", new File(["Hello, world!"], "file.txt", {type: "text/plain"}))
     formData.append("description", "A file!");
 
-    const res = await fetch(`http://localhost:3000/api/courses/${course.uuid}/materials`, {
+    const res = await fetch(`http://localhost:3000/api/courses/${course.uuid}/modules/${module.uuid}/materials`, {
         method: 'POST',
         body: formData
     });
