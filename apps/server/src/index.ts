@@ -8,6 +8,8 @@ import compression from 'compression';
 import { seed } from "./utils/seed.js";
 import { courseRoutes } from "./routes/courses.js";
 import { moduleRoutes } from "./routes/modules.js";
+import type { RowDataPacket } from "mysql2";
+import { feedRoutes } from "./routes/feed.js";
 
 const app = express();
 
@@ -20,10 +22,10 @@ app.use(compression());
 declare global {
     namespace Express {
         interface Request {
-            user?: {
+            user?: RowDataPacket & {
 				name: string;
 			};
-			course? : {
+			course? : RowDataPacket & {
 				uuid: string;
 				name: string;
 				description?: string;
@@ -35,7 +37,26 @@ declare global {
 				createdAt: string;
 				updatedAt: string;
 				updateCount: number;
-			}
+			};
+			module? : RowDataPacket & {
+				uuid: string;
+				name: string;
+				state: string;
+				description?: string;
+				idx: number;
+				createdAt: string;
+				updatedAt: string;
+				updateCount: number;
+			};
+			feed? : RowDataPacket & {
+				uuid: string;
+				type: string;
+				message: string;
+				edited: boolean;
+				author: string;
+				createdAt: string;
+				updatedAt: string;
+			};
         }
     }
 }
@@ -70,7 +91,8 @@ apiRoutes.get("/coffee", (_req, res) => {
 app.use("/api", apiRoutes);
 apiRoutes.use("/users", userRoutes);
 apiRoutes.use("/courses", courseRoutes);
-courseRoutes.use("/:uuid/modules", moduleRoutes);
+courseRoutes.use("/", moduleRoutes);
+courseRoutes.use("/", feedRoutes);
 
 const port = process.env.PORT || 3000;
 async function start() {
@@ -80,7 +102,7 @@ async function start() {
 		console.log("Server is running");
 		console.log(`Server port: ${port}`);
 	
-		seed();
+		// seed();
 	});
 }
 

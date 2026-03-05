@@ -7,6 +7,8 @@ import { Types } from "..";
 import type { RowDataPacket } from "mysql2";
 import { CourseCreateRequest, CourseUpdateRequest } from "@/types/courses";
 import { FeedMessages } from "@/types/feed";
+import { getModulesByCourseUUID, updateModuleByUUID } from "./modules";
+import { getFeedByCourseUUID, systemFeedMessage } from "./feed";
 
 export const courseRoutes = express.Router();
 
@@ -340,28 +342,6 @@ export async function updateCourseByUUID(uuid : string, message? : string & { mo
         SET updateCount = ?
         WHERE uuid = ?
     `, [course.updateCount+1, uuid]);
-};
-
-export async function getFeedByCourseUUID(uuid : string): Promise<RowDataPacket[]|null> {
-    if (!(await findCourseByUUID(uuid))) return null;
-    const [feed] = await pool.execute<RowDataPacket[]>(`
-            SELECT * FROM feed WHERE courseUuid = ? ORDER BY createdAt DESC
-    `,[uuid]);
-    for (const entry of feed) {
-        await formatFeedJSON(entry);
-    };
-    return feed;
-};
-
-export async function getModulesByCourseUUID(uuid : string): Promise<RowDataPacket[]|null> {
-    if (!(await findCourseByUUID(uuid))) return null;
-    const [modules] = await pool.execute<RowDataPacket[]>(`
-            SELECT * FROM modules WHERE courseUuid = ? ORDER BY idx ASC
-    `,[uuid]);
-    for (const entry of modules) {
-        await formatModuleJSON(entry);
-    };
-    return modules;
 };
 
 export async function findCourseByUUID(uuid : string): Promise<RowDataPacket | null> {
