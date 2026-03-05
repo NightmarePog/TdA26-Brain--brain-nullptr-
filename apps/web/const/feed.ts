@@ -10,6 +10,14 @@ export const feedItems: FeedItem[] = [
     updatedAt: "2025-01-10T08:00:00Z",
   },
   {
+    uuid: "feed-000606",
+    type: "system",
+    message: "Kvíz „Základy TypeScriptu“ byl úspěšně vytvořen.",
+    edited: false,
+    createdAt: "2025-01-10T08:00:00Z",
+    updatedAt: "2025-01-10T08:00:00Z",
+  },
+  {
     uuid: "feed-002",
     type: "manual",
     message: "Přidal jsem novou otázku do kvízu React – základy.",

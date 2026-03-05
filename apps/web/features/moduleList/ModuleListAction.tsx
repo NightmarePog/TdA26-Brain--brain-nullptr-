@@ -14,15 +14,11 @@ export const stringToIcon: StringToIconMap = {
 interface ModuleActionProps {
   children: ReactNode;
   type: FileType;
-  onAction?: () => void;
 }
 
-const ModuleListAction = ({ children, onAction, type }: ModuleActionProps) => {
+const ModuleListAction = ({ children, type }: ModuleActionProps) => {
   return (
-    <div
-      className="flex items-center w-full h-full"
-      onClick={() => onAction?.()}
-    >
+    <div className="flex items-center w-full h-full">
       {stringToIcon[type]}
       <div className="ml-2">
         <div className=" items-center space-x-2  p-5 w-full h-full">

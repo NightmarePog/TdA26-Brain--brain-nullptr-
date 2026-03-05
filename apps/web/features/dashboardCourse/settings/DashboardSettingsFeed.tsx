@@ -12,7 +12,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import { CoursesApi } from "@/lib/api";
-import { FeedCreateRequest } from "@/types/api/feed";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { Send, Trash2 } from "lucide-react";
@@ -26,28 +25,42 @@ interface DashboardSettingsFeedMessage {
   type: "manual" | "system";
 }
 
+import { motion, AnimatePresence } from "framer-motion";
+
 const DashboardSettingsFeed = () => {
   const routeData = useCourseAddress();
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["Feed"],
     queryFn: () => CoursesApi.feed.getAll(routeData.courseUuid),
+    refetchOnMount: "always",
   });
-  if (isLoading || isError || !data) return;
+  if (isLoading || isError || !data) return null;
+
   return (
     <div className="flex flex-col h-full lg:border-l">
       <h1 className="text-2xl font-bold p-5">Informační kanál</h1>
 
-      <div className="flex-1 overflow-y-auto ">
-        {data.map((item) => (
-          <DashboardSettingsFeedMessage
-            message={item.message}
-            author={item.type === "manual" ? "Lector" : "System"}
-            key={item.uuid}
-            messageUuid={item.uuid}
-            courseUuid={routeData.courseUuid}
-            type={item.type}
-          />
-        ))}
+      <div className="flex-1 overflow-y-auto">
+        <AnimatePresence initial={false}>
+          {data.map((item) => (
+            <motion.div
+              key={item.uuid}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              layout
+            >
+              <DashboardSettingsFeedMessage
+                message={item.message}
+                author={item.type === "manual" ? "Lector" : "System"}
+                messageUuid={item.uuid}
+                courseUuid={routeData.courseUuid}
+                type={item.type}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <DashboardSettingsFeedInput courseUuid={routeData.courseUuid} />

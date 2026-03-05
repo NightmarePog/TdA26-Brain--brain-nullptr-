@@ -12,7 +12,7 @@ const ModuleListItem = ({ children, className }: ModuleActionProps) => {
   return (
     <div
       className={
-        "flex justify-between items-center border border-secondary-foreground/30 last:rounded-b-2xl transition-all duration-300 ease-in-out hover:bg-secondary hover:shadow-lg cursor-pointer " +
+        "flex justify-between items-center border border-secondary-foreground/30 last:rounded-b-2xl transition-all duration-300 ease-in-out hover:bg-secondary hover:shadow-lg " +
         className
       }
     >
