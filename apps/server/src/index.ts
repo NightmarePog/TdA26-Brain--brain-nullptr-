@@ -12,6 +12,7 @@ import type { RowDataPacket } from "mysql2";
 import { feedRoutes } from "./routes/feed.js";
 import { materialRoutes } from "./routes/materials.js";
 import multer from "multer";
+import { quizRoutes } from "./routes/quizzes.js";
 
 const app = express();
 
@@ -73,6 +74,30 @@ declare global {
 				sizeBytes?: number;
 				faviconUrl?: string;
 			};
+			quiz? : RowDataPacket & {
+				uuid: string;
+				title: string;
+				attemptsCount: number;
+				description?: string;
+				createdAt: string;
+				updatedAt: string;
+				updateCount: number;
+				questionCount: number;
+				questions: RowDataPacket | {
+					options: RowDataPacket[] & {
+						opt: string;
+						idx: number;
+					};
+					correctIndex?: number;
+					correctIndices?: number[];
+				}
+				answers: RowDataPacket[] | {
+					correctPerQuestion: boolean[];
+					score: number;
+					maxScore: number;
+					submittedAt: string;
+				}
+			};
 			materialUuid: string;
 			name: string;
 
@@ -128,6 +153,14 @@ export const upload = multer({
 }).single(Types.MATERIAL_FILE);
 
 const apiRoutes = express.Router();
+app.use("/api", apiRoutes);
+apiRoutes.use("/users", userRoutes);
+apiRoutes.use("/courses", courseRoutes);
+courseRoutes.use("/", moduleRoutes);
+courseRoutes.use("/", feedRoutes);
+moduleRoutes.use("/", materialRoutes);
+moduleRoutes.use("/", quizRoutes);
+
 /** Initial api call */
 apiRoutes.get("/", (_req, res) => {
 	res.status(200).json({ organization: "Student Cyber Games" });
@@ -136,13 +169,6 @@ apiRoutes.get("/", (_req, res) => {
 apiRoutes.get("/coffee", (_req, res) => {
 	res.status(418).send("I'm a teapot");
 });
-
-app.use("/api", apiRoutes);
-apiRoutes.use("/users", userRoutes);
-apiRoutes.use("/courses", courseRoutes);
-courseRoutes.use("/", moduleRoutes);
-courseRoutes.use("/", feedRoutes);
-moduleRoutes.use("/", materialRoutes);
 
 const port = process.env.PORT || 3000;
 async function start() {

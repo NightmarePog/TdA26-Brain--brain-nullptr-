@@ -9,7 +9,6 @@ import { CourseCreateRequest, CourseUpdateRequest } from "@/types/courses";
 import { FeedMessages } from "@/types/feed";
 import { getModulesByCourseUUID, updateModuleByUUID } from "./modules";
 import { getFeedByCourseUUID, systemFeedMessage } from "./feed";
-import { FileCreateRequest } from "@/types/materials";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
 import type { SendFileOptions } from "express-serve-static-core";
 
@@ -111,13 +110,12 @@ courseRoutes.put("/:uuid", checkCourse, authenticate, async (req, res) => {
         const theme: string|null = result.data.theme || req.course.theme || null;
         const openedAt: string|null = result.data.openedAt || req.course.openedAt || null;
         const closedAt: string|null = result.data.closedAt || req.course.closedAt || null;
-        const imageUrl: string|null = result.data.imageUrl || req.course.imageUrl || null;
 
         await pool.execute(`
             UPDATE courses
-            SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?, imageUrl = ?
+            SET name = ?, description = ?, theme = ?, openedAt = ?, closedAt = ?
             WHERE uuid = ?
-        `, [name, desc, theme, openedAt, closedAt, imageUrl, uuid]);
+        `, [name, desc, theme, openedAt, closedAt, uuid]);
 
         let useAnd: boolean = false;
         async function getAnd(b: boolean) {
@@ -135,12 +133,11 @@ courseRoutes.put("/:uuid", checkCourse, authenticate, async (req, res) => {
                 descChanged = desc != req.course.description,
                 openedAtChanged = openedAt != req.course.openedAt,
                 closedAtChanged = closedAt != req.course.closedAt,
-                themeChanged = theme != req.course.theme,
-                imageUrlChanged = imageUrl != req.course.imageUrl;
+                themeChanged = theme != req.course.theme;
         
-        const msg: any =
+        const msg: string =
         `{
-            "content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}${await getAnd(imageUrlChanged)}${imageUrlChanged ? " image" : ""}",
+            "content": "Course${await getAnd(nameChanged)}${nameChanged ? " name" : ""}${await getAnd(descChanged)}${descChanged ? " description" : ""}${await getAnd(themeChanged)}${themeChanged ? " theme" : ""}${await getAnd(openedAtChanged)}${openedAtChanged ? " opening time" : ""}${await getAnd(closedAtChanged)}${closedAtChanged ? " closing time" : ""}",
             "type": "${FeedMessages.EDIT}"
         }`
         await updateCourseByUUID(uuid, msg);
@@ -285,6 +282,13 @@ courseRoutes.post("/:uuid/image", authenticate, async (req, res, next) => {
                 SET imageUrl = ?
                 WHERE uuid = ?
             `, [newFilePath, req.params.uuid]);
+
+            const msg: string =
+            `{
+                "content": "Course image",
+                "type": "${FeedMessages.EDIT}"
+            }`
+            await updateCourseByUUID(req.params.uuid, msg);
 
             next();
         });

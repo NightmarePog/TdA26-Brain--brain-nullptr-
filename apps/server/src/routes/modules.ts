@@ -9,6 +9,7 @@ import { FeedMessages } from "@/types/feed";
 import { checkCourse, findCourseByUUID, updateCourseByUUID } from "./courses";
 import { ModuleCreateRequest, ModuleUpdateRequest } from "@/types/modules";
 import { getMaterialsByModuleUUID } from "./materials";
+import { getQuizzesByModuleUUID } from "./quizzes";
 
 export const moduleRoute = "/:uuid/modules";
 export const moduleRoutes = express.Router();
@@ -190,16 +191,18 @@ moduleRoutes.delete(`${moduleRoute}/:moduleUuid`, checkCourse, checkModule, auth
 });
 
 /** Functions */
-async function formatModuleJSON(entry : RowDataPacket): Promise<RowDataPacket|null> {
+async function formatModuleJSON(entry : RowDataPacket): Promise<RowDataPacket> {
 	delete entry.courseUuid;
 
 	const materials: RowDataPacket[]|null = await getMaterialsByModuleUUID(entry.uuid);
-	if (!materials) return null;
-	entry.materials = materials;
+	if (materials != null) {
+        entry.materials = materials;
+    }
 
-	// const quizzes: RowDataPacket[]|null = await getQuizzesByModuleUUID(entry.uuid);
-	// if (!quizzes) return null;
-	// entry.quizzes = quizzes;
+	const quizzes: RowDataPacket[]|null = await getQuizzesByModuleUUID(entry.uuid);
+	if (quizzes != null) {
+        entry.quizzes = quizzes;
+    }
 
 	return entry;
 }
