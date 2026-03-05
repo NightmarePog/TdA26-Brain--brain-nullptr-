@@ -1,11 +1,11 @@
 import express from "express";
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
-import { authenticate, authenticateOptional, findUser } from "./users";
+import { authenticate } from "./users";
 import * as z from "zod";
 import { Types } from "..";
 import type { RowDataPacket } from "mysql2";
-import { FeedCreateRequest, FeedMessages } from "@/types/feed";
+import { FeedCreateRequest } from "@/types/feed";
 import { checkCourse, findCourseByUUID } from "./courses";
 
 export const feedRoute = "/:uuid/feed";

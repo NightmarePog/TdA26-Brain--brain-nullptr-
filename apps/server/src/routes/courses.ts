@@ -3,12 +3,15 @@ import { pool } from "@/db";
 import { randomUUID } from "crypto";
 import { authenticate, authenticateOptional, findUser } from "./users";
 import * as z from "zod";
-import { Types } from "..";
+import { Types, upload } from "..";
 import type { RowDataPacket } from "mysql2";
 import { CourseCreateRequest, CourseUpdateRequest } from "@/types/courses";
 import { FeedMessages } from "@/types/feed";
 import { getModulesByCourseUUID, updateModuleByUUID } from "./modules";
 import { getFeedByCourseUUID, systemFeedMessage } from "./feed";
+import { FileCreateRequest } from "@/types/materials";
+import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
+import type { SendFileOptions } from "express-serve-static-core";
 
 export const courseRoutes = express.Router();
 
@@ -220,6 +223,78 @@ courseRoutes.post("/:uuid/state", checkCourse, authenticate, async (req, res) =>
         console.error("Error updating course state:", error);
         res.status(500).json({ error: "Failed to update course state" });
     }
+});
+
+/** get image */
+courseRoutes.get(`/:uuid/image`, checkCourse, async (req, res) => {
+    try {
+        if (req.course == null) {
+            res.status(404).json({"message":"Course not found"});
+            return;
+        }
+
+        const options : SendFileOptions = {
+            dotfiles: 'deny',
+            headers: {
+            'x-timestamp': Date.now(),
+            'x-sent': true
+            }
+        }
+
+        if (req.course.imageUrl == null) {
+            res.status(404).json({ message: "Image not found" })
+            return;
+        }
+
+        res.status(200).sendFile(req.course.imageUrl, options, (err) => {
+            if (err) {
+                console.error(err);
+            };
+        })
+        
+    } catch (error) {
+        console.error("Error fetching material:", error);
+        res.status(500).json({ error: "Failed to fetch material" });
+    }
+});
+
+/** post image */
+courseRoutes.post("/:uuid/image", authenticate, async (req, res, next) => {
+    try {
+        await upload(req, res, async (err : any) => {
+            if (err) {
+                res.status(400).json({ message: err.message });
+                return;
+            }
+            if (req.file == null) {
+                res.status(400).json({ message: "File doesn't exist" });
+                return;
+            }
+
+            const tmpFilePath = `/app/tmp/${req.params.uuid}`;
+            const newDirPath = `/app/materials/${req.params.uuid}`;
+            const newFilePath = `${newDirPath}/${randomUUID()}`;
+
+            if (!(await fileOrDirectoryExists(newDirPath))) {
+                await createDirectory(newDirPath);
+            }
+            await moveFile(tmpFilePath, newFilePath);
+
+            await pool.execute(`
+                UPDATE courses
+                SET imageUrl = ?
+                WHERE uuid = ?
+            `, [newFilePath, req.params.uuid]);
+
+            next();
+        });
+    } catch (error) {
+        console.error("Error creating course:", error);
+        res.status(500).json({ error: "Failed to create course" });
+    }
+}, async (req, res) => {
+    const course: RowDataPacket|null = await findCourseByUUID(req.params.uuid);
+    res.status(200).json(course);
 });
 
 

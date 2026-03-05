@@ -1,17 +1,16 @@
 import express from "express";
 import { pool } from "@/db";
 import { randomUUID } from "crypto";
-import { authenticate, authenticateOptional, findUser } from "./users";
+import { authenticate } from "./users";
 import * as z from "zod";
 import { Types, upload } from "..";
 import type { RowDataPacket } from "mysql2";
 import { FeedMessages } from "@/types/feed";
-import { checkCourse, findCourseByUUID, updateCourseByUUID } from "./courses";
+import { checkCourse, updateCourseByUUID } from "./courses";
 import { checkModule, findModuleByUUID } from "./modules";
 import { FileCreateRequest, FileUpdateRequest, UrlCreateRequest, UrlUpdateRequest } from "@/types/materials";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
 import type { SendFileOptions } from "express-serve-static-core";
-import path from "path";
 
 export const materialRoute = "/:uuid/modules/:moduleUuid/materials";
 export const materialRoutes = express.Router();

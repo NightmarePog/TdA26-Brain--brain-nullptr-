@@ -142,7 +142,7 @@ apiRoutes.use("/users", userRoutes);
 apiRoutes.use("/courses", courseRoutes);
 courseRoutes.use("/", moduleRoutes);
 courseRoutes.use("/", feedRoutes);
-moduleRoutes.use("", materialRoutes);
+moduleRoutes.use("/", materialRoutes);
 
 const port = process.env.PORT || 3000;
 async function start() {
