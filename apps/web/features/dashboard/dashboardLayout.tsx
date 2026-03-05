@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CoursesApi } from "@/lib/api";
 import { Course } from "@/types/api/courses";
 import DashboardHeader from "./dashboardHeader";
+import DashboardCourseView from "./dashboardCourseView";
 
 const DashboardLayout = () => {
   const { data } = useQuery<Course[]>({
@@ -18,7 +19,7 @@ const DashboardLayout = () => {
       <DashboardHeader />
       <Separator className="my-5" />
       <CoursesFiltering data={data} canAdd={true}>
-        {(filteredCourses) => <CoursesCourseView data={filteredCourses} />}
+        {(filteredCourses) => <DashboardCourseView data={filteredCourses} />}
       </CoursesFiltering>
     </div>
   );

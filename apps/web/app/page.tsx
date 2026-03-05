@@ -31,7 +31,7 @@ export default function Home() {
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl font-medium mb-8 opacity-95">
-              Think Different Academy ti pomůže pochopit látku rychleji,
+              Think different Academy ti pomůže pochopit látku rychleji,
               procvičit ji na reálných úkolech a opravdu ji umět — nejen se ji
               naučit nazpaměť.
             </p>
@@ -96,7 +96,7 @@ export default function Home() {
       {/* ŘEŠENÍ */}
       <section className="py-24 px-6 sm:px-12 md:px-24 lg:px-32 bg-muted">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-          Think Different Academy to dělá jinak
+          Think different Academy to dělá jinak
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -152,7 +152,7 @@ export default function Home() {
         </div>
 
         <blockquote className="max-w-2xl mx-auto text-lg italic">
-          „Díky Think Different Academy jsem konečně pochopil látku, která mi ve
+          „Díky Think diffrent Academy jsem konečně pochopil látku, která mi ve
           škole nedávala smysl.“
         </blockquote>
         <p className="mt-4 font-semibold">– Martin, student VŠ</p>

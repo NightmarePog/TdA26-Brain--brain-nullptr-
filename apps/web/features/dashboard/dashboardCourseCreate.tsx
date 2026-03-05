@@ -1,5 +1,7 @@
+/**
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DialogHeader,
@@ -19,77 +21,95 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CoursesApi } from "@/lib/api";
+import useCourseAddress from "@/hooks/useCourseAddress";
 import { CourseCreateRequest } from "@/types/api/courses";
 
-/* ============================= */
-/* Schema */
-/* ============================= */
 
-const formSchema = z
-  .object({
-    title: z
-      .string()
-      .min(3, "Název musí být delší jak 3 znaky")
-      .max(32, "Název může mít maximálně 32 znaků"),
+const formSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Název musí být delší jak 3 znaky")
+    .max(32, "Název může mít maximálně 32 znaků"),
 
-    description: z.string().max(350, "Popisek může mít maximálně 350 znaků."),
+  description: z.string().max(350, "Popisek může mít maximálně 350 znaků."),
 
-    since: z.coerce
-      .date()
-      .refine((val) => val instanceof Date && !isNaN(val.getTime()), {
-        message: "Začátek musí být vyplněn",
-      }),
+  since: z.coerce
+    .date()
+    .refine((val) => !isNaN(val.getTime()), {
+      message: "Začátek musí být vyplněn",
+    })
+    .refine((val) => val > new Date(), {
+      message: "Začátek kurzu musí být v budoucnosti",
+    }),
 
-    until: z.coerce
-      .date()
-      .refine((val) => val instanceof Date && !isNaN(val.getTime()), {
-        message: "Konec musí být vyplněn",
-      }),
-  })
-  .refine((data) => data.until > data.since, {
-    message: "Konec musí být později než začátek",
-    path: ["until"],
-  });
+  time: z.coerce
+    .number()
+    .min(5, { message: "Kurz musí trvat alespoň 5 minut" }),
+
+  image: z
+    .any()
+    .refine((files) => files?.length === 1, "Obrázek je povinný")
+    .refine(
+      (files) => files?.[0]?.type?.startsWith("image/"),
+      "Soubor musí být obrázek",
+    ),
+});
 
 type FormSchema = typeof formSchema;
 type FormInput = z.input<FormSchema>;
 type FormValues = z.output<FormSchema>;
 
-/* ============================= */
-/* Component */
-/* ============================= */
 
 const DashboardCourseCreate = () => {
+  const [open, setOpen] = useState(false);
+
   const form = useForm<FormInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
       since: "",
-      until: "",
+      time: 0,
+      image: undefined,
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
-    const payload: CourseCreateRequest = {
-      name: formData.title,
-      description: formData.description,
-      openedAt: formData.since.toISOString() || "",
-      closedAt: formData.until.toISOString() || "",
-    };
+    const multipart = new FormData();
 
-    toast.promise(CoursesApi.post(payload), {
-      loading: "Vytvářím kurz...",
-      success: "Kurz úspěšně vytvořen!",
-      error: "Něco se pokazilo!",
-      position: "bottom-right",
-    });
+    multipart.append("name", formData.title);
+    multipart.append("description", formData.description);
+    multipart.append("openedAt", formData.since.toISOString());
+    multipart.append("courseTime", formData.time.toString());
+    multipart.append("image", formData.image[0]);
 
-    form.reset();
+    try {
+      const data: CourseCreateRequest = {
+        name: formData.title,
+        description: formData.description,
+        openedAt: formData.since.toISOString(),
+        courseTime: formData.time,
+        // obrázek nelze přímo uložit, můžeš tu dát URL pokud ji máš
+        // image: imageUrl
+      };
+
+      await CoursesApi.post();
+
+      toast.success("Kurz úspěšně vytvořen!", {
+        position: "bottom-right",
+      });
+
+      form.reset();
+      setOpen(false); // zavře dialog jen při úspěchu
+    } catch {
+      toast.error("Něco se pokazilo!", {
+        position: "bottom-right",
+      });
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-[#91F5AD] text-black p-2 hover:bg-[#91F5AD]/70">
           Vytvořit
@@ -97,7 +117,7 @@ const DashboardCourseCreate = () => {
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-sm">
-        <form onSubmit={form.handleSubmit(() => onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Vytvořit nový kurz</DialogTitle>
           </DialogHeader>
@@ -147,15 +167,31 @@ const DashboardCourseCreate = () => {
             </Field>
 
             <Field>
-              <Label htmlFor="until">Konec</Label>
+              <Label htmlFor="time">Délka kurzu v minutách</Label>
               <Input
-                type="datetime-local"
-                id="until"
-                {...form.register("until")}
+                type="number"
+                id="time"
+                min={0}
+                {...form.register("time")}
               />
-              {form.formState.errors.until && (
+              {form.formState.errors.time && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.until.message}
+                  {form.formState.errors.time.message}
+                </p>
+              )}
+            </Field>
+
+            <Field>
+              <Label htmlFor="image">Náhledový obrázek</Label>
+              <Input
+                type="file"
+                id="image"
+                accept="image/*"
+                {...form.register("image")}
+              />
+              {form.formState.errors.image && (
+                <p className="text-red-500 text-sm mt-1">
+                  {String(form.formState.errors.image.message)}
                 </p>
               )}
             </Field>
@@ -176,3 +212,4 @@ const DashboardCourseCreate = () => {
 };
 
 export default DashboardCourseCreate;
+**/

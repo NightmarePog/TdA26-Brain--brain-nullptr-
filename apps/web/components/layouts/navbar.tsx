@@ -27,11 +27,11 @@ export default function Navbar() {
   const userLabel = data ? "Dashboard" : "Přihlásit";
 
   return (
-    <nav className="flex h-16 md:h-20 w-full items-center justify-between bg-primary px-4 md:px-8 text-white">
-      {/* Left */}
-      <div className="flex items-center gap-2 md:gap-4">
-        <NavbarButton onClick={() => router.push("/")}>
-          <Icon src={Logo} alt="logo" className="h-8 w-8 md:h-12 md:w-12" />
+    <nav className="flex h-16 md:h-20 items-center justify-between bg-primary text-white px-4 md:px-8 z-50">
+      {/* Left: logo */}
+      <div className="flex items-center gap-2 md:gap-4 ">
+        <NavbarButton onClick={() => router.push("/")} className="h-18">
+          <Icon src={Logo} alt="logo" className="w-8 h-8 md:w-12 md:h-12" />
         </NavbarButton>
 
         <NavbarButton
