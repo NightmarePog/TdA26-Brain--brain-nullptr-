@@ -8,6 +8,7 @@ import type { RowDataPacket } from "mysql2";
 import { FeedMessages } from "@/types/feed";
 import { checkCourse, findCourseByUUID, updateCourseByUUID } from "./courses";
 import { ModuleCreateRequest, ModuleUpdateRequest } from "@/types/modules";
+import { getMaterialsByModuleUUID } from "./materials";
 
 export const moduleRoute = "/:uuid/modules";
 export const moduleRoutes = express.Router();
@@ -192,9 +193,9 @@ moduleRoutes.delete(`${moduleRoute}/:moduleUuid`, checkCourse, checkModule, auth
 async function formatModuleJSON(entry : RowDataPacket): Promise<RowDataPacket|null> {
 	delete entry.courseUuid;
 
-	// const materials: RowDataPacket[]|null = await getMaterialsByModuleUUID(entry.uuid);
-	// if (!materials) return null;
-	// entry.materials = materials;
+	const materials: RowDataPacket[]|null = await getMaterialsByModuleUUID(entry.uuid);
+	if (!materials) return null;
+	entry.materials = materials;
 
 	// const quizzes: RowDataPacket[]|null = await getQuizzesByModuleUUID(entry.uuid);
 	// if (!quizzes) return null;

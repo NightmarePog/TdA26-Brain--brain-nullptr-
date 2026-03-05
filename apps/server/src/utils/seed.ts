@@ -35,8 +35,7 @@ export async function seed() {
         "POST",
         "application/json",
         "courses",
-        // '{"name":"Welcome, TdA 2026!"}'
-        '{"name":"Welcome, TdA 2026!", "openedAt":"2026-03-01T19:00:00", "closedAt":"2026-03-01T19:20:00"}'
+        '{"name":"Welcome, TdA 2026!"}'
     );
     const module = await call(
         "POST",
@@ -60,94 +59,94 @@ export async function seed() {
         body: formData
     });
 
-    const quiz_single_choice = await call(
-        "POST",
-        "application/json",
-        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
-        `{
-            "title": "Basic Programming Quiz",
-            "description": "Test your basic programming knowledge",
-            "questions": [
-            {
-                "type": "singleChoice",
-                "question": "What does HTML stand for?",
-                "options": [
-                "HyperText Markup Language",
-                "HighText Machine Language",
-                "Hyperlink and Text Markup Language",
-                "Home Tool Markup Language"
-                ],
-                "correctIndex": 0
-            },
-            {
-                "type": "singleChoice",
-                "question": "Which keyword is used to declare a constant in JavaScript?",
-                "options": ["var", "let", "const", "static"],
-                "correctIndex": 2
-            }
-            ]
-        }`
-    );
-    const quiz_multiple_choice = await call(
-        "POST",
-        "application/json",
-        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
-        `{
-            "title": "Web Development Basics",
-            "description": "Multiple choice quiz about web technologies",
-            "questions": [
-            {
-                "type": "multipleChoice",
-                "question": "Which of the following are JavaScript frameworks?",
-                "options": ["React", "Laravel", "Vue", "Django"],
-                "correctIndices": [0, 2]
-            },
-            {
-                "type": "multipleChoice",
-                "question": "Which HTTP methods are idempotent?",
-                "options": ["GET", "POST", "PUT", "DELETE"],
-                "correctIndices": [0, 2, 3]
-            }
-            ]
-        }`
-    );
-    const quiz_mix = await call(
-        "POST",
-        "application/json",
-        `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
-        `{
-            "title": "Ari Lore",
-            "description": "Quiz about me, the backend developer",
-            "questions": [
-            {
-                "type": "singleChoice",
-                "question": "How old am i?",
-                "options": ["13", "14", "15", "16", "17", "18", "19", "20"],
-                "correctIndex": 4
-            },
-            {
-                "type": "multipleChoice",
-                "question": "What are my hobbies?",
-                "options": ["Guitar", "Running", "Electrical work", "Linux", "Cybersecurity", "Partying"],
-                "correctIndices": [0, 2, 3]
-            },
-            {
-                "type": "singleChoice",
-                "question": "Was this quiz good?",
-                "options": ["Yes", "No"],
-                "correctIndex": 1
-            }
-            ]
-        }`
-    );
-    const answer = await call(
-        "POST",
-        "application/json",
-        `courses/${course.uuid}/modules/${module.uuid}/quizzes/${quiz_mix.uuid}/submit`,
-        `{
-            "answers":[]
-        }`
-    )
+    // const quiz_single_choice = await call(
+    //     "POST",
+    //     "application/json",
+    //     `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
+    //     `{
+    //         "title": "Basic Programming Quiz",
+    //         "description": "Test your basic programming knowledge",
+    //         "questions": [
+    //         {
+    //             "type": "singleChoice",
+    //             "question": "What does HTML stand for?",
+    //             "options": [
+    //             "HyperText Markup Language",
+    //             "HighText Machine Language",
+    //             "Hyperlink and Text Markup Language",
+    //             "Home Tool Markup Language"
+    //             ],
+    //             "correctIndex": 0
+    //         },
+    //         {
+    //             "type": "singleChoice",
+    //             "question": "Which keyword is used to declare a constant in JavaScript?",
+    //             "options": ["var", "let", "const", "static"],
+    //             "correctIndex": 2
+    //         }
+    //         ]
+    //     }`
+    // );
+    // const quiz_multiple_choice = await call(
+    //     "POST",
+    //     "application/json",
+    //     `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
+    //     `{
+    //         "title": "Web Development Basics",
+    //         "description": "Multiple choice quiz about web technologies",
+    //         "questions": [
+    //         {
+    //             "type": "multipleChoice",
+    //             "question": "Which of the following are JavaScript frameworks?",
+    //             "options": ["React", "Laravel", "Vue", "Django"],
+    //             "correctIndices": [0, 2]
+    //         },
+    //         {
+    //             "type": "multipleChoice",
+    //             "question": "Which HTTP methods are idempotent?",
+    //             "options": ["GET", "POST", "PUT", "DELETE"],
+    //             "correctIndices": [0, 2, 3]
+    //         }
+    //         ]
+    //     }`
+    // );
+    // const quiz_mix = await call(
+    //     "POST",
+    //     "application/json",
+    //     `courses/${course.uuid}/modules/${module.uuid}/quizzes`,
+    //     `{
+    //         "title": "Ari Lore",
+    //         "description": "Quiz about me, the backend developer",
+    //         "questions": [
+    //         {
+    //             "type": "singleChoice",
+    //             "question": "How old am i?",
+    //             "options": ["13", "14", "15", "16", "17", "18", "19", "20"],
+    //             "correctIndex": 4
+    //         },
+    //         {
+    //             "type": "multipleChoice",
+    //             "question": "What are my hobbies?",
+    //             "options": ["Guitar", "Running", "Electrical work", "Linux", "Cybersecurity", "Partying"],
+    //             "correctIndices": [0, 2, 3]
+    //         },
+    //         {
+    //             "type": "singleChoice",
+    //             "question": "Was this quiz good?",
+    //             "options": ["Yes", "No"],
+    //             "correctIndex": 1
+    //         }
+    //         ]
+    //     }`
+    // );
+    // const answer = await call(
+    //     "POST",
+    //     "application/json",
+    //     `courses/${course.uuid}/modules/${module.uuid}/quizzes/${quiz_mix.uuid}/submit`,
+    //     `{
+    //         "answers":[]
+    //     }`
+    // )
     const feed = await call(
         "POST",
         "application/json",
