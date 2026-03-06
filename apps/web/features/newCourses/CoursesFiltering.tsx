@@ -8,6 +8,7 @@ import {
 import { Course } from "@/types/api/courses";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
+import { DashboardCreateCourseDialog } from "../dashboard/dashboardCreateCourseDialog";
 
 interface CoursesFilteringProps {
   data: Course[];
@@ -43,7 +44,7 @@ const CoursesFiltering = ({
             </InputGroup>
           </Field>
         </div>
-        {/**canAdd && <DashboardCourseCreate />**/}
+        {canAdd && <DashboardCreateCourseDialog />}
       </div>
 
       {children(filtered)}
