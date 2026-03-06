@@ -74,9 +74,9 @@ export async function sha512(str : string) {
 
 export async function authenticate(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
-	req.user = {name:"lecturer"};
-	next();
-	return;
+	// req.user = {name:"lecturer"};
+	// next();
+	// return;
 
 	let authToken;
 	try {
@@ -95,9 +95,9 @@ export async function authenticate(req : any, res : any, next : any) {
 
 export async function authenticateOptional(req : any, res : any, next : any) {
 	/** temporary authenticate skip */
-	req.user = {name:"lecturer"};
-	next();
-	return;
+	// req.user = {name:"lecturer"};
+	// next();
+	// return;
 
 	let authToken;
 	try {

@@ -31,12 +31,25 @@ export async function seed() {
     }
 
     /** CREATE TESTING DATA */
+    const closed_course = await call(
+        "POST",
+        "application/json",
+        "courses",
+        '{"name":"WIP COURSE"}'
+    );
+
     const course = await call(
         "POST",
         "application/json",
         "courses",
         '{"name":"Welcome, TdA 2026!"}'
     );
+    await call(
+        "POST",
+        "application/json",
+        `courses/${course.uuid}/state`,
+        '{"state":"life"}'
+    )
     const module = await call(
         "POST",
         "application/json",
