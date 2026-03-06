@@ -142,6 +142,12 @@ materialRoutes.get(`${materialRoute}/:materialUuid`, checkCourse, checkModule, c
         }
         const material = req.material;
 
+        await pool.execute(`
+            UPDATE materials
+            SET viewCount = ?
+            WHERE uuid = ?
+        `, [req.material.viewCount+1, req.material.uuid]);
+
         if (material.type == Types.MATERIAL_URL) {
             res.status(200).json(material);
             return;

@@ -71,6 +71,7 @@ export async function initDatabase() {
 				CREATE TABLE IF NOT EXISTS materials (
 					uuid CHAR(36) PRIMARY KEY,
 					moduleUuid CHAR(36) NOT NULL,
+					viewCount INT DEFAULT 0,
 					createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 					updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					updateCount INT DEFAULT 0,
