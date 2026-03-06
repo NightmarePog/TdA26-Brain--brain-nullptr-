@@ -12,6 +12,7 @@ interface DashboardCardProps {
   title: string;
   description?: string;
   state: CourseStates;
+  imageSrc: string;
 }
 
 const DashboardCard = ({
@@ -19,11 +20,15 @@ const DashboardCard = ({
   title,
   description,
   state,
+  imageSrc,
 }: DashboardCardProps) => {
   const router = useRouter();
   return (
     <BaseCard CardKey={cardKey}>
-      <BaseCardImage src="https://avatar.vercel.sh/shadcn1" alt="event cover">
+      <BaseCardImage
+        src={imageSrc || "https://avatar.vercel.sh/shadcn1"}
+        alt="event cover"
+      >
         <div
           className="h-full flex justify-center items-center transition duration-500 ease-out hover:scale-110 cursor-pointer"
           onClick={() => router.push(`/dashboard/${cardKey}`)}
