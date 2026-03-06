@@ -12,7 +12,6 @@ interface DashboardCardProps {
   title: string;
   description?: string;
   state: CourseStates;
-  imageSrc: string;
 }
 
 const DashboardCard = ({
@@ -20,7 +19,6 @@ const DashboardCard = ({
   title,
   description,
   state,
-  imageSrc,
 }: DashboardCardProps) => {
   const router = useRouter();
   return (
