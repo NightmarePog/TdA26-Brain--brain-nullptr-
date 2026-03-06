@@ -82,12 +82,12 @@ export async function authenticate(req : any, res : any, next : any) {
 	try {
 		authToken = req.cookies.auth_token;
 	} catch (err) {};
-	if (authToken == null) return res.sendStatus(401);
+	if (authToken == null) return res.status(401).json({message : "No auth token"});
 
 	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
-		if (err) return res.sendStatus(403);
+		if (err) return res.status(403).json({message: "Invalid auth token"});
 		const u = await findUser(user.name);
-		if (u == null) return res.sendStatus(401).json({ message: "User not found" });
+		if (u == null) return res.status(401).json({ message: "User not found" });
 		req.user = user;
 		next();
 	});
