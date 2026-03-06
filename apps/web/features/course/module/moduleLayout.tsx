@@ -2,7 +2,6 @@
 
 import ModulePageHeader from "./modulesPageHeader";
 import useSafeQuery from "@/features/query/useSafeQuery";
-import { ModulesRecieve } from "@/types/api/modules";
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
 import ErrorLabel from "@/components/typography/errorText";
@@ -14,11 +13,12 @@ import PageTitle from "@/components/typography/pageTitle";
 import { ModuleChart } from "./moduleChart";
 import ModuleQuizStartDialog from "../../moduleList/moduleQuizStartDialog";
 import { Button } from "@/components/ui/button";
+import { Module } from "@/types/api/modules";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
 
-  const { queryStatus, StatusElement, data } = useSafeQuery<ModulesRecieve>({
+  const { queryStatus, StatusElement, data } = useSafeQuery<Module>({
     queryFn: () => CoursesApi.modules.getAll(courseUuid),
     queryKey: ["courses", courseUuid],
     enabled: !!courseUuid,
