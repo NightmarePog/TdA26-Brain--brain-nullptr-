@@ -103,12 +103,12 @@ export async function authenticateOptional(req : any, res : any, next : any) {
 	try {
 		authToken = req.cookies.auth_token;
 	} catch (err) {};
-	if (authToken == null) next();
+	if (authToken == null) return next();
 
 	jwt.verify(authToken, authTokenSecret, async (err : any, user : any) => {
 		if (err) return next();
 		const u = await findUser(user.name);
-		if (u == null) next();
+		if (u == null) return next();
 		req.user = user;
 		next();
 	});
