@@ -16,7 +16,6 @@ const CoursesCourseView = ({ data }: CoursesCourseViewProps) => {
             title={data.name}
             description={data.description}
             state={data.state as CourseStates}
-            imageSrc={data.imageUrl}
           />
         ))}
       </div>
