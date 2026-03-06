@@ -12,7 +12,7 @@ type BaseCardImageProps = {
 export function BaseCardImage({
   src,
   alt,
-  badge,
+
   children,
   onError,
 }: BaseCardImageProps) {
