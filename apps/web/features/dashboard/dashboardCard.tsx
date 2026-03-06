@@ -21,10 +21,11 @@ const DashboardCard = ({
   state,
 }: DashboardCardProps) => {
   const router = useRouter();
+
   return (
     <BaseCard CardKey={cardKey}>
       <BaseCardImage
-        src={`/api/courses/${cardKey}/image`}
+        src={`${process.env.NEXT_PUBLIC_API_URL}/api/courses/${cardKey}/image`}
         alt="event cover"
         onError={(e) => {
           e.currentTarget.src = "https://avatar.vercel.sh/shadcn1";

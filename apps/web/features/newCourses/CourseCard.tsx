@@ -19,7 +19,7 @@ const CourseCard = ({ cardKey, title, description, state }: CardTestProps) => {
   return (
     <BaseCard CardKey={cardKey}>
       <BaseCardImage
-        src={`/api/courses/${cardKey}/image`}
+        src={`${process.env.NEXT_PUBLIC_API_URL}/api/courses/${cardKey}/image`}
         alt="event cover"
         onError={(e) => {
           e.currentTarget.src = "https://avatar.vercel.sh/shadcn1";

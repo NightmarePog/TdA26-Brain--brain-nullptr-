@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         hostname: "avatar.vercel.sh",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "**.tourde.app",
+        pathname: "/api/courses/**",
+      },
     ],
     domains: ["www.google.com"],
   },
