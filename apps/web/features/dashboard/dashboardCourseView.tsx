@@ -16,7 +16,6 @@ const DashboardCourseView = ({ data }: DashboardCourseViewProps) => {
             title={data.name}
             description={data.description}
             state={data.state as CourseStates}
-            imageSrc={data.imageUrl}
           />
         ))}
       </div>
