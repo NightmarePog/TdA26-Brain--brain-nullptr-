@@ -5,12 +5,14 @@ import { authenticate, authenticateOptional, findUser } from "./users";
 import * as z from "zod";
 import { Types, upload } from "..";
 import type { RowDataPacket } from "mysql2";
-import { CourseCreateRequest, CourseUpdateRequest } from "@/types/courses";
+import { CourseCreateRequest, CourseStats, CourseUpdateRequest, MaterialStats, ModuleStats, QuizStats } from "@/types/courses";
 import { FeedMessages } from "@/types/feed";
 import { getModulesByCourseUUID, updateModuleByUUID } from "./modules";
 import { getFeedByCourseUUID, systemFeedMessage } from "./feed";
 import { createDirectory, fileOrDirectoryExists, moveFile } from "@/utils/filesystem";
 import type { SendFileOptions } from "express-serve-static-core";
+import { getQuizzesByModuleUUID } from "./quizzes";
+import { getMaterialsByModuleUUID } from "./materials";
 
 export const courseRoutes = express.Router();
 
@@ -256,7 +258,7 @@ courseRoutes.get(`/:uuid/image`, checkCourse, async (req, res) => {
 });
 
 /** post image */
-courseRoutes.post("/:uuid/image", authenticate, async (req, res, next) => {
+courseRoutes.post("/:uuid/image", checkCourse, authenticate, async (req, res, next) => {
     try {
         await upload(req, res, async (err : any) => {
             if (err) {
@@ -299,6 +301,84 @@ courseRoutes.post("/:uuid/image", authenticate, async (req, res, next) => {
 }, async (req, res) => {
     const course: RowDataPacket|null = await findCourseByUUID(req.params.uuid);
     res.status(200).json(course);
+});
+
+/** get statistics */
+courseRoutes.get("/:uuid/stats", checkCourse, async (req, res) => {
+    try {
+        if (req.course == null) {
+            res.status(404).json({"message":"Course not found"});
+            return;
+        }
+
+        const modules: RowDataPacket[]|null = await getModulesByCourseUUID(req.params.uuid);
+        if (modules == null) {
+            res.status(404).json({"message":"No modules found"});
+            return;
+        }
+
+        const modStats: ModuleStats[] = [];
+        for (const mod of modules) {
+            const quizzes: RowDataPacket[]|null = await getQuizzesByModuleUUID(mod.uuid);
+            if (quizzes == null) {
+                res.status(404).json({"message":"No quizzes found"});
+                return;
+            }
+            const materials: RowDataPacket[]|null = await getMaterialsByModuleUUID(mod.uuid);
+            if (materials == null) {
+                res.status(404).json({"message":"No materials found"});
+                return;
+            }
+
+            const quizStats: QuizStats[] = [];
+            const materialStats: MaterialStats[] = [];
+            for (const quiz of quizzes) {
+                let min: number = 99999, max: number = -99999, avg: number = 0;
+                for (const ans of quiz.answers) {
+                    if (ans.score < min) {
+                        min = ans.score;
+                    }
+                    if (ans.score > max) {
+                        max = ans.score;
+                    }
+                    avg+=ans.score;
+                }
+                avg /= (quiz.answers.length > 0 ? quiz.answers.length : 1);
+
+                quizStats.push({
+                    quizUuid:quiz.uuid,
+                    quizTitle:quiz.title,
+                    questionCount:quiz.questionCount,
+                    maxScore:quiz.maxScore,
+                    attemptsCount:quiz.attemptsCount,
+                    minScoreAchieved:(quiz.attemptsCount>0?min:undefined),
+                    maxScoreAchieved:(quiz.attemptsCount>0?max:undefined),
+                    avgScoreAchieved:(quiz.attemptsCount>0?avg:undefined)
+                });
+            }
+            for (const mat of materials) {
+                materialStats.push({
+                    materialUuid:mat.uuid,
+                    materialName:mat.name,
+                    viewCount:mat.viewCount
+                });
+            }
+            modStats.push({
+                moduleUuid:mod.uuid,
+                moduleName:mod.name,
+                quizzes:quizStats,
+                materials:materialStats
+            });
+        }
+        const stats: CourseStats = {
+            modules:modStats
+        };
+
+        res.status(200).json(stats);
+    } catch (error) {
+        console.error("Error getting course stats:", error);
+        res.status(500).json({ error: "Failed to get course stats" });
+    }
 });
 
 

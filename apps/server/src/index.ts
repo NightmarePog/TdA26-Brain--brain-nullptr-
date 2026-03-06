@@ -73,6 +73,7 @@ declare global {
 				mimeType?: string;
 				sizeBytes?: number;
 				faviconUrl?: string;
+				viewCount: number;
 			};
 			quiz? : RowDataPacket & {
 				uuid: string;

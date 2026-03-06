@@ -23,11 +23,7 @@ quizRoutes.get(quizRoute, checkCourse, checkModule, async (req,res) => {
             return;
         }
         for (const quiz of quizzes) {
-            const [answers] = await pool.execute<RowDataPacket[]>(`
-                SELECT * FROM answers WHERE quizUuid = ?
-            `,[quiz.uuid]);
-            
-            quiz.answers = await formatAnswersJSON(answers);
+            await formatQuizJSON(quiz);
         }
         
         res.status(200).json(quizzes);
@@ -154,13 +150,7 @@ quizRoutes.get(`${quizRoute}/:quizUuid`, checkCourse, checkModule, checkQuiz, as
             return;
         }
 
-        const [answers] = await pool.execute<RowDataPacket[]>(`
-            SELECT * FROM answers WHERE quizUuid = ?
-        `,[req.params.quizUuid]);
-        
-        req.quiz.answers = await formatAnswersJSON(answers);
-
-        res.status(200).json(req.quiz);
+        res.status(200).json(await formatQuizJSON(req.quiz));
     } catch (error) {
         console.error("Error fetching quiz:", error);
         res.status(500).json({ error: "Failed to fetch quiz" });
@@ -782,6 +772,11 @@ async function formatQuizJSON(entry : RowDataPacket): Promise<RowDataPacket> {
     entry.maxScore = maxScore;
     entry.questionCount = qCount;
     entry.questions = questions;
+
+    const [answers] = await pool.execute<RowDataPacket[]>(`
+        SELECT * FROM answers WHERE quizUuid = ?
+    `,[entry.uuid]);
+    entry.answers = await formatAnswersJSON(answers);
 
     return entry;
 };

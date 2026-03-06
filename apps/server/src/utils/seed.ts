@@ -147,6 +147,14 @@ export async function seed() {
             "answers":[]
         }`
     )
+    const answer2 = await call(
+        "POST",
+        "application/json",
+        `courses/${course.uuid}/modules/${module.uuid}/quizzes/${quiz_mix.uuid}/submit`,
+        `{
+            "answers":[]
+        }`
+    )
     const feed = await call(
         "POST",
         "application/json",
