@@ -56,7 +56,7 @@ export function DashboardCreateCourseDialog() {
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/course", {
+      const res = await fetch("/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,7 +75,7 @@ export function DashboardCreateCourseDialog() {
         const formData = new FormData();
         formData.append("file", values.image[0]);
 
-        const imgRes = await fetch(`/api/course/${course.uuid}/image`, {
+        const imgRes = await fetch(`/api/courses/${course.uuid}/image`, {
           method: "POST",
           body: formData,
         });
