@@ -12,22 +12,18 @@ interface CardTestProps {
   title: string;
   description?: string;
   state: CourseStates;
-  imageSrc: string;
 }
 
-const CourseCard = ({
-  cardKey,
-  title,
-  description,
-  state,
-  imageSrc,
-}: CardTestProps) => {
+const CourseCard = ({ cardKey, title, description, state }: CardTestProps) => {
   const router = useRouter();
   return (
     <BaseCard CardKey={cardKey}>
       <BaseCardImage
-        src={imageSrc || "https://avatar.vercel.sh/shadcn1"}
+        src={`http://localhost/api/courses/${cardKey}/image`}
         alt="event cover"
+        onError={(e) => {
+          e.currentTarget.src = "https://avatar.vercel.sh/shadcn1";
+        }}
       >
         <div
           className="h-full flex justify-center items-center transition duration-500 ease-out hover:scale-110 cursor-pointer"
