@@ -1,5 +1,4 @@
 import { Course, CourseStates } from "@/types/api/courses";
-import CardTest from "./CourseCard";
 import CourseCard from "./CourseCard";
 
 interface CoursesCourseViewProps {
@@ -17,6 +16,7 @@ const CoursesCourseView = ({ data }: CoursesCourseViewProps) => {
             title={data.name}
             description={data.description}
             state={data.state as CourseStates}
+            imageSrc={data.imageUrl}
           />
         ))}
       </div>
