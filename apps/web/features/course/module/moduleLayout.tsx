@@ -36,7 +36,7 @@ const ModuleLayout = () => {
             unfinishedModules={0}
             courseName="Python základy"
             courseDescription="v tomto kurzu se dozvíte úplné základy programovacího jazyka Python"
-            notificationCount={1}
+            notificationCount={0}
             moduleCount={1}
           />
           <ModuleChart />

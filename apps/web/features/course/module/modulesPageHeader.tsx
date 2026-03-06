@@ -19,8 +19,7 @@ const ModulePageHeader = ({
   courseName,
   moduleCount,
   courseDescription,
-  doneModules,
-  unfinishedModules,
+
   notificationCount,
 }: ModulePageHeaderProps) => {
   return (
@@ -29,13 +28,7 @@ const ModulePageHeader = ({
       <div className="flex justify-between">
         <div className="lg:flex gap-5 ">
           <InfoLabel>
-            <Component /> Otevřeno {moduleCount} modulů
-          </InfoLabel>
-          <InfoLabel>
-            <Check /> Hotovo <Badge>{doneModules}</Badge>
-          </InfoLabel>
-          <InfoLabel>
-            <OctagonAlert /> Nedkončeno <Badge>{unfinishedModules}</Badge>
+            <Component /> počet {moduleCount} modulů
           </InfoLabel>
         </div>
         <ModuleNotificationDropdown notificationCount={notificationCount} />
