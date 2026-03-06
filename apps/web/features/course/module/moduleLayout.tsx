@@ -1,51 +1,31 @@
 "use client";
 
 import ModulePageHeader from "./modulesPageHeader";
-
+import useSafeQuery from "@/features/query/useSafeQuery";
+import { ModulesRecieve } from "@/types/api/modules";
 import { CoursesApi } from "@/lib/api";
 import useCourseAddress from "@/hooks/useCourseAddress";
-
-import ModuleList from "./moduleList/moduleList";
-import ModuleListHeader from "./moduleList/moduleListHeader";
-import ModuleListAction from "./moduleList/ModuleListAction";
-import ModuleListItem from "./moduleList/moduleListItem";
+import ErrorLabel from "@/components/typography/errorText";
+import ModuleList from "../../moduleList/moduleList";
+import ModuleListHeader from "../../moduleList/moduleListHeader";
+import ModuleListAction from "../../moduleList/ModuleListAction";
+import ModuleListItem from "../../moduleList/moduleListItem";
 import PageTitle from "@/components/typography/pageTitle";
 import { ModuleChart } from "./moduleChart";
-import ModuleQuizStartDialog from "./moduleList/moduleQuizStartDialog";
-import { useQueries } from "@tanstack/react-query";
+import ModuleQuizStartDialog from "../../moduleList/moduleQuizStartDialog";
+import { Button } from "@/components/ui/button";
 
 const ModuleLayout = () => {
   const { courseUuid } = useCourseAddress();
 
-  const queries = useQueries({
-    queries: [
-      {
-        queryKey: ["modules", courseUuid],
-        queryFn: () => CoursesApi.modules.getAll(courseUuid),
-        enabled: !!courseUuid,
-      },
-      {
-        queryKey: ["course", courseUuid],
-        queryFn: () => CoursesApi.get(courseUuid),
-        enabled: !!courseUuid,
-      },
-    ],
+  const { queryStatus, StatusElement, data } = useSafeQuery<ModulesRecieve>({
+    queryFn: () => CoursesApi.modules.getAll(courseUuid),
+    queryKey: ["courses", courseUuid],
+    enabled: !!courseUuid,
   });
 
-  const [modulesQuery, courseQuery] = queries;
-
-  if (modulesQuery.isLoading || courseQuery.isLoading) {
-    return <div>Načítání...</div>;
-  }
-
-  if (modulesQuery.isError || courseQuery.isError) {
-    return <div>Chyba při načítání dat</div>;
-  }
-
-  const courseData = courseQuery.data ?? {
-    name: "Modul se nenačetl",
-    description: "",
-  };
+  if (queryStatus !== "finished") return StatusElement;
+  if (!data) return <ErrorLabel>Žádné data</ErrorLabel>;
 
   return (
     <div className="p-6">
@@ -54,23 +34,24 @@ const ModuleLayout = () => {
           <ModulePageHeader
             doneModules={0}
             unfinishedModules={0}
-            courseName={courseData.name}
-            courseDescription={courseData.description}
+            courseName="Python základy"
+            courseDescription="v tomto kurzu se dozvíte úplné základy programovacího jazyka Python"
             notificationCount={1}
-            moduleCount={modulesQuery.data?.length || 0}
+            moduleCount={1}
           />
           <ModuleChart />
         </div>
 
         <div className="w-px bg-gray-800" />
 
-        <div className="flex-1">
+        <div className="flex-1 ">
           <PageTitle className="py-5">Moduly</PageTitle>
           <ModuleList>
             <ModuleListHeader>Module 1: vývoj v jazyce</ModuleListHeader>
 
             <ModuleListItem>
               <ModuleListAction type="pdf">informace o IDE</ModuleListAction>
+              <Button>test</Button>
             </ModuleListItem>
 
             <ModuleListItem>
