@@ -183,7 +183,7 @@ export async function initDatabase() {
 
 			break;
 
-		} catch (error) {
+		} catch (error: any) {
 			if (error.code === 'PROTOCOL_CONNECTION_LOST') {
 				console.log("Database is probably still starting, retrying...");
 				await new Promise(f => setTimeout(f, 5000));

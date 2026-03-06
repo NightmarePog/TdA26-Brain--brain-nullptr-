@@ -1,19 +1,40 @@
-import { writeFile } from "./filesystem";
+let cookie = "";
 
 async function call(method: string, content: string, endpoint: string, data: any) {
     const res = await fetch(`http://localhost:3000/api/${endpoint}`, {
         method: method,
+        credentials: "include",
         headers: {
+            "Cookie": cookie,
             "Content-Type": content
         },
         body: data
     });
+    if (res.headers.getSetCookie() != undefined && cookie == "") {
+        cookie = res.headers.getSetCookie()[0];
+    }
     if (res.ok && res.body) {
         return res.json();
+    } else {
+        return res.status;
     }
 }
 
 export async function seed() {
+    /** get auth token */
+    const auth = await call(
+        "POST",
+        "application/json",
+        "users/login",
+        '{"name":"lecturer", "password":"TdA26!"}'
+    );
+    const isAuth = await call(
+        "GET",
+        "application/json",
+        "users/auth",
+        null
+    )
+
     /** PURGE EXISTING */
     const existing_courses = await call(
         "GET",
