@@ -24,10 +24,7 @@ const DashboardCard = ({
 
   return (
     <BaseCard CardKey={cardKey}>
-      <BaseCardImage
-        src={`${process.env.NEXT_PUBLIC_API_URL}api/courses/${cardKey}/image`}
-        alt="event cover"
-      >
+      <BaseCardImage src={`api/courses/${cardKey}/image`} alt="event cover">
         <div
           className="h-full flex justify-center items-center transition duration-500 ease-out hover:scale-110 cursor-pointer"
           onClick={() => router.push(`/dashboard/${cardKey}`)}
