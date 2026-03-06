@@ -24,7 +24,7 @@ const DashboardCard = ({
   return (
     <BaseCard CardKey={cardKey}>
       <BaseCardImage
-        src={`http://localhost/api/courses/${cardKey}/image`}
+        src={`/api/courses/${cardKey}/image`}
         alt="event cover"
         onError={(e) => {
           e.currentTarget.src = "https://avatar.vercel.sh/shadcn1";
