@@ -6,6 +6,7 @@ type BaseCardImageProps = {
   alt: string;
   badge?: string;
   children?: ReactNode;
+  onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 };
 
 export function BaseCardImage({
@@ -13,6 +14,7 @@ export function BaseCardImage({
   alt,
   badge,
   children,
+  onError,
 }: BaseCardImageProps) {
   return (
     <div className="relative aspect-video w-full overflow-hidden">
@@ -21,6 +23,7 @@ export function BaseCardImage({
         src={src}
         alt={alt}
         className="object-cover brightness-60 grayscale dark:brightness-40"
+        onError={(e) => onError!(e)}
       />
 
       <div className="absolute inset-0 bg-black/35" />
